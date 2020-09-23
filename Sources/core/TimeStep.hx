@@ -94,19 +94,6 @@ class TimeStep {
   // The delta time, in ms, since the last game step. This is a clamped and smoothed average value.
   public var delta:Float = 0;
 
-  // Internal index of the delta history position.
-  public var deltaIndex:Int = 0;
-
-  // Internal array holding the previous delta values, used for delta smoothing.
-  public var deltaHistory:Array<Float> = [];
-
-  /**
-   * The maximum number of delta values that are retained in order to calculate a smoothed moving average.
-   * 
-   * This can be changed in the Game Config via the `fps.deltaHistory` property. The default is 10.
-   */
-  public var deltaSmoothingMax:Int = 10;
-
   /**
    * The actual elapsed time in ms between one update and the next.
    * 
@@ -120,18 +107,6 @@ class TimeStep {
    * This can differ from the `time` value in that it isn't calculated based on the delta value.
    */
   public var now:Float = 0;
-
-  /**
-   * Apply smoothing to the delta value used within Phasers internal calculations?
-   * 
-   * This can be changed in the Game Config via the `fps.smoothStep` property. The default is `true`.
-   * 
-   * Smoothing helps settle down the delta values after browser tab switches, or other situations
-   * which could cause significant delta spikes or dips. By default it has been enabled in Phaser 3
-   * since the first version, but is now exposed under this property (and the corresponding game config
-   * `smoothStep` value), to allow you to easily disable it, should you require.
-   */
-  public var smoothStep:Bool;
   
   public function new(game:Game, config:TimeStepConfig) {
     this.game = game;
@@ -142,8 +117,10 @@ class TimeStep {
     this._min = 1000 / this.minFps;
     this._target = 1000 / this.targetFps;
     this.actualFps = this.targetFps;
-
-    this.smoothStep = config.smoothStep || true;
+  }
+  
+  public function getTime() {
+    
   }
 
   public function blur() {
@@ -156,7 +133,7 @@ class TimeStep {
   }
 
   public function pause() {
-		_pauseTime = Scheduler.time();
+		_pauseTime = Scheduler.realTime();
   }
 
   public function resume() {
@@ -166,20 +143,14 @@ class TimeStep {
   }
 
   public function resetDelta() {
-		var now = Scheduler.time();
+		var now = Scheduler.realTime();
 
     time = now;
     lastTime = now;
-    nextFpsUpdate = now + 1000;
+    nextFpsUpdate = now + 1;
     framesThisSecond = 0;
 
-    // Pre-populate smoothing array
-    for (i in 0...deltaSmoothingMax) {
-      deltaHistory[i] = Math.min(_target, deltaHistory[i]);
-    }
-
     delta = 0;
-    deltaIndex = 0;
   }
 
   // Starts the Time Step running, if it is not already doing so.
@@ -190,13 +161,9 @@ class TimeStep {
     started = true;
     running = true;
 
-    for (i in 0...deltaSmoothingMax) {
-      deltaHistory[i] = _target;
-    }
-
     resetDelta();
 
-		startTime = Scheduler.time();
+		startTime = Scheduler.realTime();
 
     callback = _callback;
 
@@ -215,11 +182,11 @@ class TimeStep {
 		//  not the actual time now, and as we want to compare this time value against Event timeStamps and the like, we need a
     //  more accurate one:
     
-		var time = Scheduler.time();
+		var currentTime = Scheduler.realTime();
 
-    now = time;
+		now = currentTime;
 
-    var before = time - lastTime;
+		var before = currentTime - lastTime;
 
     if (before < 0) {
       // Because, Chrome.
@@ -228,40 +195,8 @@ class TimeStep {
 
     rawDelta = before;
 
-    var max = deltaSmoothingMax;
-
-    // Delta Time (time is in ms)
-    var dt = before;
-
-    // Delta Average
-    var avg = before;
-
-		if (smoothStep) {
-      // Smooth out the delta over the previous X frames
-
-      // add the delta to the smoothing array
-      deltaHistory[deltaIndex] = dt;
-
-			// adjusts the delta history array index based on the smoothing count
-			// this stops the array growing beyond the size of deltaSmoothingMax
-      deltaIndex = deltaIndex + 1;
-
-      if (deltaIndex > max)
-        deltaIndex = 0;
-
-      // Loop the history array, adding the delta values together
-      avg = 0;
-
-      for (i in 0...max) {
-        avg += deltaHistory[i];
-      }
-
-      // Then divide by the array length to get the average delta
-      avg = avg / max;
-    }
-
     // Set as the world delta value
-    delta = avg;
+    delta = rawDelta;
 
     // Real-World timer advance
     time += rawDelta;
@@ -289,16 +224,19 @@ class TimeStep {
     if (time > nextFpsUpdate) {
       // Compute the new exponential moving average withthe alpha of 0.25.
       actualFps = 0.25 * framesThisSecond + 0.75 * actualFps;
-      nextFpsUpdate = time + 1000;
+      nextFpsUpdate = time + 1;
       framesThisSecond = 0;
     }
 
     framesThisSecond = framesThisSecond + 1;
 
     // Interpolation - how far between what is expected and where we are?
-    var interpolation = avg / _target;
+    // var interpolation = delta / _target;
 
-    callback(time, avg, frames[0]);
+    callback(time, delta, frames[0]);
+
+		// Shift time value over.
+    lastTime = currentTime;
 
     frame = frame + 1;
   }
@@ -318,7 +256,7 @@ class TimeStep {
     if (running) return;
 
     if (seamless) {
-			startTime += -lastTime + (lastTime + Scheduler.time());
+			startTime += -lastTime + (lastTime + Scheduler.realTime());
     }
 
 		System.notifyOnFrames(step);
@@ -328,12 +266,12 @@ class TimeStep {
 
   // Gets the duration which the game has been running, in seconds.
   public function getDuration() {
-    return Math.round(lastTime - startTime) / 1000;
+    return Math.round(lastTime - startTime);
   }
 
   // Gets the duration which the game has been running, in ms.
   public function getDurationMS() {
-    return Math.round(lastTime - startTime);
+    return Math.round(lastTime - startTime) * 100;
   }
 
   // Stops the TimeStep running.

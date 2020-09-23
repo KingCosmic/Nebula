@@ -100,8 +100,6 @@ class Game {
 
     // anims = new AnimationManager(this);
 
-    loop = new TimeStep(this, config.fps);
-
     scale = new ScaleManager(this);
 
     renderer = new Renderer(this);
@@ -139,6 +137,8 @@ class Game {
   // It will also enable the Visibility Handler.
   public function start() {
     isRunning = true;
+
+		loop = new TimeStep(this, config.fps);
 
     loop.start(step);
 

@@ -3,7 +3,6 @@ package game.scenes;
 import core.gameobjects.Image;
 
 import core.scene.Scene;
-import kha.Assets;
 
 class PlayScene extends Scene {
   private var _player:Image;
@@ -28,10 +27,10 @@ class PlayScene extends Scene {
     
     sys.displayList.add([_player]);
 
-		cameras.main.startFollow(_player);
+    cameras.main.startFollow(_player);
   }
 
   override function update(time:Float, delta:Float) {
-    _player.x += 1 * delta;
+    _player.x += 100 * delta;
   }
 }

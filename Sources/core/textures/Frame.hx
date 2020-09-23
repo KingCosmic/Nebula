@@ -200,12 +200,12 @@ class Frame {
 		flipX:Bool,
 		flipY:Bool
 	}, x:Float, y:Float, width:Float, height:Float, flipX:Bool, flipY:Bool) {
-		var cx = this.cutX;
-		var cy = this.cutY;
-		var cw = this.cutWidth;
-		var ch = this.cutHeight;
-		var rw = this.realWidth;
-		var rh = this.realHeight;
+		var cx = cutX;
+		var cy = cutY;
+		var cw = cutWidth;
+		var ch = cutHeight;
+		var rw = realWidth;
+		var rh = realHeight;
 
     x = Math.max(0, Math.min(rw, x));
 		y = Math.max(0, Math.min(rh, y));
@@ -353,31 +353,31 @@ class Frame {
     data = null;
   }
 
-  public var realWidth(get, default):Float;
+  public var realWidth(get, null):Float;
 
   function get_realWidth() {
     return data.sourceSize.w;
   }
 
-  public var realHeight(get, default):Float;
+  public var realHeight(get, null):Float;
 
   function get_realHeight() {
     return data.sourceSize.h;
   }
 
-  public var radius(get, default):Float;
+  public var radius(get, null):Float;
 
   function get_radius() {
     return data.radius;
   }
 
-  public var trimmed(get, default):Bool;
+  public var trimmed(get, null):Bool;
 
   function get_trimmed() {
     return data.trim;
   }
 
-  public var canvasData(get, default):{};
+  public var canvasData(get, null):{};
 
   function get_canvasData() {
     return data.drawImage;
