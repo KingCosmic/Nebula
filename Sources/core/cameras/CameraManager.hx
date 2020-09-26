@@ -1,10 +1,12 @@
 package core.cameras;
 
+import core.input.Pointer;
 import core.structs.Size;
 import core.gameobjects.DisplayList;
 import core.scene.Scene;
 import core.scene.Systems;
 
+import core.geom.rectangle.RectangleUtils;
 /**
  * @classdesc
  * The Camera Manager is a plugin that belongs to a Scene and is responsible for managing all of the Scene Cameras.
@@ -344,6 +346,27 @@ class CameraManager {
 				cam.setSize(baseSize.width, baseSize.height);
 			}
     }
+  }
+
+	/**
+	 * Returns an array of all cameras below the given Pointer.
+	 *
+	 * The first camera in the array is the top-most camera in the camera list.
+   */
+  public function getCamerasBelowPointer(pointer:Pointer) {
+		var x = pointer.x;
+		var y = pointer.y;
+
+		var output = [];
+
+		for (camera in cameras) {
+			if (camera.visible && camera.inputEnabled && RectangleUtils.containsPoint(camera._bounds, x, y)) {
+				// So the top-most camera is at the top of the search array
+				output.unshift(camera);
+			}
+		}
+
+		return output;
   }
 
   /**

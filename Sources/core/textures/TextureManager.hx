@@ -1,5 +1,6 @@
 package core.textures;
 
+import core.textures.Parser;
 import core.gameobjects.GameObject;
 
 /**
@@ -118,7 +119,7 @@ class TextureManager extends EventEmitter {
 
     var texture = create(key, source);
 
-    texture.add('__BASE', 0, 0, 0, source.width, source.height);
+    Parser.image(texture, 0);
 
     emit('ADD', key, source);
 
@@ -139,7 +140,7 @@ class TextureManager extends EventEmitter {
     var width = source.width / config.frameWidth;
     var height = source.height / config.frameHeight;
 
-    // Parser.SpriteSheet(texture, 0, 0, 0, width, height, config);
+    // Parser.spriteSheet(texture, 0, 0, 0, width, height, config);
 
     emit('ADD', key, texture);
 

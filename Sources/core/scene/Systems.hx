@@ -2,6 +2,7 @@ package core.scene;
 
 // import core.animations.AnimationManager;
 import core.loader.LoaderPlugin;
+import core.input.InputPlugin;
 import core.textures.TextureManager;
 import core.scene.Scene.SceneConfig;
 import core.gameobjects.DisplayList;
@@ -94,6 +95,8 @@ class Systems {
 
   public var load:LoaderPlugin;
 
+  public var input:InputPlugin;
+
   /**
    * A reference to the Scene's Update List.
    *
@@ -123,6 +126,8 @@ class Systems {
    * It should never be called directly
    */
   public function init(_game:Game) {
+    game = _game;
+
     settings.status = 1;
 
     displayList = new DisplayList(scene, this);
@@ -139,7 +144,8 @@ class Systems {
     load = new LoaderPlugin(scene);
     scene.load = load;
 
-    game = _game;
+    input = new InputPlugin(scene);
+    scene.input = input;
     
     events.emit('BOOT', this);
 

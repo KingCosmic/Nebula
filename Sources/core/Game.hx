@@ -1,6 +1,8 @@
 package core;
 
 // Kha imports
+import core.textures.TextureManager;
+import core.input.InputManager;
 import core.scale.ScaleManager;
 import kha.input.KeyCode;
 import kha.Framebuffer;
@@ -49,7 +51,7 @@ class Game {
 
   // An instance of the Texture Manager.
 	// The Texture Manager is a global system responsible for managing all textures being used by your game.
-  // public var textures: TextureManager;
+  public var textures: TextureManager;
 
   // An instance of the Cache Manager.
   // The Cache Manager is a global system responsible for caching, accessing and releasing external game assets.
@@ -60,7 +62,7 @@ class Game {
 
   // An instance of the Input Manager.
   // The Input Manager is a global system responsible for the capture of browser-level input events.
-  // public var input = new InputManager(this, this.config);
+  public var input:InputManager;
 
   // An instance of the Scene Manager.
   // The Scene Manager is a global system responsible for creating, modifying and updating the Scenes in your game.
@@ -103,6 +105,10 @@ class Game {
     scale = new ScaleManager(this);
 
     renderer = new Renderer(this);
+
+    textures = new TextureManager(this);
+
+		input = new InputManager(this, this.config);
     
 		scene = new SceneManager(this, config.scene);
 

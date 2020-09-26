@@ -408,6 +408,20 @@ class ScaleManager extends EventEmitter {
   }
 
 	/**
+   * Transforms the pageX value into the scaled coordinate space of the Scale Manager.
+   */
+  public function transformX(x:Float) {
+    return x;
+  }
+
+	/**
+	 * Transforms the pageY value into the scaled coordinate space of the Scale Manager.
+   */
+  public function transformY(y:Float) {
+    return y;
+  }
+
+	/**
 	 * Sends a request to the browser to ask it to go in to full screen mode, using the {@link https://developer.mozilla.org/en-US/docs/Web/API/Fullscreen_API Fullscreen API}.
 	 *
 	 * If the browser does not support this, a `FULLSCREEN_UNSUPPORTED` event will be emitted.

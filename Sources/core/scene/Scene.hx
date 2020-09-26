@@ -1,5 +1,7 @@
 package core.scene;
 
+import core.input.InputPlugin;
+import core.input.InputManager;
 import core.loader.LoaderPlugin;
 import core.textures.TextureManager;
 import core.scale.ScaleManager;
@@ -52,6 +54,12 @@ class Scene {
    * This property will only be available if defined in the Scene Injection Map and the plugin is installed.
    */
   public var load:LoaderPlugin;
+
+  /**
+   * A scene level Input Manager Plugin.
+   * This property will only be available if defined in the Scene Injection Map and the plugin is installed.
+   */
+  public var input:InputPlugin;
 
   // A reference to the global Scale Manager.
   public var scale:ScaleManager;

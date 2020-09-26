@@ -1,9 +1,13 @@
 package core.gameobjects;
 
+import core.input.InteractiveObject;
+import core.math.MATH_CONST;
 import core.textures.Frame;
 import core.textures.Texture;
 import core.cameras.Camera;
 import core.scene.Scene;
+
+import core.math.Angle;
 
 /**
  * The base class that all Game Objects extend.
@@ -91,7 +95,7 @@ class GameObject extends EventEmitter {
    * If this Game Object is enabled for input then this property will contain an InteractiveObject instance.
    * Not usually set directly. Instead call `GameObject.setInteractive()`.
    */
-  public var input = null;
+	public var input:Null<InteractiveObject>;
 
   // If this Game Object is enabled for Arcade or Matter Physics then this property will contain a reference to a Physics Body.
   public var body = null;
@@ -109,6 +113,19 @@ class GameObject extends EventEmitter {
   // here to fix texture type issues
   public var texture:Texture;
   public var frame:Frame;
+
+  // Private internal value. Holds the horizontal scale value.
+  private var _scaleX:Float = 1;
+
+  // Private internal value. Holds the vertical scale value.
+  private var _scaleY:Float = 1;
+
+  // Private internal value. Holds the rotation value in radians.
+  private var _rotation:Float = 0;
+
+  // private + read only
+  private var _displayOriginX:Float = 0;
+	private var _displayOriginY:Float = 0;
 
   /**
    * This Game Object will ignore all calls made to its destroy method if this flag is set to `true`.
@@ -314,5 +331,176 @@ class GameObject extends EventEmitter {
     removeAllListeners();
   }
 
-	public function render(renderer:Renderer, camera:Camera) {}
+  public function render(renderer:Renderer, camera:Camera) {}
+  
+  /**
+   * This is a special setter that allows you to set both the horizontal and vertical scale of this Game Object
+   * to the same value, at the same time. When reading this value the result returned is `(scaleX + scaleY) / 2`.
+   *
+   * Use of this property implies you wish the horizontal and vertical scales to be equal to each other. If this
+   * isn't the case, use the `scaleX` or `scaleY` properties instead.
+   */
+  public var scale(get, set):Float;
+
+  function get_scale() {
+    return (_scaleX + _scaleY) / 2;
+  }
+
+  function set_scale(value:Float) {
+    _scaleX = value;
+    _scaleY = value;
+
+    return value;
+  }
+
+  /**
+   * The horizontal scale of this Game Object.
+   */
+  public var scaleX(get, set):Float;
+
+  function get_scaleX() {
+    return _scaleX;
+  }
+
+  function set_scaleX(value:Float) {
+    _scaleX = value;
+
+    return _scaleX;
+  }
+
+  /**
+   * The vertical scale of this Game Object.
+   */
+  public var scaleY(get, set):Float;
+
+  function get_scaleY() {
+    return _scaleY;
+  }
+
+  function set_scaleY(value:Float) {
+    _scaleY = value;
+
+    return _scaleY;
+  }
+
+  /**
+   * The angle of this Game Object as expressed in degrees.
+   *
+   * Phaser uses a right-hand clockwise rotation system, where 0 is right, 90 is down, 180/-180 is left
+   * and -90 is up.
+   *
+   * If you prefer to work in radians, see the `rotation` property instead.
+   */
+  public var angle(get, set):Float;
+
+  function get_angle() {
+    return Angle.wrapDegrees(_rotation * MATH_CONST.RAD_TO_DEG);
+  }
+
+  function set_angle(value:Float) {
+    // value is in degrees
+    rotation = Angle.wrapDegrees(value) * MATH_CONST.DEG_TO_RAD;
+    return rotation;
+  }
+
+  /**
+   * The angle of this Game Object in radians.
+   *
+   * Phaser uses a right-hand clockwise rotation system, where 0 is right, PI/2 is down, +-PI is left
+   * and -PI/2 is up.
+   *
+   * If you prefer to work in degrees, see the `angle` property instead.
+   */
+  public var rotation(get, set):Float;
+
+  function get_rotation() {
+    return _rotation;
+  }
+
+  function set_rotation(value:Float) {
+    // value is in radians
+    _rotation = Angle.wrap(value);
+
+    return _rotation;
+  }
+
+	/**
+	 * Sets the rotation of this Game Object.
+	 */
+	public function setRotation(?radians:Float = 0) {
+    rotation = radians;
+
+		return this;
+  }
+
+  /**
+   * Sets the angle of this Game Object.
+   */
+  public function setAngle(?degrees:Float = 0) {
+    angle = degrees;
+
+    return this;
+  }
+  
+  /**
+   * Sets the scale of this Game Object.
+   */
+  public function setScale(?x:Float = 1, ?y:Float) {
+    if (y == null) y = x;
+
+    scaleX = x;
+    scaleY = y;
+
+    return this;
+  }
+
+  /**
+   * The horizontal display origin of this Game Object.
+   * The origin is a normalized value between 0 and 1.
+   * The displayOrigin is a pixel value, based on the size of the Game Object combined with the origin.
+   */
+  public var displayOriginX(get, set):Float;
+
+  function get_displayOriginX() {
+    return _displayOriginX;
+  }
+
+  function set_displayOriginX(value:Float) {
+    _displayOriginX = value;
+    originX = value / width;
+
+    return _displayOriginX;
+  }
+
+  /**
+   * The vertical display origin of this Game Object.
+   * The origin is a normalized value between 0 and 1.
+   * The displayOrigin is a pixel value, based on the size of the Game Object combined with the origin.
+   */
+  public var displayOriginY(get, set):Float;
+
+  function get_displayOriginY() {
+    return _displayOriginY;
+  }
+
+  function set_displayOriginY(value:Float) {
+    _displayOriginY = value;
+    originY = value / height;
+
+    return _displayOriginY;
+  }
+
+  /**
+   * Sets the origin of this Game Object.
+   *
+   * The values are given in the range 0 to 1.
+   */
+  public function setOrigin(?x:Float = 0.5, ?y:Float) {
+    if (y == null) y = x;
+
+    originX = x;
+    originY = y;
+
+    // TODO: return updateDisplayOrigin();
+  }
 }

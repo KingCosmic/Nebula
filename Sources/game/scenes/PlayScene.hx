@@ -1,5 +1,6 @@
 package game.scenes;
 
+import kha.math.Random;
 import core.gameobjects.Image;
 
 import core.scene.Scene;
