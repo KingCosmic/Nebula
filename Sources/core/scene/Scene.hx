@@ -1,7 +1,6 @@
 package core.scene;
 
 import core.input.InputPlugin;
-import core.input.InputManager;
 import core.loader.LoaderPlugin;
 import core.textures.TextureManager;
 import core.scale.ScaleManager;

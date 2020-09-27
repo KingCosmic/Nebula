@@ -1,5 +1,6 @@
 package core.input;
 
+import core.input.keyboard.KeyboardPlugin;
 import core.geom.rectangle.Rectangle;
 import core.scene.Settings;
 import core.math.Distance;
@@ -14,7 +15,6 @@ import core.geom.rectangle.RectangleUtils;
 import core.input.InteractiveObject;
 
 /**
- * @classdesc
  * The Input Plugin belongs to a Scene and handles all input related events and operations for it.
  *
  * You can access it from within a Scene using `this.input`.
@@ -76,13 +76,18 @@ class InputPlugin extends EventEmitter {
   public var cameras:CameraManager;
 
   /**
+   * A reference to the Keyboard Plugin.
+   */
+  public var keyboard:KeyboardPlugin;
+
+  /**
    * A reference to the Mouse Manager.
    *
    * This property is only set if Mouse support has been enabled in your Game Configuration file.
    *
    * If you just wish to get access to the mouse pointer, use the `mousePointer` property instead.
    */
-  public var mouse:Any;
+  public var mouse:MouseManager;
 
   /**
    * When set to `true` (the default) the Input Plugin will emulate DOM behavior by only emitting events from
@@ -192,6 +197,7 @@ class InputPlugin extends EventEmitter {
     systems = scene.sys;
     settings = scene.sys.settings;
     manager = scene.sys.game.input;
+    mouse = manager.mouse;
 
     systems.events.once('BOOT', boot);
     systems.events.on('START', start);
@@ -204,6 +210,8 @@ class InputPlugin extends EventEmitter {
   public function boot() {
     cameras = systems.cameras;
     displayList = systems.displayList;
+
+    keyboard = new KeyboardPlugin(this);
 
     systems.events.once('DESTROY', destroy);
 
@@ -524,7 +532,7 @@ class InputPlugin extends EventEmitter {
   public function hitTestPointer(pointer:Pointer) {
     var _cameras = cameras.getCamerasBelowPointer(pointer);
 
-    for (camera in cameras.cameras) {
+    for (camera in _cameras) {
 			// Get a list of all objects that can be seen by the camera below the pointer in the scene and store in 'over' array.
 			// All objects in this array are input enabled, as checked by the hitTest method, so we don't need to check later on as well.
       var over = manager.hitTest(pointer, _list, camera);
@@ -567,7 +575,7 @@ class InputPlugin extends EventEmitter {
 
       total++;
 
-      go.emit('GAME_OBJECT_POINTER_DOWN', pointer, go.input.localX, go.input.localY/*, _eventContainer*/);
+      go.emit('GAMEOBJECT_POINTER_DOWN', pointer, go.input.localX, go.input.localY/*, _eventContainer*/);
       
       if (/*_eventData.cancelled | */go.input == null) {
         aborted = true;
@@ -1043,8 +1051,6 @@ class InputPlugin extends EventEmitter {
    */
   public function processOverOutEvents(pointer:Pointer) {
 
-		var i;
-		var gameObject;
 		var justOut = [];
 		var justOver = [];
 		var stillOver = [];

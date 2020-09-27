@@ -360,7 +360,7 @@ class CameraManager {
 		var output = [];
 
 		for (camera in cameras) {
-			if (camera.visible && camera.inputEnabled && RectangleUtils.containsPoint(camera._bounds, x, y)) {
+			if (camera.visible && camera.inputEnabled && RectangleUtils.containsPoint(camera.worldView, x, y)) {
 				// So the top-most camera is at the top of the search array
 				output.unshift(camera);
 			}

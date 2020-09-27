@@ -1,9 +1,9 @@
 package core.input;
 
+import core.input.keyboard.KeyboardManager;
 import kha.math.Vector2;
 import core.cameras.Camera;
 import core.gameobjects.GameObject;
-import js.html.PointerEvent;
 import core.Game.GameConfig;
 import core.scale.ScaleManager;
 
@@ -49,10 +49,10 @@ class InputManager {
   public var isOver:Bool = true;
 
   // A reference to the Keyboard Manager class, if enabled via the `input.keyboard` Game Config property.
-  public var keyboard = null;
+  public var keyboard:KeyboardManager = null;
 
   // A reference to the Mouse Manager class, if enabled via the `input.mouse` Game Config property.
-  public var mouse = null;
+  public var mouse:MouseManager = null;
 
   // A reference to the Touch Manager class, if enabled via the `input.touch` Game Config property.
   public var touch = null;
@@ -72,7 +72,7 @@ class InputManager {
    * You can change this by either calling `addPointer` at run-time, or by
    * setting the `input.activePointers` property in the Game Config.
    */
-  public var pointersTotal:Int = 0;
+  public var pointersTotal:Int = 2;
 
   /**
    * The mouse has its own unique Pointer object, which you can reference directly if making a _desktop specific game_.
@@ -118,30 +118,30 @@ class InputManager {
   public var _tempSkip:Bool = false;
 
   // An internal private array that avoids needing to create a new array on every DOM mouse event.
-  public var mousePointerContainer = [];
+  public var mousePointerContainer:Array<Pointer> = [];
 
   public function new(_game:Game, _config:GameConfig) {
     game = _game;
 
-    // keyboard = new Keyboard(this);
-    // mouse = new Mouse(this);
+    keyboard = new KeyboardManager(this);
+    mouse = new MouseManager(this);
     // touch = new Touch(this);
 
-    /*
-			if (config.inputTouch && this.pointersTotal === 1)
-				{
-					this.pointersTotal = 2;
-				}
+    
+    /*if (config.inputTouch && this.pointersTotal == 1) {
+      this.pointersTotal = 2;
+    }*/
 
-				for (var i = 0; i <= this.pointersTotal; i++)
-				{
-					var pointer = new Pointer(this, i);
+    for (i in 0...pointersTotal) {
+      var pointer = new Pointer(this, i);
 
-					pointer.smoothFactor = config.inputSmoothFactor;
+      // TODO: pointer.smoothFactor = config.inputSmoothFactor;
 
-					this.pointers.push(pointer);
-				}
-    */
+      pointers.push(pointer);
+    }
+
+    mousePointer = pointers[0];
+    mousePointerContainer = [ mousePointer ];
 
     game.events.once('BOOT', boot);
   }
@@ -408,7 +408,7 @@ class InputManager {
     var x = pointer.x;
     var y = pointer.y;
 
-    // Stores the world point inside of temPoint
+    // Stores the world point inside of tempPoint
     camera.getWorldPoint(x, y, _tempPoint);
 
     pointer.worldX = _tempPoint.x;
