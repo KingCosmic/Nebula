@@ -1,15 +1,15 @@
 package core;
 
 // Kha imports
-import core.animations.AnimationManager;
-import core.textures.TextureManager;
-import core.input.InputManager;
-import core.scale.ScaleManager;
 import kha.Framebuffer;
 import kha.System;
 import kha.Color;
 
 // core code
+import core.animations.AnimationManager;
+import core.textures.TextureManager;
+import core.input.InputManager;
+import core.scale.ScaleManager;
 import core.scene.SceneManager;
 import core.scene.Scene;
 
