@@ -48,7 +48,6 @@ class PlayScene extends Scene {
   }
 
   override function update(time:Float, delta:Float) {
-    // _player.x += 100 * delta;
     if (_keys.w.isDown) {
       _player.y -= 100 * delta;
 		} else if (_keys.s.isDown) {

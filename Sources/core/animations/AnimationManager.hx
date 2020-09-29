@@ -1,5 +1,6 @@
 package core.animations;
-/*
+
+import core.textures.TextureManager;
 import core.EventEmitter;
 import core.structs.CustomMap;
 
@@ -10,7 +11,7 @@ class AnimationManager extends EventEmitter {
   public var game:Game;
 
   // A reference to the Texture Manager.
-  // public var textureManager;
+  public var textureManager:TextureManager;
 
   // The global time scale of the Animation Manager.
   // This scales the time delta between two frames, thus influencing the speed of time for the Animation Manager.
@@ -26,24 +27,23 @@ class AnimationManager extends EventEmitter {
   // The name of this Animation Manager.
   public var name:String = 'AnimationManager';
 
-  public function new(game: Game) {
+  public function new(_game: Game) {
     super();
 
-    this.game = game;
-    this.textureManager = null;
+    game = _game;
 
-		game.events.once('BOOT', this.boot, this);
+		game.events.once('BOOT', boot);
   }
 
 	// Registers event listeners after the Game boots.
   public function boot() {
     textureManager = game.textures;
 
-    game.events.once('DESTROY', this.destroy, this);
+    game.events.once('DESTROY', destroy);
   }
 
   // Adds an existing Animation to the Animation Manager.
-  public function add(key: String, animation: Any) {
+  public function add(key:String, animation:Animation) {
     if (anims.has(key)) {
       // TODO: learn to debug
       return this;
@@ -131,7 +131,7 @@ class AnimationManager extends EventEmitter {
    * ```
    *
    * This will only create the 3 animations defined. Note that the tag names are case-sensitive.
-   *//*
+   */
   public function createFromAseprite(key: String, tags) {
     // TODO: 
   }
@@ -148,7 +148,7 @@ class AnimationManager extends EventEmitter {
    * A brand new animation is only created if the key is valid and not already in use.
    *
    * If you wish to re-use an existing key, call `AnimationManager.remove` first, then this method.
-   *//*
+   */
   public function create(config) {
 		var key = config.key;
 
@@ -196,7 +196,7 @@ class AnimationManager extends EventEmitter {
   *
   * This is a global action. Once an Animation has been removed, no Game Objects
   * can carry on using it.
-  *//*
+  */
   public function remove(key: String) {
     var anim = get(key);
 
@@ -221,7 +221,7 @@ class AnimationManager extends EventEmitter {
   /**
    * Destroy this Animation Manager and clean up animation definitions and references to other objects.
    * This method should not be called directly. It will be called automatically as a response to a `destroy` event from the Phaser.Game instance.
-   *//*
+   */
   public function destroy() {
 		this.anims.clear();
 
@@ -229,4 +229,4 @@ class AnimationManager extends EventEmitter {
 
 		this.game = null;
   }
-}*/
+}

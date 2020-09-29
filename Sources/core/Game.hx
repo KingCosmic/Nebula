@@ -1,21 +1,17 @@
 package core;
 
 // Kha imports
+import core.animations.AnimationManager;
 import core.textures.TextureManager;
 import core.input.InputManager;
 import core.scale.ScaleManager;
-import kha.input.KeyCode;
 import kha.Framebuffer;
-import kha.Assets;
 import kha.System;
 import kha.Color;
 
 // core code
 import core.scene.SceneManager;
 import core.scene.Scene;
-
-// old core code
-import core.Controls;
 
 typedef GameConfig = {
   title:String,
@@ -47,7 +43,7 @@ class Game {
   public var events:EventEmitter = new EventEmitter();
 
   // An instance of the Animation Manager.
-  // public var anims:AnimationManager;
+  public var anims:AnimationManager;
 
   // An instance of the Texture Manager.
 	// The Texture Manager is a global system responsible for managing all textures being used by your game.
@@ -100,7 +96,7 @@ class Game {
   public function new(_config:GameConfig) {
     config = _config;
 
-    // anims = new AnimationManager(this);
+    anims = new AnimationManager(this);
 
     scale = new ScaleManager(this);
 
@@ -117,9 +113,6 @@ class Game {
 			// TODO: make some default textures that get placed when textures are missing.
       texturesReady();
 		});
-
-    // Keyboard.get().notify(onKeyDown, onKeyUp);
-    // Mouse.get().notify(onMouseDown, onMouseUp, onMouseMove, onMouseWheel);
   }
 
   public function boot(window:kha.Window) {
@@ -148,7 +141,7 @@ class Game {
 
     loop.start(step);
 
-    // TODO visibility changes.
+    // TODO: visibility changes.
   }
 
   /**
