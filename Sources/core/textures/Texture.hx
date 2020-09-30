@@ -155,8 +155,20 @@ class Texture {
    * Useful if you want to randomly assign a Frame to a Game Object, as you can
    * pick a random element from the returned array.
    */
-  public function getFrameNames() {
-    // TODO:
+  public function getFrameNames(?includeBase:Bool = false) {
+    var out:Array<String> = [];
+
+    for (key in frames.keys()) {
+      out.push(key);
+    }
+
+    if (!includesBase) {
+      var idx = out.indexOf('__BASE');
+
+      if (idx != -1) out.splice(idx, 1);
+    }
+
+    return out;
   }
 
   /**

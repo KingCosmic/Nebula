@@ -1,5 +1,6 @@
 package core.animations;
 
+import core.gameobjects.GameObject;
 import core.textures.TextureManager;
 import core.EventEmitter;
 import core.structs.CustomMap;
@@ -19,7 +20,7 @@ class AnimationManager extends EventEmitter {
 
   // The Animations registered in the Animation Manager.
 	// This map should be modified with the {@link #add} and {@link #create} methods of the Animation Manager.
-  public var anims:CustomMap = new CustomMap();
+  public var anims:CustomMap<Animation> = new CustomMap();
 
   // Whether the Animation Manager is paused along with all of its Animations.
   public var paused:Bool = false;
@@ -27,7 +28,7 @@ class AnimationManager extends EventEmitter {
   // The name of this Animation Manager.
   public var name:String = 'AnimationManager';
 
-  public function new(_game: Game) {
+  public function new(_game:Game) {
     super();
 
     game = _game;
@@ -169,12 +170,12 @@ class AnimationManager extends EventEmitter {
 		return anim;
   }
 
-  public function get(key: String) {
+  public function get(key:String) {
     return anims.get(key);
   }
 
   // Play an animation on the given Game Objects that have an Animation Component.
-  public function play(key: String, children: Array<GameObject>) {
+  public function play(key:String, children:Array<GameObject>) {
 
     for (child in children) {
       child.anims.play(key);
@@ -197,7 +198,7 @@ class AnimationManager extends EventEmitter {
   * This is a global action. Once an Animation has been removed, no Game Objects
   * can carry on using it.
   */
-  public function remove(key: String) {
+  public function remove(key:String) {
     var anim = get(key);
 
     if (anim) {

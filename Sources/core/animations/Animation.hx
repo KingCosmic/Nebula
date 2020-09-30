@@ -32,29 +32,29 @@ class Animation {
   public var frames:Array<AnimationFrame> = [];
 
   // The frame rate of playback in frames per second (default 24 if duration is null)
-  public var frameRate:Int = null;
+  public var frameRate:Float = null;
 
   /**
    * How long the animation should play for, in milliseconds.
    * If the `frameRate` property has been set then it overrides this value,
    * otherwise the `frameRate` is derived from `duration`.
    */
-  public var duration:Int = null;
+  public var duration:Float = null;
 
   // How ms per frame, not including the frame specific modifiers.
-  public var msPerFrame:Int;
+  public var msPerFrame:Float;
 
   // Skip frames if the time lags, or always advance anyway?
   public var skipMissedFrames:Bool = true;
 
   // The delay in ms before the playback will begin.
-  public var delay:Int = 0;
+  public var delay:Float = 0;
 
   // Number of times to repeat the animation. Set to -1 to repeat forever.
   public var repeat:Int = 0;
 
   // The delay in ms before the repeat starts.
-  public var repeatDelay:Int = 0;
+  public var repeatDelay:Float = 0;
 
   // Should the animation yoyo (reverse back down to the start) before repeating?
   public var yoyo:Bool = false;
@@ -154,7 +154,7 @@ class Animation {
    * Called internally when this Animation first starts to play.
    * Sets the accumulator and nextTick properties.
    */
-  public function getFirstTick(comp:core.gameobjects.components.Animation) {
+  public function getFirstTick(comp:AnimationState) {
     // When is the first update due?
     comp.accumulator = 0;
 
@@ -172,7 +172,7 @@ class Animation {
 	 * Creates AnimationFrame instances based on the given string.
    */
 	public function getFramesFromString(textureManager:TextureManager, textureKey:String, ?sortFrames:Bool = true) {
-    var frames:Array<AnimationFrame> = [];
+    var frames:Array<Any> = [];
     
     var texture = textureManager.get(textureKey);
     var frameKeys = texture.getFrameNames();
@@ -245,7 +245,7 @@ class Animation {
   /**
    * Called internally. Sets the accumulator and nextTick values of the current Animation.
    */
-  public function getNextTick(comp) {
+	public function getNextTick(comp:AnimationState) {
     comp.accumulator -= comp.nextTick;
 
 		comp.nextTick = comp.msPerFrame + comp.currentFrame.duration;
@@ -261,7 +261,7 @@ class Animation {
   /**
    * Advance the animation frame.
    */
-  public function nextFrame(comp:Any) {
+	public function nextFrame(comp:AnimationState) {
     var frame = comp.currentFrame;
 
     if (frame.isLast) {
@@ -289,7 +289,7 @@ class Animation {
   /**
    * Handle the yoyo functionality in nextFrame and previousFrame methods.
    */
-  public function handleYoyoFrame(comp:Any, ?isReverse:Bool = false) {
+	public function handleYoyoFrame(comp:AnimationState, ?isReverse:Bool = false) {
     if (comp.inReverse == !isReverse && comp.repeatCounter > 0) {
       if (comp.repeatDelay == 0 || comp.pendingRepeat) {
         comp.forward = isReverse;
@@ -324,7 +324,7 @@ class Animation {
    * Called internally when the Animation is playing backwards.
    * Sets the previous frame, causing a yoyo, repeat, complete or update, accordingly.
    */
-  public function previousFrame(comp:Any) {
+	public function previousFrame(comp:AnimationState) {
     var frame = comp.currentFrame;
 
     if (frame.isFirst) {
@@ -351,7 +351,7 @@ class Animation {
   /**
    * Update Frame and Wait next tick.
    */
-  public function updateAndGetNextTick(comp:Any, frame:AnimationFrame) {
+	public function updateAndGetNextTick(comp:AnimationState, frame:AnimationFrame) {
     comp.setCurrentFrame(frame);
 
     getNextTick(comp);
@@ -386,7 +386,7 @@ class Animation {
    * Called internally during playback. Forces the animation to repeat, providing there are enough counts left
    * in the repeat counter.
    */
-  public function repeatAnimation(comp:Any) {
+	public function repeatAnimation(comp:AnimationState) {
     if (comp._pendingStop == 2) {
       if (comp._pendingStopValue == 0) {
         return comp.stop();
