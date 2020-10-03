@@ -162,7 +162,7 @@ class Texture {
       out.push(key);
     }
 
-    if (!includesBase) {
+    if (!includeBase) {
       var idx = out.indexOf('__BASE');
 
       if (idx != -1) out.splice(idx, 1);

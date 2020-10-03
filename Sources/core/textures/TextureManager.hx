@@ -194,6 +194,15 @@ class TextureManager extends EventEmitter {
 
     return gameObject;
   }
+  /* // King Check This Out Please, To-Do
+  public function setTexture(gameObject:{ texture : Texture, frame : Frame }, key:String, frame:String) {
+    if (list.exists(key)) {
+      gameObject.texture = list.get(key);
+      gameObject.frame = gameObject.texture.get(frame);
+    }
+
+    return gameObject;
+  }*/
 
   /**
    * Destroys the Texture Manager and all Textures stored within it.
