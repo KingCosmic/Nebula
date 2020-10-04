@@ -210,7 +210,7 @@ class Animation {
   /**
    * Creates AnimationFrame instances based on the given frame data.
    */
-	public function getFrames(textureManager:TextureManager, frames:Array<{ key:String, frame:String }>, ?defaultTextureKey:String) {
+	public function getFrames(textureManager:TextureManager, frames:Array<Dynamic>, ?defaultTextureKey:String) {
     var out:Array<AnimationFrame> = [];
 
     var prev:AnimationFrame = null;
@@ -246,8 +246,7 @@ class Animation {
       prev = animationFrame;
     }
 
-    if (out.length > 0) {
-      animationFrame.isLast;
+		if (out.length > 0 && animationFrame.isLast) {
 
       out[0].prevFrame = animationFrame;
 

@@ -1,14 +1,12 @@
 package core.input;
 
-import core.gameobjects.components.RenderableMixin;
+import core.gameobjects.RenderableGameObject;
 import core.input.keyboard.KeyboardManager;
 import kha.math.Vector2;
 import core.cameras.Camera;
 import core.gameobjects.GameObject;
 import core.Game.GameConfig;
 import core.scale.ScaleManager;
-
-class RenderableGameobject extends GameObject implements RenderableMixin {}
 
 /**
  * The Input Manager is responsible for handling the pointer related systems in a single Phaser Game instance.
@@ -400,7 +398,7 @@ class InputManager {
    *
    * This method is called automatically by InputPlugin.hitTestPointer and doesn't usually need to be invoked directly.
    */
-  public function hitTest(pointer:Pointer, gameObjects:Array<RenderableGameobject>, camera:Camera, ?output:Array<GameObject>) {
+	public function hitTest(pointer:Pointer, gameObjects:Array<RenderableGameObject>, camera:Camera, ?output:Array<RenderableGameObject>) {
     if (output == null) output = _tempHitTest;
 
     var csx = camera.scrollX;
@@ -445,7 +443,7 @@ class InputManager {
    *
    * If the coordinates are within the hit area they are set into the Game Objects Input `localX` and `localY` properties.
    */
-  public function isPointWithinHitArea(go:RenderableGameobject, x:Float, y:Float) {
+	public function isPointWithinHitArea(go:RenderableGameObject, x:Float, y:Float) {
     // Normalize the origin
     x += go.displayOriginX;
     y += go.displayOriginY;

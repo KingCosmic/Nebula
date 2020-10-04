@@ -1,38 +1,9 @@
 package core.gameobjects;
 
-import core.gameobjects.components.Alpha;
-import core.gameobjects.components.BlendMode;
-import core.gameobjects.components.Depth;
-import core.gameobjects.components.Flip;
-import core.gameobjects.components.GetBounds;
-import core.gameobjects.components.Mask;
-import core.gameobjects.components.Origin;
-import core.gameobjects.components.Pipeline;
-import core.gameobjects.components.ScrollFactor;
-import core.gameobjects.components.Size;
-import core.gameobjects.components.TextureCrop;
-import core.gameobjects.components.Tint;
-import core.gameobjects.components.TransformMixin;
-import core.gameobjects.components.Visible;
+import core.gameobjects.RenderableGameObject;
 import core.cameras.Camera;
 import core.scene.Scene;
 
-/* MIXINS
- * @extends Phaser.GameObjects.Components.Alpha
- * @extends Phaser.GameObjects.Components.BlendMode
- * @extends Phaser.GameObjects.Components.Depth
- * @extends Phaser.GameObjects.Components.Flip
- * @extends Phaser.GameObjects.Components.GetBounds
- * @extends Phaser.GameObjects.Components.Mask
- * @extends Phaser.GameObjects.Components.Origin
- * @extends Phaser.GameObjects.Components.Pipeline
- * @extends Phaser.GameObjects.Components.ScrollFactor
- * @extends Phaser.GameObjects.Components.Size
- * @extends Phaser.GameObjects.Components.TextureCrop
- * @extends Phaser.GameObjects.Components.Tint
- * @extends Phaser.GameObjects.Components.Transform
- * @extends Phaser.GameObjects.Components.Visible
- */
 /**
  * An Image Game Object.
  *
@@ -41,7 +12,7 @@ import core.scene.Scene;
  * events and physics bodies, or be tweened, tinted or scrolled. The main difference between an
  * Image and a Sprite is that you cannot animate an Image as they do not have the Animation component.
  */
-class Image extends GameObject implements Alpha implements BlendMode implements Depth implements Flip implements GetBounds implements Mask implements TransformMixin implements Origin implements Pipeline implements ScrollFactor implements Size implements TextureCrop implements Tint implements Visible {
+class Image extends RenderableGameObject {
 	public function new(scene:Scene, x:Float, y:Float, texture:String, ?frame:String = '') {
 		super(scene, 'Image');
 

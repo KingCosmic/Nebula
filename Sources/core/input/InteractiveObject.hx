@@ -1,7 +1,7 @@
 package core.input;
 
+import core.gameobjects.RenderableGameObject;
 import core.geom.rectangle.Rectangle;
-import core.gameobjects.GameObject;
 
 /**
  * Creates a new Interactive Object.
@@ -12,7 +12,7 @@ import core.gameobjects.GameObject;
  */
 class InteractiveObject {
   // The game object this interactive object belongs to.
-  public var gameObject:GameObject;
+	public var gameObject:RenderableGameObject;
 
   public var enabled:Bool = true;
 
@@ -30,7 +30,7 @@ class InteractiveObject {
 
   public var hitArea:Rectangle;
 
-  public var hitAreaCallback:Rectangle->Float->Float->GameObject->Bool;
+	public var hitAreaCallback:Rectangle->Float->Float->RenderableGameObject->Bool;
   
   public var localX:Float = 0;
   public var localY:Float = 0;
@@ -48,7 +48,7 @@ class InteractiveObject {
   public var dragX:Float = 0;
   public var dragY:Float = 0;
 
-	public function new(_go:GameObject, _hitArea:Rectangle, _hitAreaCallback:Rectangle->Float->Float->GameObject->Bool) {
+	public function new(_go:RenderableGameObject, _hitArea:Rectangle, _hitAreaCallback:Rectangle->Float->Float->RenderableGameObject->Bool) {
     gameObject = _go;
     hitArea = _hitArea;
     hitAreaCallback = _hitAreaCallback;

@@ -4,6 +4,8 @@ import core.textures.TextureManager;
 import core.gameobjects.Sprite;
 import core.structs.CustomMap;
 
+using core.Constants;
+
 /**
  * The Animation State Component.
  *
@@ -373,7 +375,7 @@ class AnimationState {
    * Pause the current animation and set the `isPlaying` property to `false`.
    * You can optionally pause it at a specific frame.
    */
-  public function pause(?atFrame:Int) {
+  public function pause(?atFrame:AnimationFrame) {
     if (!_paused) {
       _paused = true;
       _wasPlaying = isPlaying;
@@ -390,7 +392,7 @@ class AnimationState {
    * Resumes playback of a paused animation and sets the `isPlaying` property to `true`.
    * You can optionally tell it to start playback from a specific frame.
    */
-  public function resume(?fromFrame:Int) {
+  public function resume(?fromFrame:AnimationFrame) {
     if (_paused) {
       _paused = false;
       isPlaying = _wasPlaying;
@@ -623,7 +625,7 @@ class AnimationState {
     }
 
     // Should give us 9,007,199,254,740,991 safe repeats
-    repeatCounter = (repeat == -1) ? Floats.MAX : repeat;
+    repeatCounter = (repeat == -1) ? Ints.MAX : repeat;
 
     currentAnim.getFirstTick(this);
 
@@ -766,7 +768,7 @@ class AnimationState {
    * use the `repeat` property of the `PlayAnimationConfig` object instead.
    */
   public function setRepeat(value:Int) {
-    repeatCounter = (value == -1) ? Floats.MAX : value;
+    repeatCounter = (value == -1) ? Ints.MAX : value;
 
     return parent;
   }
@@ -798,7 +800,7 @@ class AnimationState {
     if (currentAnim == null) return parent;
 
     if (resetRepeats) {
-      repeatCounter = (repeat == -1) ? Floats.MAX : repeat;
+      repeatCounter = (repeat == -1) ? Ints.MAX : repeat;
     }
 
     currentAnim.getFirstTick(this);
@@ -1001,10 +1003,6 @@ class AnimationState {
 
     if (parent.isCropped) {
       parent.frame.updateCropUvs(parent._crop, parent.flipX, parent.flipY);
-    }
-
-    if (animationFrame.setAlpha) {
-      parent.alpha = animationFrame.alpha;
     }
 
     parent.setSizeToFrame();
