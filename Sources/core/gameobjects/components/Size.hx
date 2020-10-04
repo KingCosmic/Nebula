@@ -9,7 +9,7 @@ import core.textures.Frame;
 	/**
 	 * A property indicating that a Game Object has this component.
 	 */
-	private var _sizeComponent:Bool = true;
+	public var _sizeComponent:Bool = true;
 
 	/**
 	 * The native (un-scaled) width of this Game Object.
@@ -36,7 +36,8 @@ import core.textures.Frame;
 
 	function get_displayWidth():Float {
 		return Math.abs(this.scaleX * this.frame.realWidth);
-	}
+  }
+
 	function set_displayWidth(value:Float):Float {
 		this.scaleX = value / this.frame.realWidth;
 		return Math.abs(this.scaleX * this.frame.realWidth);
@@ -53,7 +54,8 @@ import core.textures.Frame;
 
 	function get_displayHeight():Float {
 		return Math.abs(this.scaleY * this.frame.realHeight);
-	}
+  }
+
 	function set_displayHeight(value:Float):Float {
 		this.scaleY = value / this.frame.realHeight;
 		return Math.abs(this.scaleY * this.frame.realHeight);
@@ -70,8 +72,8 @@ import core.textures.Frame;
 	 * If you have enabled this Game Object for input, changing the size will _not_ change the
 	 * size of the hit area. To do this you should adjust the `input.hitArea` object directly.
 	 */
-	// To-Do Impliment Frame
-	function setSizeToFrame(?frame:Frame = null):Dynamic {
+	// TODO: Impliment Frame
+	public function setSizeToFrame(?frame:Frame = null):Dynamic {
 		if (frame == null) {
 			frame = this.frame;
 		}
@@ -93,7 +95,7 @@ import core.textures.Frame;
 	 * If you have enabled this Game Object for input, changing the size will _not_ change the
 	 * size of the hit area. To do this you should adjust the `input.hitArea` object directly.
 	 */
-	function setSize(width:Float, height:Float):Dynamic {
+	public function setSize(width:Float, height:Float):Dynamic {
 		this.width = width;
 		this.height = height;
 
@@ -105,7 +107,7 @@ import core.textures.Frame;
 	 *
 	 * Calling this will adjust the scale.
 	 */
-	function setDisplaySize(width:Float, height:Float):Dynamic {
+	public function setDisplaySize(width:Float, height:Float):Dynamic {
 		this.displayWidth = width;
 		this.displayHeight = height;
 

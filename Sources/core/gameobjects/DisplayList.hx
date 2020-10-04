@@ -1,5 +1,6 @@
 package core.gameobjects;
 
+import core.gameobjects.components.Depth;
 import core.scene.Systems;
 import core.scene.Scene;
 import core.structs.List;
@@ -82,7 +83,7 @@ class DisplayList extends List<GameObject> {
   }
 
   // Compare the depth of two Game Objects.
-	public function sortByDepth(childA:GameObject, childB:GameObject) {
+	public function sortByDepth(childA:Depth, childB:Depth) {
     return childA.depth - childB.depth;
   }
 

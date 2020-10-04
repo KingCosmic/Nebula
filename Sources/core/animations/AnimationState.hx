@@ -955,7 +955,10 @@ class AnimationState {
     if (_pendingStop == 1) {
       _pendingStopValue -= delta;
 
-      if (_pendingStopValue <= 0) return stop();
+      if (_pendingStopValue <= 0) {
+        stop();
+        return;
+      }
     }
 
     if (!hasStarted) {
@@ -997,7 +1000,7 @@ class AnimationState {
     parent.frame = animationFrame.frame;
 
     if (parent.isCropped) {
-      parent.frame.updateCropUVs(parent._crop, parent.flipX, parent.flipY);
+      parent.frame.updateCropUvs(parent._crop, parent.flipX, parent.flipY);
     }
 
     if (animationFrame.setAlpha) {

@@ -1,27 +1,27 @@
 package core.gameobjects.components;
 
+import core.gameobjects.components.TransformMatrix;
 import core.math.MATH_CONST;
 import core.math.Angle;
-import core.gameobjects.components.TransformMatrix;
 
 /**
  * Provides methods used for getting and setting the position, scale and rotation of a Game Object.
  */
-@mixin interface Transform {
+@mixin interface TransformMixin {
 	/**
 	 * Private internal value. Holds the horizontal scale value.
 	 */
-	private var _scaleX:Float = 1;
+	public var _scaleX:Float = 1;
 
 	/**
 	 * Private internal value. Holds the vertical scale value.
 	 */
-	private var _scaleY:Float = 1;
+	public var _scaleY:Float = 1;
 
 	/**
 	 * Private internal value. Holds the rotation value in radians.
 	 */
-	private var _rotation:Float = 0;
+	public var _rotation:Float = 0;
 
 	/**
 	 * The x position of this Game Object.
@@ -51,7 +51,8 @@ import core.gameobjects.components.TransformMatrix;
 
 	function get_scale():Float {
 		return (this._scaleX + this._scaleY) / 2;
-	}
+  }
+
 	function set_scale(value:Float):Float {
 		this._scaleX = value;
 		this._scaleY = value;
@@ -98,7 +99,7 @@ import core.gameobjects.components.TransformMatrix;
 	 *
 	 * If you prefer to work in radians, see the `rotation` property instead.
 	 */
-	// To-Do WrapAngleDegrees
+	// TODO: WrapAngleDegrees
 	public var angle(get, set):Float;
 
 	function get_angle():Float {
@@ -151,7 +152,7 @@ import core.gameobjects.components.TransformMatrix;
 	 * Sets the position of this Game Object to be a random position within the confines of
 	 * the given area.
 	 */
-	// To-Do
+	// TODO:
 	public function setRandomPosition(?x:Float = 0.0, ?y:Float = 0.0, ?width:Float = null, ?height:Float = null):Dynamic {
 		if (width == null) {
 			width = this.scene.sys.scale.gameSize.width;

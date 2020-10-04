@@ -7,6 +7,21 @@ import core.textures.Frame;
 import core.textures.TextureManager;
 import core.gameobjects.GameObject;
 
+typedef AnimationConfig = {
+  ?key:String,
+  ?frames:Array<AnimationFrame>,
+  ?defaultTextureKey:Null<String>,
+  ?frameRate:Float,
+  ?duration:Float,
+  ?skipMissedFrames:Bool,
+  ?delay:Float,
+  ?repeat:Int,
+  ?repeatDelay:Float,
+  ?yoyo:Bool,
+  ?showOnStart:Bool,
+  ?hideOnComplete:Bool
+}
+
 /**
  * A Frame based Animation.
  *
@@ -71,7 +86,7 @@ class Animation {
   // Global pause. All Game Objects using this Animation instance are impacted by this property.
   public var paused:Bool = false;
 
-  public function new(_manager:AnimationManager, _key:String, config:Any) {
+  public function new(_manager:AnimationManager, _key:String, config:AnimationConfig) {
     manager = _manager;
     key = _key;
 

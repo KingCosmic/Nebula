@@ -117,7 +117,7 @@ class GameObject extends EventEmitter {
 	 * Sets the `active` property of this Game Object and returns this Game Object for further chaining.
 	 * A Game Object with its `active` property set to `true` will be updated by the Scenes UpdateList.
 	 */
-	function setActive(value:Bool) {
+	public function setActive(value:Bool) {
 		active = value;
 		return this;
 	}
@@ -126,7 +126,7 @@ class GameObject extends EventEmitter {
 	 * Sets the `name` property of this Game Object and returns this Game Object for further chaining.
 	 * The `name` property is not populated by Phaser and is presented for your own use.
 	 */
-	function setName(value:String) {
+	public function setName(value:String) {
 		name = value;
 		return this;
 	}
@@ -141,16 +141,16 @@ class GameObject extends EventEmitter {
 	 * in your game code), but could also be a string. It is recommended to keep it light and simple.
 	 * If you need to store complex data about your Game Object, look at using the Data Component instead.
 	 */
-	function setState(value:String) {
-		this.state = value;
+	public function setState(value:String) {
+		state = value;
 		return this;
 	}
 
 	/**
 	 * Adds a Data Manager component to this Game Object.
 	 */
-	function setDataEnabled() {
-		if (this.data == null) {
+	public function setDataEnabled() {
+		if (data == null) {
 			// this.data = new DataManager(this); To-Do
 		}
 		return this;
@@ -195,8 +195,8 @@ class GameObject extends EventEmitter {
 	 * Please note that the data keys are case-sensitive and must be valid JavaScript Object property strings.
 	 * This means the keys `gold` and `Gold` are treated as two unique values within the Data Manager.
 	 */
-	function setData(key:String, value) { // Key String / Object
-		if (this.data == null) {
+	public function setData(key:String, value) { // Key String / Object
+		if (data == null) {
 			// this.data = new DataManager(this); To-Do
 		}
 
@@ -215,8 +215,8 @@ class GameObject extends EventEmitter {
 	 *
 	 * When the value is first set, a `setdata` event is emitted from this Game Object.
 	 */
-	function incData(key:String, value) { // Key String / Object
-		if (this.data == null) {
+	public function incData(key:String, value) { // Key String / Object
+		if (data == null) {
 			// this.data = new DataManager(this); To-Do
 		}
 
@@ -235,8 +235,8 @@ class GameObject extends EventEmitter {
 	 *
 	 * When the value is first set, a `setdata` event is emitted from this Game Object.
 	 */
-	function toggleData(key:String) { // Key String/Object
-		if (this.data == null) {
+	public function toggleData(key:String) { // Key String/Object
+		if (data == null) {
 			// this.data = new DataManager(this);To-Do
 		}
 
@@ -268,7 +268,7 @@ class GameObject extends EventEmitter {
 	 *
 	 * This approach is useful for destructuring arrays in ES6.
 	 */
-	function getData(key:String) { // Key String/Object
+	public function getData(key:String) { // Key String/Object
 		if (this.data == null) {
 			// this.data = new DataManager(this); To-Do
 		}

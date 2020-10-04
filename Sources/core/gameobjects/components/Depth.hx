@@ -10,7 +10,7 @@ import core.gameobjects.GameObject;
 	/**
 	 * Private internal value. Holds the depth of the Game Object.
 	 */
-	private var _depth:Int = 0;
+	public var _depth:Int = 0;
 
 	/**
 	 * The depth of this Game Object within the Scene.
@@ -46,7 +46,7 @@ import core.gameobjects.GameObject;
 	 *
 	 * Setting the depth will queue a depth sort event within the Scene.
 	 */
-	function setDepth(value:Int = 0):GameObject {
+	public function setDepth(value:Int = 0):GameObject {
 		this.depth = value;
 		return this;
 	}

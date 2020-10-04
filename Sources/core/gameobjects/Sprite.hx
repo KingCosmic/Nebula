@@ -5,7 +5,7 @@ import core.animations.AnimationFrame;
 import core.scene.Scene;
 
 // Mixins
-import core.gameobjects.components.Transform_mixin;
+import core.gameobjects.components.TransformMixin;
 import core.gameobjects.components.ScrollFactor;
 import core.gameobjects.components.TextureCrop;
 import core.gameobjects.components.BlendMode;
@@ -31,10 +31,7 @@ import core.gameobjects.components.Tint;
  * As such, Sprites take a fraction longer to process and have a larger API footprint due to the Animation
  * Component. If you do not require animation then you can safely use Images to replace Sprites in all cases.
  */
-class Sprite extends GameObject implements Alpha implements BlendMode implements Depth implements Flip implements GetBounds implements Mask implements Origin implements Pipeline implements ScrollFactor implements Size implements TextureCrop implements Tint implements Transform implements Visible {
-  // The internal crop data object, as used by `setCrop` and passed to the `Frame.setCropUVs` method.
-  public var _crop = {};
-
+class Sprite extends GameObject implements Alpha implements BlendMode implements Depth implements Flip implements GetBounds implements Mask implements Origin implements Pipeline implements ScrollFactor implements Size implements TextureCrop implements Tint implements TransformMixin implements Visible {
   /**
    * The Animation State component of this Sprite.
    *

@@ -10,34 +10,34 @@ import core.math.Clamp;
 	/**
 	 * Private internal value. Holds the global alpha value.
 	 */
-	private var _alpha:Float = 1;
+	public var _alpha:Float = 1;
 
 	/**
 	 * Private internal value. Holds the top-left alpha value.
 	 */
-	private var _alphaTL:Float = 1;
+	public var _alphaTL:Float = 1;
 
 	/**
 	 * Private internal value. Holds the top-right alpha value.
 	 */
-	private var _alphaTR:Float = 1;
+	public var _alphaTR:Float = 1;
 
 	/**
 	 * Private internal value. Holds the bottom-left alpha value.
 	 */
-	private var _alphaBL:Float = 1;
+	public var _alphaBL:Float = 1;
 
 	/**
 	 * Private internal value. Holds the bottom-right alpha value.
 	 */
-	private var _alphaBR:Float = 1;
+	public var _alphaBR:Float = 1;
 
 	/**
 	 * Clears all alpha values associated with this Game Object.
 	 *
 	 * Immediately sets the alpha levels back to 1 (fully opaque).
 	 */
-	function clearAlpha():Dynamic {
+	public function clearAlpha():Dynamic {
 		return this.setAlpha(1);
 	}
 
@@ -48,7 +48,7 @@ import core.math.Clamp;
 	 * If your game is running under WebGL you can optionally specify four different alpha values, each of which
 	 * correspond to the four corners of the Game Object. Under Canvas only the `topLeft` value given is used.
 	 */
-	function setAlpha(topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):Dynamic {
+	public function setAlpha(topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):Dynamic {
 		//  Treat as if there is only one alpha value for the whole Game Object
 		if (topRight == null) {
 			this.alpha = topLeft;

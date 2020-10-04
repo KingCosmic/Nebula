@@ -11,7 +11,7 @@ import core.renderer.BlendModes;
 	/**
 	 * Private internal value. Holds the current blend mode.
 	 */
-	private var _blendMode:Int = BlendModes.NORMAL;
+	public var _blendMode:Int = BlendModes.NORMAL;
 
 	/**
 	 * Sets the Blend Mode being used by this Game Object.

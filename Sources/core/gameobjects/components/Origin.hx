@@ -12,7 +12,7 @@ import core.textures.Frame;
 	/**
 	 * A property indicating that a Game Object has this component.
 	 */
-	private var _originComponent:Bool = true;
+	public var _originComponent:Bool = true;
 
 	/**
 	 * The horizontal origin of this Game Object.
@@ -30,20 +30,8 @@ import core.textures.Frame;
 	 */
 	public var originY:Float = 0.5;
 
-	//  private + read only
-	/*
-		private var _displayOriginX(get, null):Float;
-		function get__displayOriginX():Float{
-		return 0;
-		}
-		private var _displayOriginY(get, null):Float;
-		function get__displayOriginY():Float{
-		return 0;
-		}
-	 */
-	// To-Do uh... So is it readonly?...
-	private var _displayOriginX:Float = 0;
-	private var _displayOriginY:Float = 0;
+	public var _displayOriginX:Float = 0;
+	public var _displayOriginY:Float = 0;
 
 	/**
 	 * The horizontal display origin of this Game Object.
@@ -84,7 +72,7 @@ import core.textures.Frame;
 	 *
 	 * The values are given in the range 0 to 1.
 	 */
-	function setOrigin(?x:Float = 0.5, ?y:Float = null):Dynamic {
+	public function setOrigin(?x:Float = 0.5, ?y:Float = null):Dynamic {
 		if (y == null) {
 			y = x;
 		}
@@ -98,8 +86,8 @@ import core.textures.Frame;
 	/**
 	 * Sets the origin of this Game Object based on the Pivot values in its Frame.
 	 */
-	// to-do customPivot
-	function setOriginFromFrame():Dynamic {
+	// TODO: customPivot
+	public function setOriginFromFrame():Dynamic {
 		if (this.frame == null || !this.frame.customPivot) {
 			return this.setOrigin();
 		} else {
@@ -113,7 +101,7 @@ import core.textures.Frame;
 	 * Sets the display origin of this Game Object.
 	 * The difference between this and setting the origin is that you can use pixel values for setting the display origin.
 	 */
-	function setDisplayOrigin(?x:Float = 0, ?y:Float = null):Dynamic {
+	public function setDisplayOrigin(?x:Float = 0, ?y:Float = null):Dynamic {
 		if (y == null) {
 			y = x;
 		}
@@ -128,7 +116,7 @@ import core.textures.Frame;
 	 * Updates the Display Origin cached values internally stored on this Game Object.
 	 * You don't usually call this directly, but it is exposed for edge-cases where you may.
 	 */
-	function updateDisplayOrigin():Dynamic {
+	public function updateDisplayOrigin():Dynamic {
 		this._displayOriginX = this.originX * this.width;
 		this._displayOriginY = this.originY * this.height;
 

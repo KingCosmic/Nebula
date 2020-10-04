@@ -49,7 +49,7 @@ class UpdateList extends ProcessQueue<GameObject> {
     for (gameObject in _active) {
       if (!gameObject.active) continue;
 
-      gameObject.preUpdate(time, float);
+      gameObject.preUpdate(time, delta);
     }
   }
 

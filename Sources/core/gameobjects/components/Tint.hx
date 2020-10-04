@@ -5,34 +5,35 @@ package core.gameobjects.components;
  * Should be applied as a mixin and not used directly.
  */
 @mixin interface Tint {
-	private function GetColor(value):Float {
+
+	function GetColor(value):Float {
 		return (value >> 16) + (value & 0xff00) + ((value & 0xff) << 16);
 	}
 
 	/**
 	 * Private internal value. Holds the top-left tint value.
 	 */
-	private var _tintTL:Float = 16777215;
+	public var _tintTL:Float = 16777215;
 
 	/**
 	 * Private internal value. Holds the top-right tint value.
 	 */
-	private var _tintTR:Float = 16777215;
+	public var _tintTR:Float = 16777215;
 
 	/**
 	 * Private internal value. Holds the bottom-left tint value.
 	 */
-	private var _tintBL:Float = 16777215;
+	public var _tintBL:Float = 16777215;
 
 	/**
 	 * Private internal value. Holds the bottom-right tint value.
 	 */
-	private var _tintBR:Float = 16777215;
+	public var _tintBR:Float = 16777215;
 
 	/**
 	 * Private internal value. Holds if the Game Object is tinted or not.
 	 */
-	private var _isTinted:Bool = false;
+	public var _isTinted:Bool = false;
 
 	/**
 	 * Fill or additive?

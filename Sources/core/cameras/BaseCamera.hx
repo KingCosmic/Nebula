@@ -1,5 +1,7 @@
 package core.cameras;
 
+import core.gameobjects.components.RenderableMixin;
+import core.gameobjects.components.ScrollFactor;
 import core.gameobjects.components.TransformMatrix;
 import core.geom.rectangle.Rectangle;
 import core.gameobjects.GameObject;
@@ -210,7 +212,7 @@ class BaseCamera extends EventEmitter {
   public var disableCull:Bool = false;
 
   // A temporary array of culled objects.
-  public var culledObjects:Array<GameObject> = [];
+  public var culledObjects:Array<RenderableMixin> = [];
 
   /**
    * The mid-point of the Camera in 'world' coordinates.
@@ -395,7 +397,7 @@ class BaseCamera extends EventEmitter {
    * Takes an array of Game Objects and returns a new array featuring only those objects
    * visible by this camera.
    */
-  public function cull(renderableObjects:Array<GameObject>) {
+  public function cull(renderableObjects:Array<RenderableMixin>) {
     if (disableCull) return renderableObjects;
 
     var cameraMatrix = matrix.matrix;

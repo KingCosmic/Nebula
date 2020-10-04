@@ -29,7 +29,27 @@ import core.gameobjects.GameObject;
 	 * You can toggle this at any time after `setCrop` has been called, to turn cropping on or off.
 	 * Equally, calling `setCrop` with no arguments will reset the crop and disable it.
 	 */
-	public var isCropped:Bool = false;
+  public var isCropped:Bool = false;
+  
+	/**
+	 * The internal crop data object, as used by `setCrop` and passed to the `Frame.setCropUVs` method.
+	 */ // To-Do Why Isn't this used by a Component?
+	public var _crop:{
+		u0:Float,
+		v0:Float,
+		u1:Float,
+		v1:Float,
+		x:Float,
+		y:Float,
+		cx:Float,
+		cy:Float,
+		cw:Float,
+		ch:Float,
+		width:Float,
+		height:Float,
+		flipX:Bool,
+		flipY:Bool
+	};
 
 	/**
 	 * Applies a crop to a texture based Game Object, such as a Sprite or Image.
@@ -54,7 +74,7 @@ import core.gameobjects.GameObject;
 	 * You should do this if the crop rectangle becomes the same size as the frame itself, as it will allow
 	 * the renderer to skip several internal calculations.
 	 */
-	// To-Do Rectangle Version
+	// TODO: Rectangle Version
 	public function setCrop(?x:Float, ?y:Float, ?width:Float, ?height:Float):GameObject {
 		if (x == null) {
 			this.isCropped = false;
@@ -84,7 +104,7 @@ import core.gameobjects.GameObject;
 	 * Calling `setFrame` will modify the `width` and `height` properties of your Game Object.
 	 * It will also change the `origin` if the Frame has a custom pivot point, as exported from packages like Texture Packer.
 	 */
-	// To-Do set up frame functions/variables
+	// TODO: set up frame functions/variables
 	public function setFrame(key:String, ?updateSize:Bool = true, ?updateOrigin:Bool = true):GameObject {
 		this.frame = texture.get(key);
 		if (this._sizeComponent != null && updateSize) {
