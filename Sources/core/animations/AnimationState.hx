@@ -1,9 +1,8 @@
 package core.animations;
 
-
-import core.structs.CustomMap;
 import core.textures.TextureManager;
-import core.gameobjects.GameObject;
+import core.gameobjects.Sprite;
+import core.structs.CustomMap;
 
 /**
  * The Animation State Component.
@@ -31,7 +30,7 @@ class AnimationState {
    * You can typically access this component from the Game Object
    * via the `this.anims` property.
    */
-  public var parent:GameObject;
+  public var parent:Sprite;
 
   // A reference to the global Animation Manager.
   public var animationManager:AnimationManager;
@@ -47,8 +46,11 @@ class AnimationState {
    */
   public var anims:CustomMap<Animation> = new CustomMap();
 
+	// Is an animation currently playing or not?
+  public var isPlaying:Bool = false;
+
   // Has the current animation started playing, or is it waiting for a delay to expire?
-  public var hasStart:Bool = false;
+  public var hasStarted:Bool = false;
 
   /**
    * The current Animation loaded into this Animation component.
@@ -230,7 +232,7 @@ class AnimationState {
    * This value is set when a new animation is loaded into this component, but can also be modified
    * at run-time.
    */
-  public var repeatCounter:Float = 0;
+  public var repeatCounter:Int = 0;
 
   // An internal flag keeping track of pending repeats.
   public var pendingRepeat:Bool = false;
@@ -252,9 +254,9 @@ class AnimationState {
   public var _pendingStop:Int = 0;
 
   // Internal property used by _pendingStop.
-  public var _pendingStopValue:Any;
+  public var _pendingStopValue:Dynamic;
 
-  public function new(_parent:GameObject) {
+  public function new(_parent:Sprite) {
     parent = _parent;
     animationManager = parent.scene.sys.anims;
     textureManager = animationManager.textureManager;
@@ -317,14 +319,14 @@ class AnimationState {
   /**
    * Internal method used to load an animation into this component.
    */
-  public function load(key:Any) {
+  public function load(key:Dynamic) {
     // stop the anim so we can load.
     if (isPlaying) stop();
 
     var animKey = Std.isOfType(key, String) ? key : key.key;
 
 		// Get the animation, first from the local map and, if not found, from the Animation Manager
-    var anim = exists(animKey) ? get(animKey) : manager.get(animKey);
+    var anim = exists(animKey) ? get(animKey) : animationManager.get(animKey);
 
     if (anim == null) {
       trace('Missing Animation: ' + animKey);
@@ -337,24 +339,24 @@ class AnimationState {
     // And now override the animation values, if set in the config.
     var totalFrames = anim.getTotalFrames();
 
-    var frameRate = key.frameRate || anim.frameRate;
-    var duration = key.duration || anim.duration;
+    var frameRate:Float = (key.frameRate != null) ? key.frameRate : anim.frameRate;
+    var duration:Float = (key.duration != null) ? key.duration : anim.duration;
 
     anim.calculateDuration(this, totalFrames, duration, frameRate);
 
-    delay = key.delay || anim.delay;
-    repeat = key.repeat || anim.repeat;
-    repeatDelay = key.repeatDelay || anim.repeatDelay;
+    delay = (key.delay != null) ? key.delay : anim.delay;
+    repeat = (key.repeat != null) ? key.repeat : anim.repeat;
+    repeatDelay = (key.repeatDelay != null) ? key.repeatDelay : anim.repeatDelay;
     yoyo = key.yoyo || anim.yoyo;
     showOnStart = key.showOnStart || anim.showOnStart;
     hideOnComplete = key.hideOnComplete || anim.hideOnComplete;
     skipMissedFrames = key.skipMissedFrames || anim.skipMissedFrames;
 
-    timeScale = key.timeScale || timeScale;
+    timeScale = (key.timeScale != null) ? key.timeScale : timeScale;
 
-    var startFrame = key.startFrame || 0;
+    var startFrame:Int = (key.startFrame != null) ? key.startFrame : 0;
 
-    if (startFrame > anim.getTotalFrames) startFrame = 0;
+    if (startFrame > anim.getTotalFrames()) startFrame = 0;
 
     var frame = anim.frames[startFrame];
 
@@ -374,7 +376,7 @@ class AnimationState {
   public function pause(?atFrame:Int) {
     if (!_paused) {
       _paused = true;
-      wasPlaying = isPlaying;
+      _wasPlaying = isPlaying;
       isPlaying = false;
     }
 
@@ -451,7 +453,7 @@ class AnimationState {
       }
 
       if (repeatCounter != -1 && repeatCount > repeatCounter) {
-        repeatCounter = repeatCounter;
+        repeatCount = repeatCounter;
       }
 
       nextAnim = key;
@@ -514,9 +516,9 @@ class AnimationState {
    *
    * Also, see the documentation in the Animation Manager for further details on creating animations.
    */
-  public function play(key:Any, ?ignoreIfPlaying:Bool = false) {
+  public function play(key:Dynamic, ?ignoreIfPlaying:Bool = false) {
 		// Must be either an Animation instance, or a PlayAnimationConfig object
-    var animKey = Std.isTypeOf(key, String) ? key : key.key;
+    var animKey = Std.isOfType(key, String) ? key : key.key;
 
     if (ignoreIfPlaying && isPlaying && currentAnim.key == animKey) {
       return parent;
@@ -591,10 +593,10 @@ class AnimationState {
    *
    * Also, see the documentation in the Animation Manager for further details on creating animations.
    */
-  public function playReverse(key:Any, ?ignoreIfPlaying:Bool = false) {
+  public function playReverse(key:Dynamic, ?ignoreIfPlaying:Bool = false) {
 
 		// Must be either an Animation instance, or a PlayAnimationConfig object
-    var animKey = Std.isTypeOf(key, String) ? key : key.key;
+    var animKey = Std.isOfType(key, String) ? key : key.key;
 
     if (ignoreIfPlaying && isPlaying && currentAnim.key == animKey) {
       return parent;
@@ -623,7 +625,7 @@ class AnimationState {
     // Should give us 9,007,199,254,740,991 safe repeats
     repeatCounter = (repeat == -1) ? Floats.MAX : repeat;
 
-    anim.getFirstTick(this);
+    currentAnim.getFirstTick(this);
 
     isPlaying = true;
     pendingRepeat = false;
@@ -724,7 +726,7 @@ class AnimationState {
    * The value is based on the current frame and how far that is in the animation, it is not based on
    * the duration of the animation.
    */
-  public function getProgress() {
+  public function getProgress():Float {
     if (currentFrame == null) return 0;
 
     var p = currentFrame.progress;
@@ -792,14 +794,14 @@ class AnimationState {
    * If you `includeDelay` then it will also fire the `ANIMATION_START` event once
    * the delay has expired, otherwise, playback will just begin immediately.
    */
-  public function restart(?includeDelay:Bool = false, ?resetRepeats:Bool = ffalse) {
+  public function restart(?includeDelay:Bool = false, ?resetRepeats:Bool = false) {
     if (currentAnim == null) return parent;
 
     if (resetRepeats) {
       repeatCounter = (repeat == -1) ? Floats.MAX : repeat;
     }
 
-    anim.getFirstTick(this);
+    currentAnim.getFirstTick(this);
 
     emitEvents('ANIMATION_RESTART');
 
@@ -813,7 +815,7 @@ class AnimationState {
     _pendingStopValue = 0;
     _paused = false;
 
-    setCurrentFrame(anim.frames[0]);
+    setCurrentFrame(currentAnim.frames[0]);
 
     return parent;
   }
@@ -854,7 +856,7 @@ class AnimationState {
    *
    * If there is another animation in the queue (set via the `chain` method) then it will start playing.
    */
-  public function stop() {
+  public function stop():Sprite {
     _pendingStop = 0;
 
     isPlaying = false;
@@ -903,7 +905,7 @@ class AnimationState {
    */
   public function stopAfterRepeat(?repeatCount:Int = 1) {
     if (repeatCounter != -1 && repeatCount > repeatCounter) {
-      repeatCounter = repeatCounter;
+      repeatCount = repeatCounter;
     }
 
     _pendingStop = 2;
@@ -944,7 +946,7 @@ class AnimationState {
    * This is called automatically by the `Sprite.preUpdate` method.
    */
   public function update(time:Float, delta:Float) {
-    if (!isPlating || currentAnim == null || currentAnim.paused) {
+    if (!isPlaying || currentAnim == null || currentAnim.paused) {
       return;
     }
 
@@ -961,23 +963,23 @@ class AnimationState {
         // Process one frame advance as standard
 
         if (forward) {
-          anim.nextFrame(this);
+          currentAnim.nextFrame(this);
         } else {
-          anim.previousFrame(this);
+          currentAnim.previousFrame(this);
         }
 
         // And only do more if we're skipping frames and have time left
         if (isPlaying && _pendingStop == 0 && skipMissedFrames && accumulator > nextTick) {
           var safetyNet = 0;
 
-          while (accumulator > nextTick && safetyNey < 60) {
+          while (accumulator > nextTick && safetyNet < 60) {
             if (forward) {
-              anim.nextFrame(this);
+              currentAnim.nextFrame(this);
             } else {
-              anim.previousFrame(this);
+              currentAnim.previousFrame(this);
             }
 
-            safetyNext++;
+            safetyNet++;
           }
         }
       }
@@ -1089,13 +1091,13 @@ class AnimationState {
   public function create(config) {
     var key = config.key;
 
-    var anim = false;
+    var anim:Animation = null;
 
     if (key != '') {
       anim = get(key);
 
       if (anim == null) {
-        anim = new Animation(this, key, config);
+        anim = new Animation(this.animationManager, key, config);
 
         anims.set(key, anim);
       }

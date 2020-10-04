@@ -1,5 +1,6 @@
 package core.textures;
 
+import core.gameobjects.components.TextureMixin;
 import core.textures.Parser;
 import core.gameobjects.GameObject;
 
@@ -182,11 +183,18 @@ class TextureManager extends EventEmitter {
     return list.get('__MISSING');
   }
 
+	/**
+	 * Takes a Texture key and Frame name and returns a reference to that Frame, if found.
+	 */
+	public function getFrame(key:String, frame:Any) {
+		return list.exists(key) ? list.get(key).get(frame) : null;
+	}
+
   /**
    * Sets the given Game Objects `texture` and `frame` properties so that it uses
    * the Texture and Frame specified in the `key` and `frame` arguments to this method.
    */
-  public function setTexture(gameObject:GameObject, key:String, frame:String) {
+  public function setTexture(gameObject:TextureMixin, key:String, frame:String) {
     if (list.exists(key)) {
       gameObject.texture = list.get(key);
       gameObject.frame = gameObject.texture.get(frame);

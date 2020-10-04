@@ -1,7 +1,24 @@
 package core.gameobjects;
 
+import core.animations.AnimationState;
 import core.animations.AnimationFrame;
 import core.scene.Scene;
+
+// Mixins
+import core.gameobjects.components.Transform_mixin;
+import core.gameobjects.components.ScrollFactor;
+import core.gameobjects.components.TextureCrop;
+import core.gameobjects.components.BlendMode;
+import core.gameobjects.components.GetBounds;
+import core.gameobjects.components.Pipeline;
+import core.gameobjects.components.Visible;
+import core.gameobjects.components.Origin;
+import core.gameobjects.components.Alpha;
+import core.gameobjects.components.Depth;
+import core.gameobjects.components.Flip;
+import core.gameobjects.components.Mask;
+import core.gameobjects.components.Size;
+import core.gameobjects.components.Tint;
 
 /**
  * A Sprite Game Object.
@@ -14,7 +31,7 @@ import core.scene.Scene;
  * As such, Sprites take a fraction longer to process and have a larger API footprint due to the Animation
  * Component. If you do not require animation then you can safely use Images to replace Sprites in all cases.
  */
-class Sprite extends GameObject {
+class Sprite extends GameObject implements Alpha implements BlendMode implements Depth implements Flip implements GetBounds implements Mask implements Origin implements Pipeline implements ScrollFactor implements Size implements TextureCrop implements Tint implements Transform implements Visible {
   // The internal crop data object, as used by `setCrop` and passed to the `Frame.setCropUVs` method.
   public var _crop = {};
 
@@ -25,12 +42,14 @@ class Sprite extends GameObject {
    * It is responsible for playing, loading, queuing animations for later playback,
    * mixing between animations and setting the current animation frame to this Sprite.
    */
-  public var anims:Any;
+  public var anims:AnimationState;
 
   public function new(scene:Scene, x:Float, y:Float, texture:String, ?frame:Any) {
     super(scene, 'Sprite');
 
     _crop = resetCropObject();
+
+    anims = new AnimationState(this);
 
     setTexture(texture, frame);
     setPosition(x, y);
@@ -53,7 +72,7 @@ class Sprite extends GameObject {
   /**
    * Update this Sprite's animations.
    */
-  override  public function preUpdate(time:Float, delta:Float) {
+  override public function preUpdate(time:Float, delta:Float) {
     anims.update(time, delta);
   }
 
@@ -222,7 +241,7 @@ class Sprite extends GameObject {
    * locally within the Sprite. If it can, it will play the local animation. If not, it will then
    * search the global Animation Manager and look for it there.
    */
-  public function chain(key:String) {
+  public function chain(key:Array<Any>) {
     return anims.chain(key);
   }
 
@@ -283,7 +302,7 @@ class Sprite extends GameObject {
   /**
    * Handles the pre-destroy step for the Sprite, which removes the Animation component.
    */
-  public function preDestroy() {
+  override public function preDestroy() {
     anims.destroy();
 
     anims = null;

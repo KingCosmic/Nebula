@@ -9,4 +9,11 @@ class CMath {
 
     return (min + ((((value - min) % range) + range) % range));
   }
+
+	/**
+	 * Force a value within the boundaries by clamping it to the range `min`, `max`.
+	 */
+	public static function clamp(value, min, max) {
+		return Math.max(min, Math.min(max, value));
+	}
 }

@@ -1,6 +1,7 @@
 package core.scene;
 
 // import core.animations.AnimationManager;
+import core.animations.AnimationManager;
 import core.loader.LoaderPlugin;
 import core.input.InputPlugin;
 import core.textures.TextureManager;
@@ -36,7 +37,7 @@ class Systems {
    *
    * In the default set-up you can access this from within a Scene via the `this.anims` property.
    */
-  // public var anims:AnimationManager;
+  public var anims:AnimationManager;
 
 	/**
    * A reference to the global Scale Manager.
@@ -133,7 +134,10 @@ class Systems {
     displayList = new DisplayList(scene, this);
     scene.children = displayList;
 
-		updateList = new UpdateList(scene, this);
+    updateList = new UpdateList(scene, this);
+
+    anims = game.anims;
+    scene.anims = anims;
 
     cameras = new CameraManager(scene);
     scene.cameras = cameras;

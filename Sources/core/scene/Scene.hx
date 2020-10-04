@@ -1,5 +1,6 @@
 package core.scene;
 
+import core.animations.AnimationManager;
 import core.input.InputPlugin;
 import core.loader.LoaderPlugin;
 import core.textures.TextureManager;
@@ -26,6 +27,12 @@ class Scene {
 
   // A reference to the Phaser.Game instance
   public var game:Game;
+
+
+	/**
+	 * A reference to the global Animations Manager.
+	 */
+	public var anims:AnimationManager;
 
   /**
    * A reference to the Texture Manager.

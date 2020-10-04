@@ -1,5 +1,6 @@
 package core.animations;
 
+import core.gameobjects.Sprite;
 import core.gameobjects.GameObject;
 import core.textures.TextureManager;
 import core.EventEmitter;
@@ -22,6 +23,13 @@ class AnimationManager extends EventEmitter {
 	// This map should be modified with the {@link #add} and {@link #create} methods of the Animation Manager.
   public var anims:CustomMap<Animation> = new CustomMap();
 
+	/**
+   * A list of animation mix times.
+   *
+   * See the {@link #setMix} method for more details.
+   */
+  public var mixes:CustomMap<Float> = new CustomMap();
+
   // Whether the Animation Manager is paused along with all of its Animations.
   public var paused:Bool = false;
 
@@ -41,6 +49,28 @@ class AnimationManager extends EventEmitter {
     textureManager = game.textures;
 
     game.events.once('DESTROY', destroy);
+  }
+
+	/**
+  * Returns the mix delay between two animations.
+  *
+  * If no mix has been set-up, this method will return zero.
+  *
+  * If you wish to create, or update, a new mix, call the `addMix` method.
+  * If you wish to remove a mix, call the `removeMix` method.
+  */
+  public function getMix(animA:Dynamic, animB:Dynamic) {
+    
+    var keyA = Std.isOfType(animA, String) ? animA : animA.key;
+    var keyB = Std.isOfType(animB, String) ? animB : animB.key;
+
+    var mixObj = mixes.get(keyA);
+
+    if (mixObj != null && Reflect.hasField(mixObj, keyB)) {
+      return Reflect.getProperty(mixObj, keyB);
+    } else {
+      return 0;
+    }
   }
 
   // Adds an existing Animation to the Animation Manager.
@@ -151,14 +181,14 @@ class AnimationManager extends EventEmitter {
    * If you wish to re-use an existing key, call `AnimationManager.remove` first, then this method.
    */
   public function create(config) {
-		var key = config.key;
+		var key:String = config.key;
 
-		var anim = false;
+		var anim:Animation = null;
 
-		if (key) {
+		if (key != null) {
 			anim = get(key);
 
-			if (!anim) {
+			if (anim == null) {
 				anim = new Animation(this, key, config);
 
 				anims.set(key, anim);
@@ -175,7 +205,7 @@ class AnimationManager extends EventEmitter {
   }
 
   // Play an animation on the given Game Objects that have an Animation Component.
-  public function play(key:String, children:Array<GameObject>) {
+  public function play(key:String, children:Array<Sprite>) {
 
     for (child in children) {
       child.anims.play(key);
@@ -201,7 +231,7 @@ class AnimationManager extends EventEmitter {
   public function remove(key:String) {
     var anim = get(key);
 
-    if (anim) {
+    if (anim != null) {
       emit('REMOVE_ANIMATION', key, anim);
 
       anims.delete(key);

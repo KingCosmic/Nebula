@@ -1,5 +1,8 @@
 package core.animations;
 
+import core.utils.ArrayUtils;
+import core.math.CMath;
+import core.math.Clamp;
 import core.textures.Frame;
 import core.textures.TextureManager;
 import core.gameobjects.GameObject;
@@ -72,7 +75,7 @@ class Animation {
     manager = _manager;
     key = _key;
 
-    getFrames(manager.textureManager, config.frames, null, null);
+    getFrames(manager.textureManager, config.frames, null);
 
     calculateDuration(this, getTotalFrames(), duration, frameRate);
 
@@ -90,7 +93,7 @@ class Animation {
   /**
    * Calculates the duration, frame rate and msPerFrame values.
    */
-  public function calculateDuration(target:Animation, totalFrames:Float, duration:Float, frameRate:Float) {
+  public function calculateDuration(target:Dynamic, totalFrames:Float, duration:Float, frameRate:Float) {
     if (duration == null && frameRate == null) {
 			// No duration or frameRate given, use default frameRate of 24fps
 			target.frameRate = 24;
@@ -115,15 +118,15 @@ class Animation {
   /**
    * Add frames to the end of the animation.
    */
-	public function addFrame(config:Array<AnimationFrame>) {
+	public function addFrame(config:Array<{key:String, frame:String}>) {
     return addFrameAt(frames.length, config);
   }
 
   /**
    * Add frame/s into the animation.
    */
-  public function addFrameAt(index:Int, config:Array<AnimationFrame>) {
-    var newFrames = getTotalFrames(manager.textureManager, config);
+  public function addFrameAt(index:Int, config:Array<{ key:String, frame:String }>) {
+    var newFrames = getFrames(manager.textureManager, config);
 
     if (newFrames.length > 0) {
       if (index == 0) {
@@ -134,7 +137,8 @@ class Animation {
         var pre = frames.slice(0, index);
         var post = frames.slice(index, frames.length);
 
-        frames = pre.concat(newFrames, post);
+        frames = pre.concat(newFrames);
+        frames = frames.concat(post);
       }
 
       updateFrameSequence();
@@ -172,7 +176,7 @@ class Animation {
 	 * Creates AnimationFrame instances based on the given string.
    */
 	public function getFramesFromString(textureManager:TextureManager, textureKey:String, ?sortFrames:Bool = true) {
-    var frames:Array<Any> = [];
+		var frames:Array<{key:String, frame:String}> = [];
     
     var texture = textureManager.get(textureKey);
     var frameKeys = texture.getFrameNames();
@@ -186,31 +190,32 @@ class Animation {
     }
 
     return getFrames(textureManager, frames, textureKey);
-	}
+  }
 
   /**
    * Creates AnimationFrame instances based on the given frame data.
    */
-	public function getFrames(textureManager:TextureManager, frames:Array<AnimationFrame>, defaultTextureKey:String) {
+	public function getFrames(textureManager:TextureManager, frames:Array<{ key:String, frame:String }>, ?defaultTextureKey:String) {
     var out:Array<AnimationFrame> = [];
 
-    var prev:Frame = null;
-    var animationFrame:Frame = null;
+    var prev:AnimationFrame = null;
+    var animationFrame:AnimationFrame = null;
 
-    for (item in frames) {
-      var key = item.key || defaultTextureKey;
+    for (i in 0...frames.length) {
+      var item = frames[i];
+      var key = (item.key != null) ? item.key : defaultTextureKey;
 
       if (key == null) continue;
 
       // Could be an integer or a string
-      var frame:Dynamic = item.frame || 0;
+      var frame:Dynamic = (item.frame != null) ? item.frame : 0;
 
       // The actual texture frame
       var textureFrame = textureManager.getFrame(key, frame);
 
-      animationFrame = new Frame(key, frame, index, textureFrame);
+      animationFrame = new AnimationFrame(key, frame, i, textureFrame);
 
-      animationFrame.duration = item.duration || 0;
+      animationFrame.duration = (item.duration != null) ? item.duration : 0;
 
       animationFrame.isFirst = (prev == null);
 
@@ -254,8 +259,10 @@ class Animation {
   /**
    * Returns the frame closest to the given progress value between 0 and 1.
    */
-  public function getFrameByProgess(value:Float) {
-    // TODO:
+  public function getFrameByProgress(value:Float) {
+    value = CMath.clamp(value, 0, 1);
+
+    return ArrayUtils.findClosestInSortedFromKey(value, frames, 'progress');
   }
 
   /**
@@ -362,7 +369,7 @@ class Animation {
    * This is a global action. Any Game Object using this Animation will be impacted by this change.
    */
   public function removeFrame(frame:AnimationFrame) {
-    var idnex = frames.indexOf(frame);
+    var index = frames.indexOf(frame);
 
     if (index != -1)
       removeFrameAt(index);
@@ -389,7 +396,8 @@ class Animation {
 	public function repeatAnimation(comp:AnimationState) {
     if (comp._pendingStop == 2) {
       if (comp._pendingStopValue == 0) {
-        return comp.stop();
+        comp.stop();
+        return;
       } else {
         comp._pendingStopValue--;
       }
@@ -420,6 +428,7 @@ class Animation {
    * Called internally whenever frames are added to, or removed from, this Animation.
    */
   public function updateFrameSequence() {
+    var len = frames.length;
     var slice = 1 / (len - 1);
 
     var frame:AnimationFrame;

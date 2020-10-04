@@ -149,4 +149,53 @@ class ArrayUtils {
 		return items;
   }
 
+  /**
+   * Searches a pre-sorted array for the closet value to the given number.
+   *
+   * If the `key` argument is given it will assume the array contains objects that all have the required `key` property name,
+   * and will check for the closest value of those to the given number.
+   */
+  static public function findClosestInSortedFromKey<T>(value:Float, array:Array<T>, ?key:String) {
+    if (array.length == 0) return null;
+
+    if (array.length == 1) return array[0];
+
+    var i = 1;
+    var low:Float = null;
+    var high:Float = null;
+
+    if (value < Reflect.getProperty(array[0], key)) return array[0];
+
+    while (Reflect.getProperty(array[i], key) < value) {
+      i++;
+    }
+
+    if (i > array.length) i = array.length;
+
+    low = Reflect.getProperty(array[i - 1], key);
+    high = Reflect.getProperty(array[i], key);
+
+    return ((high - value) <= (value - low)) ? array[i] : array[i - 1];
+  }
+
+	static public function findClosestInSorted(value:Float, array:Array<Float>) {
+		if (array.length == 0)
+			return null;
+
+		if (array.length == 1)
+			return array[0];
+
+		var i = 1;
+		var low:Float = null;
+		var high:Float = null;
+
+		while (array[i] < value) {
+			i++;
+		}
+
+		low = array[i - 1];
+		high = array[i];
+
+		return ((high - value) <= (value - low)) ? high : low;
+  }
 }
