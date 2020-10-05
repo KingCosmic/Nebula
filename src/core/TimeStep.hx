@@ -178,9 +178,9 @@ class TimeStep {
    * You generally should never call this method directly.
    */
 	public function step(frames:Array<Framebuffer>) {
-		//  Because the timestamp passed in from raf represents the beginning of the main thread frame that we’re currently in,
-		//  not the actual time now, and as we want to compare this time value against Event timeStamps and the like, we need a
-    //  more accurate one:
+		// Because the timestamp passed in from raf represents the beginning of the main thread frame that we’re currently in,
+		// not the actual time now, and as we want to compare this time value against Event timeStamps and the like, we need a
+    // more accurate one:
     
 		var currentTime = Scheduler.realTime();
 

@@ -71,8 +71,6 @@ class PlayScene extends Scene {
 			d: input.keyboard.addKey('D')
     };
 
-    _player.anims.play('left');
-
     cameras.main.startFollow(_player);
   }
 
@@ -85,12 +83,12 @@ class PlayScene extends Scene {
 
 		if (_keys.a.isDown) {
       _player.x -= 100 * delta;
-			//_player.anims.play('left', true);
+			_player.anims.play('left', true);
 		} else if (_keys.d.isDown) {
       _player.x += 100 * delta;
-			//_player.anims.play('right', true);
+			_player.anims.play('right', true);
     } else {
-			//_player.anims.play('turn');
+			_player.anims.play('turn');
     }
   }
 }

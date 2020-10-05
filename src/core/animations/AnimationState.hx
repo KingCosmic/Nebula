@@ -627,9 +627,6 @@ class AnimationState {
     // Should give us 9,007,199,254,740,991 safe repeats
     repeatCounter = (repeat == -1) ? Ints.MAX : repeat;
 
-    // why is this a function? wth.
-		trace(repeat);
-
     currentAnim.getFirstTick(this);
 
     isPlaying = true;

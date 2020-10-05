@@ -128,10 +128,10 @@ class Animation {
 			// I.e. 15 frames in the animation, frameRate = 30 fps
 			// So duration is 15 / 30 = 0.5 * 1000 (half a second, or 500ms)
 			target.frameRate = frameRate;
-			target.duration = (totalFrames / frameRate) * 1000;
+      target.duration = (totalFrames / frameRate) * 1000;
     }
 
-    target.msPerFrame = target.frameRate / 1000;
+    target.msPerFrame = 1 / target.frameRate;
   }
 
   /**
