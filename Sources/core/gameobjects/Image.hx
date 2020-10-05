@@ -30,6 +30,6 @@ class Image extends RenderableGameObject {
 	 * This method should not be called directly. It is a utility function of the Render module.
 	 */
 	override public function render(renderer:Renderer, camera:Camera) {
-		renderer.batchImage(this, texture.source[0].source, camera);
+    renderer.batchImage(this, frame, camera);
 	}
 }

@@ -371,7 +371,7 @@ class InputManager {
    * Checks if the Game Object has an input component that is enabled, that it will render,
    * and finally, if it has a parent, that the parent parent, or any ancestor, is visible or not.
    */
-  public function isInputCandidate(gameObject:GameObject, camera:Camera) {
+  public function isInputCandidate(gameObject:RenderableGameObject, camera:Camera) {
     var input = gameObject.input;
 
 		if (input == null || !input.enabled || (!input.alwaysEnabled && !gameObject.willRender(camera))) {

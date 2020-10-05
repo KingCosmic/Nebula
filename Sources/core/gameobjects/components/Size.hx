@@ -73,13 +73,11 @@ import core.textures.Frame;
 	 * size of the hit area. To do this you should adjust the `input.hitArea` object directly.
 	 */
 	// TODO: Impliment Frame
-	public function setSizeToFrame(?frame:Frame = null):Dynamic {
-		if (frame == null) {
-			frame = this.frame;
-		}
+	public function setSizeToFrame(?_frame:Frame = null):Dynamic {
+    if (_frame == null) _frame = frame;
 
-		this.width = frame.realWidth;
-		this.height = frame.realHeight;
+		this.width = _frame.realWidth;
+		this.height = _frame.realHeight;
 
 		return this;
 	}

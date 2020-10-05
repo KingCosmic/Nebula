@@ -133,15 +133,15 @@ class TextureManager extends EventEmitter {
    * In Phaser terminology a Sprite Sheet is a texture containing different frames, but each frame is the exact
    * same size and cannot be trimmed or rotated.
    */
-  public function addSpriteSheet(key:String, source:kha.Image, config:{ frameWidth:Int, frameHeight:Int }) {
+  public function addSpriteSheet(key:String, source:kha.Image, config:{frameWidth:Int,frameHeight:Int,startFrame:Int,endFrame:Int,margin:Int,spacing:Int}) {
     if (!checkKey(key)) return null;
 
     var texture = create(key, source);
 
-    var width = source.width / config.frameWidth;
-    var height = source.height / config.frameHeight;
+    var width = texture.source[0].width;
+    var height = texture.source[0].height;
 
-    // Parser.spriteSheet(texture, 0, 0, 0, width, height, config);
+    Parser.spriteSheet(texture, 0, 0, 0, width, height, config);
 
     emit('ADD', key, texture);
 
@@ -180,7 +180,7 @@ class TextureManager extends EventEmitter {
   public function get(?key:String = '__DEFAULT') {
     if (list.exists(key)) return list.get(key);
 
-    return list.get('__MISSING');
+    return list.get(key);
   }
 
 	/**

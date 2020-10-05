@@ -2,10 +2,7 @@ package core.animations;
 
 import core.utils.ArrayUtils;
 import core.math.CMath;
-import core.math.Clamp;
-import core.textures.Frame;
 import core.textures.TextureManager;
-import core.gameobjects.GameObject;
 
 typedef AnimationConfig = {
   ?key:String,
@@ -90,7 +87,7 @@ class Animation {
     manager = _manager;
     key = _key;
 
-    getFrames(manager.textureManager, config.frames, null);
+    frames = getFrames(manager.textureManager, config.frames, null);
 
     calculateDuration(this, getTotalFrames(), duration, frameRate);
 
@@ -210,14 +207,14 @@ class Animation {
   /**
    * Creates AnimationFrame instances based on the given frame data.
    */
-	public function getFrames(textureManager:TextureManager, frames:Array<Dynamic>, ?defaultTextureKey:String) {
+	public function getFrames(textureManager:TextureManager, _frames:Array<Dynamic>, ?defaultTextureKey:String) {
     var out:Array<AnimationFrame> = [];
 
     var prev:AnimationFrame = null;
     var animationFrame:AnimationFrame = null;
 
-    for (i in 0...frames.length) {
-      var item = frames[i];
+		for (i in 0..._frames.length) {
+			var item = _frames[i];
       var key = (item.key != null) ? item.key : defaultTextureKey;
 
       if (key == null) continue;
@@ -235,7 +232,7 @@ class Animation {
       animationFrame.isFirst = (prev == null);
 
       // The previously created animationFrame
-      if (prev == null) {
+      if (prev != null) {
         prev.nextFrame = animationFrame;
 
         animationFrame.prevFrame = prev;
@@ -448,6 +445,8 @@ class Animation {
     var frame:AnimationFrame;
 
     for (i in 0...frames.length) {
+      frame = frames[i];
+
       frame.index = i + 1;
       frame.isFirst = false;
       frame.isLast = false;

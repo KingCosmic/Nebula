@@ -24,8 +24,8 @@ class Parser {
 				spacing: 0
 			}
 		}
-		var frameWidth = config.frameWidth != null ? config.frameWidth : null; // GetFastValue(config, 'frameWidth', null);
-		var frameHeight = config.frameWidth != null ? config.frameWidth : frameWidth; // GetFastValue(config, 'frameHeight', frameWidth);
+		var frameWidth = config.frameWidth != null ? config.frameWidth : null;
+		var frameHeight = config.frameHeight != null ? config.frameHeight : frameWidth;
 
 		// If missing we can't proceed
 		if (frameWidth == null) {
@@ -37,17 +37,17 @@ class Parser {
 
 		texture.add('__BASE', sourceIndex, 0, 0, source.width, source.height);
 
-		var startFrame:Int = config.startFrame != null ? config.frameWidth : 0;
-		var endFrame = config.endFrame != null ? config.frameWidth : -1;
-		var margin = config.margin != null ? config.frameWidth : 0;
-		var spacing = config.spacing != null ? config.frameWidth : 0;
+		var startFrame:Int = config.startFrame != null ? config.startFrame : 0;
+		var endFrame = config.endFrame != null ? config.endFrame : -1;
+		var margin = config.margin != null ? config.margin : 0;
+		var spacing = config.spacing != null ? config.spacing : 0;
 
 		var row = Math.floor((width - margin + spacing) / (frameWidth + spacing));
 		var column = Math.floor((height - margin + spacing) / (frameHeight + spacing));
-		var total = row * column;
+    var total = row * column;
 
 		if (total == 0) {
-			trace('SpriteSheet frame dimensions will result in zero frames for texture:', texture.key);
+			trace('SpriteSheet frame dimensions will result in zero frames for texture: ' + texture.key);
 		}
 
 		if (startFrame > total || startFrame < -total) {

@@ -1,3 +1,0 @@
-# @install: lix --silent download "gh://github.com/skial/min-max#2e347ace1f88d8a1f6d30b5fc27130e911e74e6c" into min-max/1.0.0/github/2e347ace1f88d8a1f6d30b5fc27130e911e74e6c
--cp ${HAXE_LIBCACHE}/min-max/1.0.0/github/2e347ace1f88d8a1f6d30b5fc27130e911e74e6c/src
--D min-max=1.0.0

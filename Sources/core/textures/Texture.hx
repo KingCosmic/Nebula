@@ -47,6 +47,7 @@ class Texture {
 
   public function new(_manager:TextureManager, _key:String, _sources:Array<kha.Image>, width:Int, height:Int) {
     manager = _manager;
+    key = _key;
 
     for (_source in _sources) {
       source.push(new TextureSource(this, _source, width, height));

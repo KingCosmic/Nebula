@@ -1,5 +1,7 @@
 package core;
 
+import core.textures.Frame;
+import core.gameobjects.RenderableGameObject;
 import kha.Image;
 import core.gameobjects.GameObject;
 import kha.math.FastMatrix3;
@@ -196,7 +198,7 @@ class Renderer {
   }
 
   // Takes a Image Game Object, or any object that extends it, and draws it to the current context.
-  public function batchImage(child:core.gameobjects.Image, frame:Image, camera:Camera) {
+  public function batchImage(child:RenderableGameObject, frame:Frame, camera:Camera) {
     var alpha = camera.alpha * child.alpha;
 
     // Nothing to see, so abort early
@@ -205,7 +207,65 @@ class Renderer {
     var x = child.x - (child.originX * child.width);
     var y = child.y - (child.originY * child.height);
 
-    graphics.drawImage(frame, x - (child.scrollFactorX * camera.scrollX), y - (child.scrollFactorY * camera.scrollY));
+    /*
+    if (child.isCropped) {
+      var crop = child._crop;
+
+			if (crop.flipX != sprite.flipX || crop.flipY != sprite.flipY) {
+				frame.updateCropUVs(crop, sprite.flipX, sprite.flipY);
+      }
+      
+      x = -child.displayOriginX + crop.x;
+      y = -child.displayOriginY + crop.y;
+
+      if (child.flipX) {
+        if (x >= 0) {
+          x = -(x + crop.cw);
+        } else if (x < 0) {
+          x = (Math.abs(x) - crop.cw);
+        }
+      }
+
+      if (child.flipY) {
+        if (y >= 0) {
+          y = -(y + crop.ch);
+        } else if (y < 0) {
+          y = (Math.abs(y) - crop.ch);
+        }
+      }
+    }*/
+
+    var flipX = 1;
+    var flipY = 1;
+
+    if (child.flipX) {
+      // TODO: add custom pivot
+      x += (-frame.realWidth + (child.displayOriginX * 2));
+
+      flipX = -1;
+    }
+
+    // Auto-invert the flipY if this is coming from a GLTexture
+    if (child.flipY) {
+      // TODO: add custom pivot
+      y += (-frame.realHeight + (child.displayOriginY * 2));
+
+      flipY = -1;
+    }
+
+    _tempMatrix2.applyITRS(child.x, child.y, child.rotation, child.scale * flipX, child.scaleY * flipY);
+
+    var crop = child._crop;
+
+    graphics.drawSubImage(
+      frame.source.image,
+      x - (child.scrollFactorX * camera.scrollX),
+      y - (child.scrollFactorY * camera.scrollY),
+      frame.cutX,
+      frame.cutY,
+      frame.cutWidth,
+      frame.cutHeight
+    );
   }
 
   public function destroy() {

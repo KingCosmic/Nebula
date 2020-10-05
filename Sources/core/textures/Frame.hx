@@ -98,6 +98,7 @@ class Frame {
     texture = _texture;
     name = _name;
     sourceIndex = _sourceIndex;
+		source = texture.source[sourceIndex];
 
     setSize(_width, _height, x, y);
   }

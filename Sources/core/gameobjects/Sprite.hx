@@ -1,5 +1,6 @@
 package core.gameobjects;
 
+import core.cameras.Camera;
 import core.gameobjects.RenderableGameObject;
 import core.animations.AnimationState;
 import core.animations.AnimationFrame;
@@ -57,6 +58,15 @@ class Sprite extends RenderableGameObject {
   override public function preUpdate(time:Float, delta:Float) {
     anims.update(time, delta);
   }
+
+	/**
+	 * Renders this Game Object with the Canvas Renderer to the given Camera.
+	 * The object will not render if any of its renderFlags are set or it is being actively filtered out by the Camera.
+	 * This method should not be called directly. It is a utility function of the Render module.
+	 */
+	override public function render(renderer:Renderer, camera:Camera) {
+		renderer.batchImage(this, frame, camera);
+	}
 
   /**
    * Start playing the given animation on this Sprite.

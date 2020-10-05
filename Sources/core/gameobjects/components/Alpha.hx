@@ -85,8 +85,9 @@ import core.math.Clamp;
 			//   this.renderFlags &= ~_FLAG;
 		} else {
 			//  this.renderFlags |= _FLAG;
-		}
-		return get_alpha();
+    }
+
+		return _alpha;
 	}
 
 	/**
@@ -106,8 +107,9 @@ import core.math.Clamp;
 
 		if (v != 0) {
 			// this.renderFlags |= _FLAG;
-		}
-		return get_alphaTopLeft();
+    }
+
+		return v;
 	}
 
 	/**
@@ -127,8 +129,9 @@ import core.math.Clamp;
 
 		if (v != 0) {
 			// this.renderFlags |= _FLAG;
-		}
-		return get_alphaTopRight();
+    }
+
+		return v;
 	}
 
 	/**

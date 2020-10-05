@@ -30,6 +30,8 @@ class File {
   // The processed file data, stored here after the file has loaded.
   public var data:kha.Image;
 
+  public var config:Dynamic;
+
 	public function new(_loader:LoaderPlugin, fileConfig:{
 		type:String,
 		cache:TextureManager,
@@ -42,6 +44,8 @@ class File {
 
     key = fileConfig.key;
     type = fileConfig.type;
+
+    config = (fileConfig.config != null) ? fileConfig.config : {};
 
     if (loader.prefix != '') {
       key = loader.prefix + key;

@@ -1,5 +1,6 @@
 package core.animations;
 
+import core.utils.ArrayUtils;
 import core.gameobjects.Sprite;
 import core.gameobjects.GameObject;
 import core.textures.TextureManager;
@@ -7,6 +8,14 @@ import core.EventEmitter;
 import core.structs.CustomMap;
 
 // TODO: Stagger play
+
+typedef GenerateFrameNumbersConfig = {
+  ?start:Int,
+  ?end:Int,
+  ?first:String,
+  ?out:Array<Dynamic>,
+  ?frames:Array<Dynamic>
+}
 
 class AnimationManager extends EventEmitter {
   // A reference to the Phaser.Game instance.
@@ -198,6 +207,53 @@ class AnimationManager extends EventEmitter {
 		}
 
 		return anim;
+  }
+
+	/**
+	 * Generate an array of {@link Phaser.Types.Animations.AnimationFrame} objects from a texture key and configuration object.
+	 *
+	 * Generates objects with numbered frame names, as configured by the given {@link Phaser.Types.Animations.GenerateFrameNumbers}.
+	 *
+	 * If you're working with a texture atlas, see the `generateFrameNames` method instead.
+   */
+  public function generateFrameNumbers(key:String, config:GenerateFrameNumbersConfig):Array<AnimationFrame> {
+    var start = (config.start != null) ? config.start : 0;
+    var end = (config.end != null) ? config.end : -1;
+    var first = (config.first != null) ? config.first : '';
+		var out = (config.out != null) ? config.out : [];
+    var frames:Array<Dynamic> = (config.frames != null) ? config.frames : [];
+    
+    var texture = textureManager.get(key);
+
+		if (texture == null) {
+      var output:Array<AnimationFrame> = cast out;
+      return output;
+    }
+
+    if (first != '' && texture.has(first))
+      out.push({ key: key, frame: first });
+
+    // No 'frames' array? Then generate one automatically
+    if (frames.length == 0) {
+      if (end == -1) {
+				// -1 because of __BASE, which we don't want in our results
+				// and -1 because frames are zero based
+				end = texture.frameTotal - 2;
+      }
+
+      frames = ArrayUtils.numberArray(start, end);
+    }
+
+    for (i in 0...frames.length) {
+      if (texture.has(frames[i])) {
+        out.push({ key: key, frame: frames[i] });
+      } else {
+        trace('generateFrameNumbers: Frame ' + i + ' missing from texture: ' + key);
+      }
+    }
+
+		var output:Array<AnimationFrame> = cast out;
+		return output;
   }
 
   public function get(key:String) {

@@ -1,15 +1,14 @@
 package core.scene;
 
-// import core.animations.AnimationManager;
 import core.animations.AnimationManager;
-import core.loader.LoaderPlugin;
-import core.input.InputPlugin;
 import core.textures.TextureManager;
 import core.scene.Scene.SceneConfig;
 import core.gameobjects.DisplayList;
 import core.gameobjects.UpdateList;
 import core.cameras.CameraManager;
+import core.loader.LoaderPlugin;
 import core.scale.ScaleManager;
+import core.input.InputPlugin;
 
 class Systems {
   // The Scene Configuration object, as passed in when creating the Scene.
@@ -142,7 +141,7 @@ class Systems {
     cameras = new CameraManager(scene);
     scene.cameras = cameras;
 
-    textures = new TextureManager(_game);
+    textures = game.textures;
     scene.textures = textures;
 
     load = new LoaderPlugin(scene);
@@ -383,11 +382,11 @@ class Systems {
     
     scene = null;
     game = null;
-    // anims = null;
+    anims = null;
     // cache = null;
     // registry = null;
     // sound = null;
-    // textures = null;
+    textures = null;
     cameras = null;
     displayList = null;
     events = null;

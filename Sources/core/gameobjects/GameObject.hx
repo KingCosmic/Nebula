@@ -360,8 +360,6 @@ class GameObject extends EventEmitter {
 			scene.sys.displayList.remove([this]);
 		}
 
-		input = null;
-
 		// TODO: data clear
 
 		// TODO: physics clear

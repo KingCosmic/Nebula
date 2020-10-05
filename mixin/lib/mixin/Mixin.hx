@@ -89,8 +89,8 @@ class Mixin
 			throw 'Mixin with ${mixin.fql} already existed...';
 		
 		lc.meta.add(":autoBuild", [macro mixin.Mixin.includeMixin($v{mixin.fql})], lc.pos);
-			
-		var interfaceFields:Array<Field> = [];	
+
+		var interfaceFields:Array<Field> = [];
 		var buildFields = Context.getBuildFields();
 		
 		
@@ -126,7 +126,7 @@ class Mixin
 				return null;
 			}
 			
-			//ok lets go :)
+			// ok lets go :)
 
 			var typer = new Typer(lc, Context.getLocalModule(), Context.getLocalImports());
 			
@@ -141,7 +141,7 @@ class Mixin
 				{
 					var conflictingMixin = getConflictingMixinName(mf.name);
 					if (conflictingMixin != null)
-						Context.fatalError('Field ${mf.name} is defined in ${mixin.fql} and $conflictingMixin', mf.pos);
+            Context.fatalError('Field ${mf.name} is defined in ${mixin.fql} and $conflictingMixin', mf.pos);
 				}
 					
 				mf.validateMixinType();				
@@ -215,13 +215,14 @@ class Mixin
 			return null;	
 			
 		// error if mixin was included twice or more somewhere in hierarchy 		
-		var includedIn = whereMixinWasIncluded(lc, mixinFql, true);
-		if (includedIn != null)
-			Context.fatalError('Mixin <${mixinFql}> was already included in <${getFqlClassName(includedIn)}>', includedIn.pos);
-		
+    var includedIn = whereMixinWasIncluded(lc, mixinFql, true);
+		if (includedIn != null) {
+			return null; // TODO: FIX THIS so it doesn't error when you extend a class using mixins.
+      Context.fatalError('Mixin <${mixinFql}> was already included in <${getFqlClassName(includedIn)}>', includedIn.pos);
+    }
 
 		markAsMixinWasIncludedHere(lc, mixinFql);
-			
+
 		var classFql = getFqlClassName(lc);				
 		var fields = Context.getBuildFields();
 		var cached = mixins.get(mixinFql);
@@ -516,19 +517,16 @@ class Mixin
 	
 	static function includedMeta(fql:String) return inlcudedMetaTemplate.replace('%fql%', fql.replace(".", "_").toLowerCase());
 	
-	static function whereMixinWasIncluded(base:ClassType, mixinFql:String, recursive:Bool = false):ClassType
-	{
-		if (base.meta.has(includedMeta(mixinFql)))
-			return base;
-		else if (recursive)
-		{
-			var superClass = getSuperClass(base);
-			if (superClass != null) 
-				return whereMixinWasIncluded(superClass, mixinFql, recursive);
-			else
-				return null;
-		} else 
-			return null;
+	static function whereMixinWasIncluded(base:ClassType, mixinFql:String, recursive:Bool = false):ClassType {
+    if (base.meta.has(includedMeta(mixinFql))) return base;
+
+		if (recursive) {
+      var superClass = getSuperClass(base);
+      
+			return (superClass != null) ? whereMixinWasIncluded(superClass, mixinFql, recursive) : null;
+		}
+    
+    return null;
 	}
 	
 	static function markAsMixinWasIncludedHere(base:ClassType, mixinFql:String)
@@ -621,12 +619,8 @@ class Mixin
 		return null;
 	}
 	
-	static function getSuperClass(lc:ClassType):Null<ClassType>
-	{
-		if (lc.superClass != null)
-			return lc.superClass.t.get();
-		else
-			return null;
+	static function getSuperClass(lc:ClassType):Null<ClassType> {
+    return (lc.superClass != null) ? lc.superClass.t.get() : null;
 	}
 	
 	static function getSuperClassRef(lcRef:Ref<ClassType>):Ref<ClassType>
