@@ -1,5 +1,6 @@
 package core.animations;
 
+import core.animations.Animation.AnimationConfig;
 import core.utils.ArrayUtils;
 import core.gameobjects.Sprite;
 import core.gameobjects.GameObject;
@@ -189,7 +190,7 @@ class AnimationManager extends EventEmitter {
    *
    * If you wish to re-use an existing key, call `AnimationManager.remove` first, then this method.
    */
-  public function create(config) {
+	public function create(config:AnimationConfig) {
 		var key:String = config.key;
 
 		var anim:Animation = null;

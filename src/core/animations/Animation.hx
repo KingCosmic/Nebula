@@ -89,6 +89,13 @@ class Animation {
 
     frames = getFrames(manager.textureManager, config.frames, null);
 
+    frameRate = (config.frameRate != null) ? config.frameRate : null;
+    duration = (config.duration != null) ? config.duration : null;
+
+		repeat = (config.repeat != null) ? config.repeat : 0;
+    
+    // TODO: get rest of config
+
     calculateDuration(this, getTotalFrames(), duration, frameRate);
 
     manager.on('PAUSE_ALL', pause);
@@ -114,7 +121,7 @@ class Animation {
 			// Duration given but no frameRate, so set the frameRate based on duration
 			// I.e. 12 frames in the animation, duration = 4000 ms
 			// So frameRate is 12 / (4000 / 1000) = 3 fps
-			target.duration = duration;
+      target.duration = duration;
 			target.frameRate = totalFrames / (duration / 1000);
     } else {
 			// frameRate given, derive duration from it (even if duration also specified)
@@ -124,7 +131,7 @@ class Animation {
 			target.duration = (totalFrames / frameRate) * 1000;
     }
 
-    target.msPerFrame = 1000 / target.frameRate;
+    target.msPerFrame = target.frameRate / 1000;
   }
 
   /**
@@ -243,7 +250,11 @@ class Animation {
       prev = animationFrame;
     }
 
-		if (out.length > 0 && animationFrame.isLast) {
+		if (out.length > 0) {
+      animationFrame.isLast = true;
+      
+      // Link them end-to-end, so they loop
+      animationFrame.nextFrame = out[0];
 
       out[0].prevFrame = animationFrame;
 

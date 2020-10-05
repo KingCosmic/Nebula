@@ -43,20 +43,23 @@ class PlayScene extends Scene {
 		// Our player animations, turning, walking left and walking right.
 		anims.create({
 			key: 'left',
-			frames: anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+      frames: anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
+			skipMissedFrames: false,
 			frameRate: 10,
 			repeat: -1
 		});
 
 		anims.create({
 			key: 'turn',
-			frames: anims.generateFrameNumbers('dude', { start: 4, end: 5 }),
+      frames: anims.generateFrameNumbers('dude', { start: 4, end: 5 }),
+			skipMissedFrames: false,
 			frameRate: 20
 		});
 
 		anims.create({
 			key: 'right',
-			frames: anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+      frames: anims.generateFrameNumbers('dude', { start: 5, end: 8 }),
+			skipMissedFrames: false,
 			frameRate: 10,
 			repeat: -1
 		});
@@ -67,6 +70,8 @@ class PlayScene extends Scene {
       s: input.keyboard.addKey('S'),
 			d: input.keyboard.addKey('D')
     };
+
+    _player.anims.play('left');
 
     cameras.main.startFollow(_player);
   }
@@ -80,12 +85,12 @@ class PlayScene extends Scene {
 
 		if (_keys.a.isDown) {
       _player.x -= 100 * delta;
-			_player.anims.play('left', true);
+			//_player.anims.play('left', true);
 		} else if (_keys.d.isDown) {
       _player.x += 100 * delta;
-			_player.anims.play('right', true);
+			//_player.anims.play('right', true);
     } else {
-			_player.anims.play('turn');
+			//_player.anims.play('turn');
     }
   }
 }
