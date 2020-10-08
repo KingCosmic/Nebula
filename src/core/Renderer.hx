@@ -205,8 +205,9 @@ class Renderer {
     // Nothing to see, so abort early
     if (alpha == 0) return;
 
-    var x = child.x - (child.originX * child.width);
-    var y = child.y - (child.originY * child.height);
+    var x = child.x - (child.originX * child.displayWidth);
+    var y = child.y - (child.originY * child.displayHeight);
+
 
     /*
     if (child.isCropped) {

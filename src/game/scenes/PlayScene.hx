@@ -36,7 +36,7 @@ class PlayScene extends Scene {
 	override function create() {
     sys.displayList.add([new Image(this, 400, 300, 'sky')]);
 
-    _star = new Image(this, 400, 300, 'star');
+    _star = new Image(this, 450, 300, 'star');
     _star.setScale(2);
     _star.setAlpha(0.5);
 
