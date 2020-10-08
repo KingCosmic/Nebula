@@ -1,5 +1,6 @@
 package core;
 
+import kha.math.Vector2;
 import core.textures.Frame;
 import core.gameobjects.RenderableGameObject;
 import kha.Image;
@@ -255,17 +256,31 @@ class Renderer {
 
     _tempMatrix2.applyITRS(child.x, child.y, child.rotation, child.scale * flipX, child.scaleY * flipY);
 
-    var crop = child._crop;
+		// grab our childs center.
+    var center = child.getCenter();
 
-    graphics.drawSubImage(
+		var cameraPos = new Vector2(child.scrollFactorX * camera.scrollX, child.scrollFactorY * camera.scrollY);
+
+		// rotate our graphics.
+		graphics.rotate(child.rotation, center.x - cameraPos.x, center.y - cameraPos.y);
+
+    // set our alpha.
+    graphics.pushOpacity(child.alpha);
+
+    graphics.drawScaledSubImage(
       frame.source.image,
-      x - (child.scrollFactorX * camera.scrollX),
-      y - (child.scrollFactorY * camera.scrollY),
       frame.cutX,
       frame.cutY,
       frame.cutWidth,
-      frame.cutHeight
+      frame.cutHeight,
+      x - cameraPos.x,
+      y - cameraPos.y,
+      frame.cutWidth * child.scaleX,
+      frame.cutHeight * child.scaleY
     );
+
+		graphics.rotate(-child.rotation, center.x - cameraPos.x, center.y - cameraPos.y);
+    graphics.popOpacity();
   }
 
   public function destroy() {

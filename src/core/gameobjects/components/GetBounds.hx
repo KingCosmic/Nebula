@@ -29,15 +29,12 @@ import kha.math.Vector2;
 	 * Gets the center coordinate of this Game Object, regardless of origin.
 	 * The returned point is calculated in local space and does not factor in any parent containers
 	 */
-	public function getCenter(output:{x:Float, y:Float}, includeParent:Bool = false):{x:Float, y:Float} {
-		if (output == null) {
-			output = {
-				x: 0.0,
-				y: 0.0
-			};
-		}
-		output.x = this.x - (this.displayWidth * this.originX) + (this.displayWidth / 2);
-		output.y = this.y - (this.displayHeight * this.originY) + (this.displayHeight / 2);
+	public function getCenter(?output:Vector2, ?includeParent:Bool = false):Vector2 {
+    if (output == null) output = new Vector2();
+
+		output.x = x - (displayWidth * originX) + (displayWidth / 2);
+    output.y = y - (displayHeight * originY) + (displayHeight / 2);
+
 		return output;
 	}
 

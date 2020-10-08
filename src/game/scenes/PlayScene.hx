@@ -10,6 +10,7 @@ import core.scene.Scene;
 
 class PlayScene extends Scene {
   private var _player:Sprite;
+  private var _star:Image;
 
   private var _keys:{
     w:Key,
@@ -34,6 +35,12 @@ class PlayScene extends Scene {
 
 	override function create() {
     sys.displayList.add([new Image(this, 400, 300, 'sky')]);
+
+    _star = new Image(this, 400, 300, 'star');
+    _star.setScale(2);
+    _star.setAlpha(0.5);
+
+    sys.displayList.add([_star]);
 
     _player = new Sprite(this, 600, 400, 'dude');
     
@@ -75,6 +82,8 @@ class PlayScene extends Scene {
   }
 
   override function update(time:Float, delta:Float) {
+    _star.rotation += 0.1;
+
     if (_keys.w.isDown) {
       _player.y -= 100 * delta;
 		} else if (_keys.s.isDown) {

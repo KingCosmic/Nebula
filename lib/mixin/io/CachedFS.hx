@@ -23,7 +23,9 @@
 package mixin.io;
 
 import haxe.ds.StringMap;
+#if !kha_html5
 import sys.FileSystem;
+#end
 
 class CachedFS {
 	static var cache:StringMap<{?exists:Bool, ?isDirectory:Bool, ?entries:Array<String>}> = new StringMap();
@@ -31,8 +33,10 @@ class CachedFS {
 	public static function exists(path:String):Bool {
 		var cached = retrieve(path);
 
+		#if !kha_html5
 		if (cached.exists == null)
-			cached.exists = FileSystem.exists(path);
+      cached.exists = FileSystem.exists(path);
+		#end
 
 		return cached.exists;
 	}
@@ -40,8 +44,10 @@ class CachedFS {
 	public static function isDirectory(path:String):Bool {
 		var cached = retrieve(path);
 
+		#if !kha_html5
 		if (cached.isDirectory == null)
-			cached.isDirectory = FileSystem.isDirectory(path);
+      cached.isDirectory = FileSystem.isDirectory(path);
+    #end
 
 		return cached.isDirectory;
 	}
@@ -49,8 +55,10 @@ class CachedFS {
 	public static function readDirectory(path:String):Array<String> {
 		var cached = retrieve(path);
 
+		#if !kha_html5
 		if (cached.entries == null)
-			cached.entries = FileSystem.readDirectory(path);
+      cached.entries = FileSystem.readDirectory(path);
+    #end
 
 		return cached.entries;
 	}

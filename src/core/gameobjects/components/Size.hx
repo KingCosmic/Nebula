@@ -35,12 +35,13 @@ import core.textures.Frame;
 	public var displayWidth(get, set):Float;
 
 	function get_displayWidth():Float {
-		return Math.abs(this.scaleX * this.frame.realWidth);
+		return Math.abs(scaleX * frame.realWidth);
   }
 
 	function set_displayWidth(value:Float):Float {
-		this.scaleX = value / this.frame.realWidth;
-		return Math.abs(this.scaleX * this.frame.realWidth);
+    scaleX = value / frame.realWidth;
+
+		return Math.abs(scaleX * frame.realWidth);
 	}
 
 	/**
@@ -53,12 +54,13 @@ import core.textures.Frame;
 	public var displayHeight(get, set):Float;
 
 	function get_displayHeight():Float {
-		return Math.abs(this.scaleY * this.frame.realHeight);
+		return Math.abs(scaleY * frame.realHeight);
   }
 
 	function set_displayHeight(value:Float):Float {
-		this.scaleY = value / this.frame.realHeight;
-		return Math.abs(this.scaleY * this.frame.realHeight);
+    scaleY = value / frame.realHeight;
+
+		return Math.abs(scaleY * frame.realHeight);
 	}
 
 	/**
