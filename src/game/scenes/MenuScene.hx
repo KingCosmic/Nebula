@@ -1,7 +1,5 @@
 package game.scenes;
 
-import core.input.Pointer;
-import kha.math.Random;
 import core.gameobjects.Image;
 import core.scene.Scene;
 
@@ -25,12 +23,10 @@ class MenuScene extends Scene {
     _startButton.setInteractive();
 
     _startButton.on('GAMEOBJECT_POINTER_DOWN', () -> {
-      trace('ayy I was clicked');
+      scene.start('Play');
     });
     
 		sys.displayList.add([_startButton]);
-		
-		scene.start('Play');
 	}
 
 	override function update(time:Float, delta:Float) {}

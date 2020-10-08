@@ -429,8 +429,9 @@ class InputManager {
       // TODO: add in parentContainer code
       transformXY(px, py, go.x, go.y, go.rotation, go.scaleX, go.scaleY, point);
       
-      if (isPointWithinHitArea(go, point.x, point.y))
+      if (isPointWithinHitArea(go, point.x, point.y)) {
         output.push(go);
+      }
     }
 
     return output;

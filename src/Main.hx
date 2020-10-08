@@ -10,7 +10,7 @@ class Main {
 			title: 'Phaser 3 example',
 			width: 800,
 			height: 600,
-			scene: [/*MenuScene,*/ PlayScene],
+			scene: [MenuScene, PlayScene],
 			fps: {
 				min: 30,
 				target: 60,
