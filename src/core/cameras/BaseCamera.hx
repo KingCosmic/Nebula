@@ -523,8 +523,6 @@ class BaseCamera extends EventEmitter {
     
     var halfWidth = width * 0.5;
     var halfHeight = height * 0.5;
-
-    var realZoom = zoom * res;
     
     var xOrigin = width * originX;
     var yOrigin = height * originY;
@@ -558,7 +556,7 @@ class BaseCamera extends EventEmitter {
       displayHeight
     );
 
-		matrix.applyITRS(x + xOrigin, y + yOrigin, rotation, realZoom, realZoom);
+		matrix.applyITRS(x + xOrigin, y + yOrigin, rotation, zoom, zoom);
 		matrix.translate(-xOrigin, -yOrigin);
   }
 
