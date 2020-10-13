@@ -264,7 +264,7 @@ class Renderer {
 		graphics.rotate(child.rotation, x - cameraPos.x, y - cameraPos.y);
 
     // set our alpha.
-    graphics.pushOpacity(child.alpha);
+    graphics.pushOpacity(alpha);
 
     graphics.drawScaledSubImage(
       frame.source.image,
@@ -278,7 +278,7 @@ class Renderer {
       frame.cutHeight * child.scaleY
     );
 
-		graphics.rotate(-child.rotation, x - cameraPos.x, y - cameraPos.y);
+    graphics.rotate(-child.rotation, x - cameraPos.x, y - cameraPos.y);
     graphics.popOpacity();
   }
 

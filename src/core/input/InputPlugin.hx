@@ -1343,8 +1343,14 @@ class InputPlugin extends EventEmitter {
 		_pendingInsertion = [];
 		_dragState = [];
 
-		_drag.clear();
-		_over.clear();
+		// reset our drag and over stuff.
+		for (key => value in _drag) {
+			_drag.set(key, []);
+		}
+
+		for (key => value in _over) {
+			_over.set(key, []);
+		}
 
 		removeAllListeners();
 

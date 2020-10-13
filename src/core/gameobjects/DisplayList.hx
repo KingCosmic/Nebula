@@ -103,7 +103,7 @@ class DisplayList extends List<GameObject> {
     var i = children.length;
 
     while (i > 0) {
-      children[i].destroy(true);
+			if (children[i] != null) children[i].destroy(true);
       i--;
     }
 

@@ -203,7 +203,9 @@ class Mixin {
 
 		var classFql = getFqlClassName(lc);
 		var fields = Context.getBuildFields();
-		var cached = mixins.get(mixinFql);
+    var cached = mixins.get(mixinFql);
+    
+    if (cached == null) return fields;
 
 		for (shouldImplement in cached.baseImplements) {
 			if (!lc.interfaces.exists((iface) -> getFqlClassName(iface.t.get()) == shouldImplement)) {
