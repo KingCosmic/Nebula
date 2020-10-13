@@ -39,7 +39,7 @@ class Mixin {
 	static var printer = new Printer();
 
 	public static function sugar():Array<Field> {
-		var lcRef = Context.getLocalClass();
+    var lcRef = Context.getLocalClass();
 		var lc = lcRef != null ? lcRef.get() : null;
 		var isMixin = lc != null && lc.meta.has("mixin");
 
@@ -206,10 +206,9 @@ class Mixin {
 		var cached = mixins.get(mixinFql);
 
 		for (shouldImplement in cached.baseImplements) {
-			if (!lc.interfaces.exists(function(iface) {
-				return getFqlClassName(iface.t.get()) == shouldImplement;
-			}))
-				Context.fatalError('Mixin $mixinFql requires base class to implement $shouldImplement', lc.pos);
+			if (!lc.interfaces.exists((iface) -> getFqlClassName(iface.t.get()) == shouldImplement)) {
+        Context.fatalError('Mixin $mixinFql requires base class to implement $shouldImplement', lc.pos);
+      }
 		}
 
 		for (shouldExtend in cached.baseExtends) {

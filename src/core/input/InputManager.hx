@@ -56,7 +56,7 @@ class InputManager {
   public var mouse:MouseManager = null;
 
   // A reference to the Touch Manager class, if enabled via the `input.touch` Game Config property.
-  public var touch = null;
+  public var touch:TouchManager = null;
 
   /**
    * An array of Pointers that have been added to the game.
@@ -126,7 +126,7 @@ class InputManager {
 
     keyboard = new KeyboardManager(this);
     mouse = new MouseManager(this);
-    // touch = new Touch(this);
+    touch = new TouchManager(this);
 
     
     /*if (config.inputTouch && this.pointersTotal == 1) {
@@ -250,68 +250,68 @@ class InputManager {
   }
 
   // Processes a touch start event, as passed in by the TouchManager.
-  /*
-  public function onTouchStart(event:Any) {
+  public function onTouchStart(id:Int, x:Int, y:Int) {
     var changed = [];
 
-    for (changedTouch in event.changedTouches) {
+    for (i in 1...pointersTotal) {
+      var pointer = pointers[i];
 
-      for (i in 1...pointersTotal) {
-        var pointer = pointers[i];
+      if (!pointer.active) {
+        pointer.touchStart(id, x, y);
 
-        if (!pointer.active) {
-          pointer.touchStart(changedTouch, event);
+        activePointer = pointer;
 
-          activePointer = pointer;
+        changed.push(pointer);
 
-          changed.push(pointer);
-
-          break;
-        }
+        break;
       }
     }
 
     updateInputPlugins(INPUT_CONST.TOUCH_START, changed);
-  }*/
+  }
 
   /**
    * Processes a touch move event, as passed in by the TouchManager.
    */
-  /*public function onTouchMove(event) {
+	public function onTouchMove(id:Int, x:Int, y:Int) {
     var changed = [];
 
-    for (changedTouch in event.changedTouches) {
+    for (i in 1...pointersTotal) {
+      var pointer = pointers[i];
 
-      for (i in 1...pointersTotal) {
-        var pointer = pointers[i];
+      if (pointer.active && pointer.identifier == id) {
+        pointer.touchMove(id, x, y);
 
-        if (pointer.active && pointer.identifier == changedTouch.identifier) {
-          pointer.touchMove(changedTouch, event);
+        activePointer = pointer;
 
-          activePointer = pointer;
+        changed.push(pointer);
 
-          changed.push(pointer);
-
-          break;
-        }
+        break;
       }
     }
 
     updateInputPlugins(INPUT_CONST.TOUCH_MOVE, changed);
-  }*/
+  }
 
   /**
    * Processes a touch end event, as passed in by the TouchManager.
    */
-  public function onTouchEnd(event) {
-    // TODO:
-  }
+  public function onTouchEnd(id:Int, x:Int, y:Int) {
+		var changed = [];
 
-  /**
-   * Processes a touch cancel event, as passed in by the TouchManager.
-   */
-  public function onTouchCancel(event) {
-    // TODO:
+    for (i in 1...pointersTotal) {
+      var pointer = pointers[i];
+
+      if (pointer.active && pointer.identifier == id) {
+        pointer.touchEnd(id, x, y);
+
+        changed.push(pointer);
+
+        break;
+      }
+    }
+
+		updateInputPlugins(INPUT_CONST.TOUCH_END, changed);
   }
 
   /**

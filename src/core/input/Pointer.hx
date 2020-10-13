@@ -324,13 +324,13 @@ class Pointer {
   }
 
   // Internal method to handle a Mouse Down Event.
-  public function down(_button:Int, x:Int, y:Int) {
+  public function down(_button:Int, _x:Int, _y:Int) {
     // TODO: Buttons
 
     button = _button;
 
     // Sets the local x/y properties
-    manager.transformPointer(this, x, y, false);
+    manager.transformPointer(this, _x, _y, false);
 
     // 0: Main button pressed, usually the left button or the un-initialized state
     if (button == 0) {
@@ -356,11 +356,11 @@ class Pointer {
   }
 
   // Internal method to handle a Mouse Move Event
-  public function move(x:Int, y:Int, moveX:Int, moveY:Int) {
+  public function move(_x:Int, _y:Int, moveX:Int, moveY:Int) {
     // TODO: Buttons
 
-    // Sets teh local x/y properties
-    manager.transformPointer(this, x, y, true);
+    // Sets the local x/y properties
+    manager.transformPointer(this, _x, _y, true);
 
     if (isLocked) {
       movementX = moveX | 0;
@@ -385,23 +385,59 @@ class Pointer {
   }
 
   // Internal method to handle a Touch Start Event.
-  public function touchStart() {
-    // TODO:
+  public function touchStart(id:Int, _x:Int, _y:Int) {
+
+    pointerId = id;
+    identifier = id;
+    active = true;
+
+    buttons = 1;
+
+    manager.transformPointer(this, _x, _y, false);
+
+    primaryDown = true;
+    downX = x;
+    downY = y;
+    downTime = Scheduler.realTime();
+
+    wasTouch = true;
+    wasCanceled = false;
+
+    updateMotion();
   }
 
   // Internal method to handle a Touch Move Event.
-  public function touchMove() {
-    // TODO:
+  public function touchMove(id:Int, _x:Int, _y:Int) {
+		// Sets the local x/y properties
+		manager.transformPointer(this, _x, _y, true);
+
+		moveTime = Scheduler.realTime();
+
+		wasTouch = true;
+
+		updateMotion();
   }
 
   // Internal method to handle a Touch End Event.
-  public function touchEnd() {
-    // TODO:
-  }
+  public function touchEnd(id:Int, _x:Int, _y:Int) {
+		buttons = 0;
 
-  // Internal method to handle a Touch Cancel Event.
-  public function touchCancel() {
-    // TODO:
+		//  Sets the local x/y properties
+		manager.transformPointer(this, _x, _y, false);
+
+		primaryDown = false;
+		upX = x;
+		upY = y;
+		upTime = Scheduler.realTime();
+
+		isDown = false;
+
+		wasTouch = true;
+		wasCanceled = false;
+
+		active = false;
+
+		updateMotion();
   }
 
   /**

@@ -22,9 +22,7 @@ class MenuScene extends Scene {
     _startButton = new Image(this, 400, 300, 'star');
     _startButton.setInteractive();
 
-    _startButton.on('GAMEOBJECT_POINTER_DOWN', () -> {
-      scene.start('Play');
-    });
+    _startButton.on('GAMEOBJECT_POINTER_DOWN', () -> scene.start('Play'));
     
 		sys.displayList.add([_startButton]);
 	}
