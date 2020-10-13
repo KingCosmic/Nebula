@@ -340,8 +340,8 @@ class CameraManager {
   // The event handler that manages the `resize` event dispatched by the Scale Manager.
 	public function onResize(gameSize:Size, baseSize:Size, previousWidth:Float, previousHeight:Float) {
     for (cam in cameras) {
-			//  if camera is at 0x0 and was the size of the previous game size, then we can safely assume it
-			//  should be updated to match the new game size too
+			// if camera is at 0x0 and was the size of the previous game size, then we can safely assume it
+			// should be updated to match the new game size too
 			if (cam._x == 0 && cam._y == 0 && cam._width == previousWidth && cam._height == previousHeight) {
 				cam.setSize(baseSize.width, baseSize.height);
 			}

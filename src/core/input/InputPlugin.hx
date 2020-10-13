@@ -516,7 +516,7 @@ class InputPlugin extends EventEmitter {
       setHitArea([go]/*, hitArea, hitAreaCallback*/);
     }
 
-    if (go.input != null && dropZone != null && go.input.dropZone == null) {
+    if (go.input != null && dropZone != null && go.input.dropZone) {
       go.input.dropZone = dropZone;
     }
 
@@ -541,7 +541,7 @@ class InputPlugin extends EventEmitter {
       // Filter out the drop zones
       for (obj in over) {
 
-        if (obj.input.dropZone != null) {
+        if (obj.input.dropZone) {
           _tempZones.push(obj);
         }
       }

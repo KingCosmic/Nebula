@@ -106,19 +106,18 @@ import core.gameobjects.GameObject;
 	 */
 	// TODO: set up frame functions/variables
 	public function setFrame(key:String, ?updateSize:Bool = true, ?updateOrigin:Bool = true):GameObject {
-		this.frame = texture.get(key);
+		frame = texture.get(key);
 
-		if (this._sizeComponent != null && updateSize) {
-			this.setSizeToFrame();
-		}
+		if (_sizeComponent && updateSize) setSizeToFrame();
 
-		if (this._originComponent != null && updateOrigin) /*Reflect.hasField(this,"_originComponent ")*/ {
-			if (this.frame.customPivot) {
-				this.setOrigin(this.frame.pivotX, this.frame.pivotY);
+		if (_originComponent && updateOrigin) {
+			if (frame.customPivot) {
+				setOrigin(frame.pivotX, frame.pivotY);
 			} else {
-				this.updateDisplayOrigin();
+				updateDisplayOrigin();
 			}
-		}
+    }
+
 		return this;
 	}
 

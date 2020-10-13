@@ -2,7 +2,6 @@ package core.input.keyboard;
 
 import kha.input.KeyCode;
 import kha.Scheduler;
-import js.html.KeyboardEvent;
 import core.scene.Settings;
 import core.scene.Scene;
 

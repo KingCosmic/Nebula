@@ -258,12 +258,10 @@ class Renderer {
     _tempMatrix2.applyITRS(child.x, child.y, child.rotation, child.scale * flipX, child.scaleY * flipY);
 
 		// grab our childs center.
-    var center = child.getCenter();
-
 		var cameraPos = new Vector2(child.scrollFactorX * camera.scrollX, child.scrollFactorY * camera.scrollY);
 
 		// rotate our graphics.
-		graphics.rotate(child.rotation, center.x - cameraPos.x, center.y - cameraPos.y);
+		graphics.rotate(child.rotation, x - cameraPos.x, y - cameraPos.y);
 
     // set our alpha.
     graphics.pushOpacity(child.alpha);
@@ -280,7 +278,7 @@ class Renderer {
       frame.cutHeight * child.scaleY
     );
 
-		graphics.rotate(-child.rotation, center.x - cameraPos.x, center.y - cameraPos.y);
+		graphics.rotate(-child.rotation, x - cameraPos.x, y - cameraPos.y);
     graphics.popOpacity();
   }
 

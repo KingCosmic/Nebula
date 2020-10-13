@@ -161,8 +161,8 @@ class ArrayUtils {
     if (array.length == 1) return array[0];
 
     var i = 1;
-    var low:Float = null;
-    var high:Float = null;
+    var low:Float;
+    var high:Float;
 
     if (value < Reflect.getProperty(array[0], key)) return array[0];
 
@@ -178,16 +178,14 @@ class ArrayUtils {
     return ((high - value) <= (value - low)) ? array[i] : array[i - 1];
   }
 
-	static public function findClosestInSorted(value:Float, array:Array<Float>) {
-		if (array.length == 0)
-			return null;
+	static public function findClosestInSorted(value:Float, array:Array<Float>):Float {
+		if (array.length == 0) return 0;
 
-		if (array.length == 1)
-			return array[0];
+		if (array.length == 1) return array[0];
 
 		var i = 1;
-		var low:Float = null;
-		var high:Float = null;
+		var low:Float;
+		var high:Float;
 
 		while (array[i] < value) {
 			i++;

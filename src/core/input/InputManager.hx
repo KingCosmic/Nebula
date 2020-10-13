@@ -241,7 +241,7 @@ class InputManager {
       if (scene.sys.input != null) {
         var capture = scene.sys.input.update(type, pointers);
 
-        if ((capture != null && globalTopOnly) || _tempSkip) {
+        if ((capture && globalTopOnly) || _tempSkip) {
 					// If the Scene returns true, or called stopPropagation, it means it captured some input that no other Scene should get, so we bail out
 					return;
         }

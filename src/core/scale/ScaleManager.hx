@@ -6,7 +6,6 @@ import core.structs.Size;
 import kha.math.Vector2;
 
 /**
- * @classdesc
  * The Scale Manager handles the scaling, resizing and alignment of the game canvas.
  *
  * The way scaling is handled is by setting the game canvas to a fixed size, which is defined in the
@@ -380,21 +379,21 @@ class ScaleManager extends EventEmitter {
   // Internal method that manages updating the size components based on the scale mode.
   public function updateScale() {
 		if (scaleMode == SCALE_MODE_CONST.RESIZE) {
-			// Resize to match parent
+      
+      // Resize to match parent
+      gameSize.setSize(window.width, window.height);
 
-			this.gameSize.setSize(window.width, window.height);
+      baseSize.setSize(gameSize.width, gameSize.height);
 
-			this.baseSize.setSize(gameSize.width, gameSize.height);
-
-			var canvasWidth = this.baseSize.width;
-			var canvasHeight = this.baseSize.height;
+			var canvasWidth = baseSize.width;
+			var canvasHeight = baseSize.height;
 
 			if (autoRound) {
 				canvasWidth = Math.floor(canvasWidth);
 				canvasHeight = Math.floor(canvasHeight);
       }
       
-			this.baseSize.setSize(canvasWidth, canvasHeight);
+			baseSize.setSize(canvasWidth, canvasHeight);
 		}
   }
 
@@ -470,9 +469,7 @@ class ScaleManager extends EventEmitter {
 
   // An internal method that starts the different DOM event listeners running.
   public function startListeners() {
-    window.notifyOnResize((_width, _height) -> {
-      setGameSize(_width, _height);
-    });
+    window.notifyOnResize(setGameSize);
   }
 
 	/**

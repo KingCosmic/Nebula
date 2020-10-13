@@ -47,14 +47,14 @@ class Animation {
   public var frames:Array<AnimationFrame> = [];
 
   // The frame rate of playback in frames per second (default 24 if duration is null)
-  public var frameRate:Float = null;
+  public var frameRate:Float = -1;
 
   /**
    * How long the animation should play for, in milliseconds.
    * If the `frameRate` property has been set then it overrides this value,
    * otherwise the `frameRate` is derived from `duration`.
    */
-  public var duration:Float = null;
+  public var duration:Float = -1;
 
   // How ms per frame, not including the frame specific modifiers.
   public var msPerFrame:Float;
@@ -89,8 +89,8 @@ class Animation {
 
     frames = getFrames(manager.textureManager, config.frames, null);
 
-    frameRate = (config.frameRate != null) ? config.frameRate : null;
-    duration = (config.duration != null) ? config.duration : null;
+    frameRate = (config.frameRate != null) ? config.frameRate : -1;
+    duration = (config.duration != null) ? config.duration : -1;
 
 		repeat = (config.repeat != null) ? config.repeat : 0;
     
@@ -113,11 +113,11 @@ class Animation {
    * Calculates the duration, frame rate and msPerFrame values.
    */
   public function calculateDuration(target:Dynamic, totalFrames:Float, duration:Float, frameRate:Float) {
-    if (duration == null && frameRate == null) {
+    if (duration == -1 && frameRate == -1) {
 			// No duration or frameRate given, use default frameRate of 24fps
 			target.frameRate = 24;
 			target.duration = (24 / totalFrames) * 1000;
-    } else if (duration != null && frameRate == null) {
+    } else if (duration != -1 && frameRate == -1) {
 			// Duration given but no frameRate, so set the frameRate based on duration
 			// I.e. 12 frames in the animation, duration = 4000 ms
 			// So frameRate is 12 / (4000 / 1000) = 3 fps
@@ -234,7 +234,7 @@ class Animation {
 
       animationFrame = new AnimationFrame(key, frame, i, textureFrame);
 
-      animationFrame.duration = (item.duration != null) ? item.duration : 0;
+      animationFrame.duration = (item.duration != -1) ? item.duration : 0;
 
       animationFrame.isFirst = (prev == null);
 

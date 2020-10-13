@@ -1011,7 +1011,7 @@ class AnimationState {
 
     parent.setSizeToFrame();
 
-    if (parent._originComponent != null) {
+    if (parent._originComponent) {
       if (animationFrame.frame.customPivot) {
         parent.setOrigin(animationFrame.frame.pivotX, animationFrame.frame.pivotY);
       } else {

@@ -23,8 +23,10 @@ class MenuScene extends Scene {
     _startButton.setInteractive();
 
     _startButton.on('GAMEOBJECT_POINTER_DOWN', () -> scene.start('Play'));
+
+    _startButton.setScale(3);
     
-		sys.displayList.add([_startButton]);
+    sys.displayList.add([_startButton]);
 	}
 
 	override function update(time:Float, delta:Float) {}

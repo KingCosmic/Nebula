@@ -250,19 +250,18 @@ import core.math.Angle;
 			parentMatrix = new TransformMatrix();
 		}
 
-		var parent = this.parentContainer;
+    // TODO: add parent code
 
-		if (parent == null) {
-			return this.getLocalTransformMatrix(tempMatrix);
-		}
+		return this.getLocalTransformMatrix(tempMatrix);
 
 		tempMatrix.applyITRS(this.x, this.y, this._rotation, this._scaleX, this._scaleY);
 
-		while (parent) { // To-Do Container Code
-			/*	parentMatrix.applyITRS(parent.x, parent.y, parent._rotation, parent._scaleX, parent._scaleY);
+		/*while (parent) { // To-Do Container Code
+				parentMatrix.applyITRS(parent.x, parent.y, parent._rotation, parent._scaleX, parent._scaleY);
 				parentMatrix.multiply(tempMatrix, tempMatrix);
-				parent = parent.parentContainer; */
-		}
+				parent = parent.parentContainer;
+    }*/
+
 		return tempMatrix;
 	}
 

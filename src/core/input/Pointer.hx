@@ -205,7 +205,7 @@ class Pointer {
    * The pointerId property of the Pointer as set by the DOM event when this Pointer is started.
    * The browser can and will recycle this value.
    */
-  public var pointerId:Float = null;
+  public var pointerId:Null<Float>;
 
   /**
    * An active Pointer is one that is currently pressed down on the display.

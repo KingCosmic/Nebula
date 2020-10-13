@@ -13,7 +13,7 @@ class Parser {
 	// Parses a Sprite Sheet and adds the Frames to the Texture.
 	// In Phaser terminology a Sprite Sheet is a texture containing different frames, but each frame is the exact
 	// same size and cannot be trimmed or rotated.
-	static public function spriteSheet(texture:Texture, sourceIndex:Int, x:Int, y:Int, width:Int, height:Int, ?config:{frameWidth:Int,frameHeight:Int,startFrame:Int,endFrame:Int,margin:Int,spacing:Int}) {
+	static public function spriteSheet(texture:Texture, sourceIndex:Int, x:Int, y:Int, width:Int, height:Int, ?config:{ ?frameWidth:Int, ?frameHeight:Int, ?startFrame:Int, ?endFrame:Int, ?margin:Int, ?spacing:Int}) {
 		if (config == null) {
 			config = {
 				frameWidth: 0,
