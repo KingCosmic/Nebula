@@ -136,8 +136,8 @@ class Camera extends BaseCamera {
     }
 
     if (useBounds) {
-      scrollX = clampX(scrollX);
-      scrollY = clampY(scrollY);
+      sx = clampX(sx);
+      sy = clampY(sy);
     }
 
     if (roundPixels) {
