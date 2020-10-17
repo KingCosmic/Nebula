@@ -92,7 +92,6 @@ class Game {
   // This is modified by the VisibilityHandler.
   public var hasFocus:Bool = false;
 
-  // TODO: move some of the above stuff into this.
   public function new(_config:GameConfig) {
     config = _config;
 
