@@ -20,28 +20,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package nebula.mixin.tools;
-import haxe.macro.Context;
-import haxe.macro.Expr.ComplexType;
-import haxe.macro.Expr.Position;
-import haxe.macro.Expr.TypePath;
+package mixin.tools;
+import haxe.macro.Expr;
+import haxe.macro.Expr.Metadata;
+import haxe.macro.Expr.MetadataEntry;
 
-using haxe.macro.Tools;
+using Lambda;
 
-class MoreComplexTypeTools 
-{	
-	public static function extractTypePath(t:ComplexType):TypePath
+class MetadataTools 
+{
+
+	public static function hasMetaWithName(meta:Metadata, name:String):Bool
 	{
-		return switch (t)
-		{
-			case TPath(tp): tp;
-			case _: 
-				throw 'Failed to extract TypePath from ${safeToString(t)}';
-		}
+		return meta != null && meta.exists(function (e) return e.name == name);
 	}
 	
-	public static function safeToString(?t:ComplexType)
+	public static function getMetaWithName(meta:Metadata, name:String):MetadataEntry
 	{
-		return t != null ? t.toString() : "null";
+		return meta != null ? meta.find(function (e) return e.name == name) : null;
+	}
+	
+	public static function cosumeParameters(meta:MetadataEntry, consumer:Expr->Bool)
+	{
+		if (meta.params != null)
+			meta.params = meta.params.filter(function invert(p) return !consumer(p));
+	}
+	
+	public static function consumeMetadata(meta:Metadata, consumer:MetadataEntry->Bool)
+	{
+		if (meta != null)
+		{
+			var i = meta.length;
+			while (i-- > 0)
+				if (consumer(meta[i]))
+					meta.remove(meta[i]);
+		}
 	}
 }

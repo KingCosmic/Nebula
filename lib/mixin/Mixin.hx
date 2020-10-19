@@ -20,7 +20,7 @@
 	SOFTWARE.
  */
 
-package nebula.mixin;
+package mixin;
 
 import haxe.ds.StringMap;
 import haxe.macro.Context;
@@ -30,9 +30,9 @@ import haxe.macro.Type;
 import haxe.macro.Type.ClassField;
 import haxe.macro.Type.ClassType;
 import haxe.macro.Type.Ref;
-import nebula.mixin.same.Same;
-import nebula.mixin.tools.ClassFieldTools;
-import nebula.mixin.typer.Typer;
+import mixin.same.Same;
+import mixin.tools.ClassFieldTools;
+import mixin.typer.Typer;
 
 class Mixin {
 	static var mixins:StringMap<Mixin> = new StringMap();
@@ -80,12 +80,12 @@ class Mixin {
 
 		var mixin = new Mixin(getFqlClassName(lc), typeParams, baseExtends, baseImplements);
 
-		if (!mixins.exists(nebula.mixin.fql))
-			mixins.set(nebula.mixin.fql, mixin);
+		if (!mixins.exists(mixin.fql))
+			mixins.set(mixin.fql, mixin);
 		else
-			throw 'Mixin with ${nebula.mixin.fql} already existed...';
+			throw 'Mixin with ${mixin.fql} already existed...';
 
-		lc.meta.add(":autoBuild", [macro nebula.mixin.nebula.mixin.includeMixin($v{nebula.mixin.fql})], lc.pos);
+		lc.meta.add(":autoBuild", [macro mixin.Mixin.includeMixin($v{mixin.fql})], lc.pos);
 
 		var interfaceFields:Array<Field> = [];
 		var buildFields = Context.getBuildFields();
@@ -94,7 +94,7 @@ class Mixin {
 		for (field in buildFields) {
 			var mf = new MixinField(mixin, field);
 			mf.convertForDisplay();
-			nebula.mixin.fields.push(mf);
+			mixin.fields.push(mf);
 
 			if (mf.isPublic && !mf.isConstructor)
 				interfaceFields.push(mf.createInterface());
@@ -131,11 +131,11 @@ class Mixin {
 			if (mf.type == MIXIN) {
 				var conflictingMixin = getConflictingMixinName(mf.name);
 				if (conflictingMixin != null)
-					Context.fatalError('Field ${mf.name} is defined in ${nebula.mixin.fql} and $conflictingMixin', mf.pos);
+					Context.fatalError('Field ${mf.name} is defined in ${mixin.fql} and $conflictingMixin', mf.pos);
 			}
 
 			mf.validateMixinType();
-			nebula.mixin.fields.push(mf);
+			mixin.fields.push(mf);
 
 			overwriteCache.set(mf.name, mf.baseFieldName);
 
@@ -148,7 +148,7 @@ class Mixin {
 			typer.resolveComplexTypesInFieldExpr(field, allFields);
 		}
 
-		for (mf in nebula.mixin.fields) {
+		for (mf in mixin.fields) {
 			if (mf.isMethod)
 				switch (mf.type) {
 					// if has bodyyyy
@@ -289,12 +289,12 @@ class Mixin {
 							if (mf.isConstructor) {
 								overwriteConstructor(mixin, cf);
 							} else {
-								nebula.mixin.name = mf.baseFieldName;
+								mixin.name = mf.baseFieldName;
 
 								// so we make it private
-								nebula.mixin.makePrivate();
+								mixin.makePrivate();
 								if (mf.meta.inlineBase)
-									nebula.mixin.makeInline();
+									mixin.makeInline();
 
 								// mixin field recieves all meta from base field
 								// class field recieves mixin's implementation
@@ -317,7 +317,7 @@ class Mixin {
 								mockBase.makePrivate();
 
 								if (shouldBeOverridden)
-									nebula.mixin.makeOverride();
+									mixin.makeOverride();
 
 								fields.push(mockBase);
 							}
@@ -337,10 +337,10 @@ class Mixin {
 	static function copyMetaAndExchangeImpl(mixin:Field, cf:Field) {
 		copyMeta(cf, mixin);
 
-		var mixinFunction = nebula.mixin.extractFFunFunction();
+		var mixinFunction = mixin.extractFFunFunction();
 		var originalFunction = cf.extractFFunFunction();
 
-		nebula.mixin.replaceFFunFunction(originalFunction);
+		mixin.replaceFFunFunction(originalFunction);
 		cf.replaceFFunFunction(mixinFunction);
 	}
 

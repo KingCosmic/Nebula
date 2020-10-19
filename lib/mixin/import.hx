@@ -20,46 +20,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package nebula.mixin.tools;
-import haxe.macro.Expr;
+package mixin;
 
 using haxe.macro.Tools;
+using mixin.tools.FieldTools;
+using mixin.tools.MetadataTools;
+using mixin.tools.MoreComplexTypeTools;
+using mixin.tools.MoreExprTools;
+using mixin.tools.TypeParamTools;
+using mixin.tools.TypePathTools;
 
-class MoreExprTools 
-{
-
-	/**
-	 * Prepends e to dst
-	 */
-	public static function prepend(dst:Expr, e:Expr)
-	{
-		dst.expr = switch (dst.expr)
-		{
-			case EBlock(exprs):
-				exprs.unshift(e);
-				EBlock(exprs);
-			case _:
-				(macro $b{[e, dst]}).expr;
-		}
-	}
-	
-	public static function setPos(e:Expr, pos:Position):Expr
-	{
-		return { 
-			expr: e.expr,
-			pos: pos
-		}
-	}
-	
-	public static function getBoolValue(e:Expr):Null<Bool>
-	{
-		try {
-			var value = e.getValue();
-			if (Std.is(value, Bool)) 
-				return value;
-				
-		} catch (ignore:Dynamic) {}
-		
-		return null;
-	}
-}
+using StringTools;
+using Lambda;

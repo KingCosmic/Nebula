@@ -20,7 +20,7 @@
 	SOFTWARE.
  */
 
-package nebula.mixin.io;
+package mixin.io;
 
 import haxe.ds.StringMap;
 #if !kha_html5

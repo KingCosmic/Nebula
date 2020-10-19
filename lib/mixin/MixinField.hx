@@ -20,7 +20,7 @@
 	SOFTWARE.
  */
 
-package nebula.mixin;
+package mixin;
 
 import haxe.ds.StringMap;
 import haxe.macro.Context;
@@ -28,12 +28,12 @@ import haxe.macro.Expr;
 import haxe.macro.Expr.Access;
 import haxe.macro.Expr.Field;
 import haxe.macro.Expr.Position;
-import nebula.mixin.MixinMeta.FieldMixinType;
-import nebula.mixin.MixinMeta.MixinFieldMeta;
-import nebula.mixin.copy.Copy;
-import nebula.mixin.typer.Typer;
+import mixin.MixinMeta.FieldMixinType;
+import mixin.MixinMeta.MixinFieldMeta;
+import mixin.copy.Copy;
+import mixin.typer.Typer;
 import haxe.macro.Type;
-import nebula.mixin.typer.resolver.Resolve;
+import mixin.typer.resolver.Resolve;
 
 class MixinField {
 	var field:Field;
@@ -95,7 +95,7 @@ class MixinField {
 		this.meta = MixinMeta.consumeMixinFieldMeta(field);
 
 		this.baseFieldName = switch (type) {
-			case OVERWRITE: '_' + nebula.mixin.fql.replace(".", "_").toLowerCase() + '_${field.name}';
+			case OVERWRITE: '_' + mixin.fql.replace(".", "_").toLowerCase() + '_${field.name}';
 			case BASE: field.name;
 			case MIXIN: null;
 		};
@@ -117,13 +117,13 @@ class MixinField {
 		var copy = Copy.field(field);
 
 		if (params.length > 0) {
-			if (params.length != nebula.mixin.typeParams.length)
+			if (params.length != mixin.typeParams.length)
 				throw "Known typeParams length is different from supplied";
 
 			var typeMap:StringMap<ComplexType> = new StringMap();
 			for (i in 0...params.length) {
 				var complex = Context.toComplexType(params[i]);
-				typeMap.set(nebula.mixin.typeParams[i], complex);
+				typeMap.set(mixin.typeParams[i], complex);
 			}
 
 			// for (k in typeMap.keys()) trace(k + ' -> ' + typeMap.get(k).safeToString());
@@ -136,7 +136,7 @@ class MixinField {
 
 			Resolve.typeParamsInField(copy, resolve);
 			if (!forDisplay) {
-				var names = nebula.mixin.fields.map(function(f) return f.name);
+				var names = mixin.fields.map(function(f) return f.name);
 				Resolve.typeParamsInFieldExpr(copy, resolve);
 			}
 		}

@@ -20,13 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package nebula.mixin.typer.resolver;
+package mixin.typer.resolver;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Expr.ComplexType;
 import haxe.macro.Expr.Field;
 import haxe.macro.Expr.TypePath;
-import nebula.mixin.same.Same;
+import mixin.same.Same;
 
 class Resolve 
 {

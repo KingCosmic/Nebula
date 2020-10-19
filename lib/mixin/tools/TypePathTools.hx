@@ -20,40 +20,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package nebula.mixin.tools;
-import haxe.macro.Expr;
-import haxe.macro.Expr.Metadata;
-import haxe.macro.Expr.MetadataEntry;
+package mixin.tools;
+import haxe.macro.Expr.TypePath;
 
-using Lambda;
 
-class MetadataTools 
+class TypePathTools 
 {
 
-	public static function hasMetaWithName(meta:Metadata, name:String):Bool
+	public static function toTypePath(s:String):TypePath
 	{
-		return meta != null && meta.exists(function (e) return e.name == name);
-	}
-	
-	public static function getMetaWithName(meta:Metadata, name:String):MetadataEntry
-	{
-		return meta != null ? meta.find(function (e) return e.name == name) : null;
-	}
-	
-	public static function cosumeParameters(meta:MetadataEntry, consumer:Expr->Bool)
-	{
-		if (meta.params != null)
-			meta.params = meta.params.filter(function invert(p) return !consumer(p));
-	}
-	
-	public static function consumeMetadata(meta:Metadata, consumer:MetadataEntry->Bool)
-	{
-		if (meta != null)
-		{
-			var i = meta.length;
-			while (i-- > 0)
-				if (consumer(meta[i]))
-					meta.remove(meta[i]);
+		var pack = s.split(".");
+		var hasSub = pack.length > 1 && ~/\b[A-Z]/.match(pack[pack.length - 2]);
+		var sub = hasSub ? pack.pop() : null;
+		var name = pack.pop();
+		if (name.indexOf("<") != -1) throw "Parsing type path with type parameters is not implemented";
+		
+		return {
+			pack: pack,
+			sub: sub,
+			name: name,
+			params: []
 		}
 	}
+	
+	public static function toString(tp:TypePath, includeTypeParams:Bool)
+	{
+		var str = tp.pack.join(".") + (tp.pack.length > 0 ? "." + tp.name : tp.name);
+		if (tp.sub != null) str += "." + tp.sub;
+		if (includeTypeParams && tp.params != null && tp.params.length > 0)
+		{
+			str += "<" + tp.params.map(TypeParamTools.toString).join(",") + ">";
+		}
+		
+		return str;
+	}	
+
 }

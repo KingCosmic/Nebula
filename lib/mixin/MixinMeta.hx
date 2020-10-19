@@ -20,7 +20,7 @@
 	SOFTWARE.
  */
 
-package nebula.mixin;
+package mixin;
 
 import haxe.macro.Context;
 import haxe.macro.Expr.Field;

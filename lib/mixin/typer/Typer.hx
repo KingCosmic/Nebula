@@ -20,7 +20,7 @@
 	SOFTWARE.
  */
 
-package nebula.mixin.typer;
+package mixin.typer;
 
 import haxe.ds.StringMap;
 import haxe.io.Path;
@@ -30,9 +30,9 @@ import haxe.macro.Expr;
 import haxe.macro.Expr.Field;
 import haxe.macro.Printer;
 import haxe.macro.Type.ClassType;
-import nebula.mixin.io.CachedFS;
-import nebula.mixin.same.Same;
-import nebula.mixin.typer.resolver.Resolve;
+import mixin.io.CachedFS;
+import mixin.same.Same;
+import mixin.typer.resolver.Resolve;
 
 class Typer {
 	inline static var DEBUG = false;

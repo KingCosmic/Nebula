@@ -20,15 +20,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package nebula.mixin;
+package mixin.tools;
+import haxe.macro.Context;
+import haxe.macro.Expr.ComplexType;
+import haxe.macro.Expr.Position;
+import haxe.macro.Expr.TypePath;
 
 using haxe.macro.Tools;
-using nebula.mixin.tools.FieldTools;
-using nebula.mixin.tools.MetadataTools;
-using nebula.mixin.tools.MoreComplexTypeTools;
-using nebula.mixin.tools.MoreExprTools;
-using nebula.mixin.tools.TypeParamTools;
-using nebula.mixin.tools.TypePathTools;
 
-using StringTools;
-using Lambda;
+class MoreComplexTypeTools 
+{	
+	public static function extractTypePath(t:ComplexType):TypePath
+	{
+		return switch (t)
+		{
+			case TPath(tp): tp;
+			case _: 
+				throw 'Failed to extract TypePath from ${safeToString(t)}';
+		}
+	}
+	
+	public static function safeToString(?t:ComplexType)
+	{
+		return t != null ? t.toString() : "null";
+	}
+}

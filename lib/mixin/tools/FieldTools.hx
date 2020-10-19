@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package nebula.mixin.tools;
+package mixin.tools;
 import haxe.macro.Expr;
 import haxe.macro.Expr.Field;
 

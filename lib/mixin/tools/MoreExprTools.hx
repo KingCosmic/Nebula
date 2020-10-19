@@ -20,20 +20,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package nebula.mixin.tools;
-import haxe.macro.Expr.TypeParam;
+package mixin.tools;
+import haxe.macro.Expr;
 
-class TypeParamTools 
+using haxe.macro.Tools;
+
+class MoreExprTools 
 {
 
-	public static function toString(tp:TypeParam):String
+	/**
+	 * Prepends e to dst
+	 */
+	public static function prepend(dst:Expr, e:Expr)
 	{
-		if (tp == null) return null;
-		
-		return switch(tp) {
-			case TPType(ct): ct.toString();
-			case TPExpr(e): e.toString();
+		dst.expr = switch (dst.expr)
+		{
+			case EBlock(exprs):
+				exprs.unshift(e);
+				EBlock(exprs);
+			case _:
+				(macro $b{[e, dst]}).expr;
 		}
 	}
 	
+	public static function setPos(e:Expr, pos:Position):Expr
+	{
+		return { 
+			expr: e.expr,
+			pos: pos
+		}
+	}
+	
+	public static function getBoolValue(e:Expr):Null<Bool>
+	{
+		try {
+			var value = e.getValue();
+			if (Std.is(value, Bool)) 
+				return value;
+				
+		} catch (ignore:Dynamic) {}
+		
+		return null;
+	}
 }

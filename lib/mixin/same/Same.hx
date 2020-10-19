@@ -20,7 +20,7 @@
 	SOFTWARE.
  */
 
-package nebula.mixin.same;
+package mixin.same;
 
 import haxe.ds.ArraySort;
 import haxe.macro.ComplexTypeTools;
@@ -31,7 +31,7 @@ import haxe.macro.Expr.FunctionArg;
 import haxe.macro.Expr.Metadata;
 import haxe.macro.Expr.TypeParam;
 import haxe.macro.Expr.TypeParamDecl;
-import nebula.mixin.typer.Typer;
+import mixin.typer.Typer;
 
 @:publicFields
 class Same {
