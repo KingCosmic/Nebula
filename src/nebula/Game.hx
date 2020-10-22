@@ -22,7 +22,7 @@ typedef GameConfig = {
   scene:Array<Class<Scene>>,
   ?version:String,
   // ?input:Input.InputConfig,
-  ?fps:nebula.TimeStep.TimeStepConfig,
+  ?fps:Int,
   // ?render:RenderConfig,
   ?backgroundColor:Color,
 }
@@ -97,10 +97,6 @@ class Game {
 
     anims = new AnimationManager(this);
 
-    scale = new ScaleManager(this);
-
-    renderer = new Renderer(this);
-
     textures = new TextureManager(this);
 
 		input = new InputManager(this, this.config);
@@ -108,6 +104,12 @@ class Game {
 		scene = new SceneManager(this, config.scene);
 
 		System.start({ title: config.title, width: config.width, height: config.height }, (window) -> {
+      // we have to initialize kha things once window starts.
+			scale = new ScaleManager(this);
+
+      renderer = new Renderer(this);
+
+      // now we can boot the game.
 			boot(window);
 			// TODO: make some default textures that get placed when textures are missing.
       texturesReady();
@@ -136,22 +138,20 @@ class Game {
   public function start() {
     isRunning = true;
 
-		loop = new TimeStep(this, config.fps);
+    loop = new TimeStep(this, config.fps);
 
     loop.start(step);
+    System.notifyOnFrames(render);
 
     // TODO: visibility changes.
   }
 
   /**
-	 * The main Game Step. Called automatically by the Time Step, once per browser frame (typically as a result of
-	 * Request Animation Frame, or Set Timeout on very old browsers.)
+	 * The main Game Step. Called automatically by the Time Step.
 	 *
 	 * The step will update the global managers first, then proceed to update each Scene in turn, via the Scene Manager.
-	 *
-	 * It will then render each Scene in turn, via the Renderer. This process emits `prerender` and `postrender` events.
    */
-	public function step(time:Float, delta:Float, buffer:Framebuffer) {
+	public function step(time:Float, delta:Float) {
     if (pendingDestroy)
       return runDestroy();
 
@@ -170,12 +170,18 @@ class Game {
     // Our final event before rendering starts.
 
     events.emit('POST_STEP', time, delta);
+  }
 
-		// Now get the `g2` graphics object so we can draw
-		final graphics = buffer.g2;
+  /*
+   * Render our game via the Renderer. This process emits `prerender` and `postrender` events.
+   */
+  public function render(frames:Array<Framebuffer>) {
+
+    // grab our buffer from the incoming frames.
+    final buffer = frames[0];
 
 		// Run the Pre-render (clearing the canvas, setting background colors, etc)
-		renderer.preRender(graphics);
+		renderer.preRender(buffer);
 
 		events.emit('PRE_RENDER', renderer);
 

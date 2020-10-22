@@ -2,13 +2,7 @@ package nebula;
 
 import kha.Framebuffer;
 import kha.Scheduler;
-import kha.System;
-
-typedef TimeStepConfig = {
-  min:Int,
-  target:Int,
-  smoothStep:Bool
-} 
+import kha.System; 
 
 class TimeStep {
   // A reference to the game instance
@@ -28,9 +22,6 @@ class TimeStep {
    */
   public var running:Bool = false;
 
-  // The minimum fps rate you want the Time Step to run at.
-  public var minFps:Int;
-
   /**
    * The target fps rate for the Time Step to run at.
    *
@@ -39,12 +30,6 @@ class TimeStep {
    * is spiraling out of control.
    */
   public var targetFps:Int;
-
-  /**
-   * The minFps value in ms.
-   * Defaults to 200ms between frames (i.e. super slow!)
-   */
-  private var _min:Float;
 
   /**
    * The targetFps value in ms.
@@ -65,7 +50,7 @@ class TimeStep {
   public var framesThisSecond:Int = 0;
 
   // A callback to be inivoked each time the Time Step steps.
-  public var callback:Float->Float->Framebuffer->Void;
+  public var callback:Float->Float->Void;
 
   // The time, calculated at the start of the current step, as smoothed by the delta value.
   public var time:Float = 0;
@@ -108,19 +93,13 @@ class TimeStep {
    */
   public var now:Float = 0;
   
-  public function new(game:Game, config:TimeStepConfig) {
+  public function new(game:Game, ?_targetFps:Int = 60) {
     this.game = game;
 
-    this.minFps = config.min | 5;
-    this.targetFps = config.target | 60;
+    this.targetFps = _targetFps;
 
-    this._min = 1000 / this.minFps;
-    this._target = 1000 / this.targetFps;
+    this._target = 1 / this.targetFps;
     this.actualFps = this.targetFps;
-  }
-  
-  public function getTime() {
-    
   }
 
   public function blur() {
@@ -155,7 +134,7 @@ class TimeStep {
 
   // Starts the Time Step running, if it is not already doing so.
   // Called automatcally by the Game Boot process.
-  public function start(_callback:Float->Float->Framebuffer->Void) {
+  public function start(_callback:Float->Float->Void) {
     if (started) return this;
 
     started = true;
@@ -167,8 +146,8 @@ class TimeStep {
 
     callback = _callback;
 
-		System.notifyOnFrames(step);
-    
+    updateID = Scheduler.addTimeTask(step, 0, _target);
+
     return this;
   }
 
@@ -177,7 +156,7 @@ class TimeStep {
    * or by Set Timeout. It is responsible for calculating the delta values, frame totals, cool down history and more.
    * You generally should never call this method directly.
    */
-	public function step(frames:Array<Framebuffer>) {
+	public function step() {
 		// Because the timestamp passed in from raf represents the beginning of the main thread frame that we’re currently in,
 		// not the actual time now, and as we want to compare this time value against Event timeStamps and the like, we need a
     // more accurate one:
@@ -233,7 +212,7 @@ class TimeStep {
     // Interpolation - how far between what is expected and where we are?
     // var interpolation = delta / _target;
 
-    callback(time, delta, frames[0]);
+    callback(time, delta);
 
 		// Shift time value over.
     lastTime = currentTime;
@@ -259,7 +238,7 @@ class TimeStep {
 			startTime += -lastTime + (lastTime + Scheduler.realTime());
     }
 
-		System.notifyOnFrames(step);
+		updateID = Scheduler.addTimeTask(step, 0, _target);
     
     running = true;
   }
@@ -287,7 +266,7 @@ class TimeStep {
   public function destroy() {
     stop();
 
-    callback = (f1:Float, f2:Float, f3:Framebuffer) -> {};
+    callback = (f1:Float, f2:Float) -> {};
 
     game = null;
   }

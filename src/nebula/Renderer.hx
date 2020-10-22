@@ -1,19 +1,18 @@
 package nebula;
 
-import kha.math.Vector2;
-import nebula.textures.Frame;
-import nebula.gameobjects.RenderableGameObject;
-import kha.Image;
-import nebula.gameobjects.GameObject;
-import kha.math.FastMatrix3;
-import nebula.structs.Size;
 import nebula.gameobjects.components.TransformMatrix;
-import nebula.cameras.Camera;
+import nebula.gameobjects.RenderableGameObject;
 import nebula.gameobjects.DisplayList;
+import nebula.textures.Frame;
+import nebula.cameras.Camera;
+import nebula.structs.Size;
 import nebula.scene.Scene;
+import kha.math.Vector2;
+import kha.Framebuffer;
+import kha.System;
+import kha.Scaler;
 import kha.Color;
-
-import kha.graphics2.Graphics;
+import kha.Image;
 
 /**
  * The game class prepares a backbuffer to which states draw. The
@@ -23,6 +22,13 @@ import kha.graphics2.Graphics;
 class Renderer {
   // The Phaser Game isntance that owns this renderer.
   public var game:Game;
+
+  /*
+   * Our backbuffer our game is rendered to.
+   * 
+   * we set this to our targetted resolution then scale it to the canvas.
+   */
+  public var backbuffer:Image;
 
   // The total number of Game Objects which were rendered in a frame.
   public var drawCount:Int = 0;
@@ -42,7 +48,7 @@ class Renderer {
   }
 
   // current Graphics (updated every time notifyFrames runs)
-  public var graphics:Graphics;
+	public var framebuffer:Framebuffer;
 
   public var contextOptions = {
     alpha: true,
@@ -99,6 +105,9 @@ class Renderer {
   public function new(_game:Game) {
     game = _game;
 
+    // unused currently.
+    backbuffer = Image.createRenderTarget(1280, 720);
+
     init();
   }
 
@@ -110,6 +119,8 @@ class Renderer {
 
     resize(baseSize.width, baseSize.height);
   }
+
+  // TODO: make sure this onResize and resize stuff is necessary.
 
   // The event handler that manages the `resize` event dispatched by the Scale Manager.
   public function onResize(gameSize:Size, baseSize:Size) {
@@ -135,17 +146,10 @@ class Renderer {
     // TODO:
   }
 
-  // Sets the global alpha of the current context.
-  public function setAlpha(alpha:Float) {
-    graphics.set_opacity(alpha);
+  public function preRender(_buffer:Framebuffer) {
+    framebuffer = _buffer;
 
-    return this;
-  }
-
-  public function preRender(_graphics:Graphics) {
-    graphics = _graphics;
-
-    graphics.set_opacity(1);
+    final graphics = framebuffer.g2;
 
 		// Start drawing, and clear the framebuffer to `petrol`
     graphics.begin(config.clearBeforeRender, Color.fromBytes(0, 0, 0));
@@ -193,9 +197,9 @@ class Renderer {
     // TODO: renderToTexture
   }
 
-  public function postRender() {
+	public function postRender() {
 		// Finish the drawing operations
-    graphics.end();
+		framebuffer.g2.end();
   }
 
   // Takes a Image Game Object, or any object that extends it, and draws it to the current context.
@@ -207,6 +211,9 @@ class Renderer {
 
     var x = child.x - (child.originX * child.displayWidth);
     var y = child.y - (child.originY * child.displayHeight);
+
+    // grab our backbuffer so we can draw to it.
+    final g = framebuffer.g2;
 
 
     /*
@@ -261,12 +268,12 @@ class Renderer {
 		var cameraPos = new Vector2(child.scrollFactorX * camera.scrollX, child.scrollFactorY * camera.scrollY);
 
 		// rotate our graphics.
-		graphics.rotate(child.rotation, x - cameraPos.x, y - cameraPos.y);
+		g.rotate(child.rotation, x - cameraPos.x, y - cameraPos.y);
 
     // set our alpha.
-    graphics.pushOpacity(alpha);
+    g.pushOpacity(alpha);
 
-    graphics.drawScaledSubImage(
+		g.drawScaledSubImage(
       frame.source.image,
       frame.cutX,
       frame.cutY,
@@ -278,12 +285,13 @@ class Renderer {
       frame.cutHeight * child.scaleY
     );
 
-    graphics.rotate(-child.rotation, x - cameraPos.x, y - cameraPos.y);
-    graphics.popOpacity();
+		g.rotate(-child.rotation, x - cameraPos.x, y - cameraPos.y);
+		g.popOpacity();
   }
 
   public function destroy() {
-    graphics = null;
+    backbuffer = null;
+    framebuffer = null;
     game = null;
   }
 }
