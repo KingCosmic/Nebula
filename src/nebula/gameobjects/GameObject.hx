@@ -84,11 +84,6 @@ class GameObject extends EventEmitter {
 	public var cameraFilter:Int = 0;
 
 	/**
-	 * If this Game Object is enabled for Arcade or Matter Physics then this property will contain a reference to a Physics Body.
-	 */
-	public var body = null; // To-Do {?(Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|MatterJS.BodyType)}
-
-	/**
 	 * This Game Object will ignore all calls made to its destroy method if this flag is set to `true`.
 	 * This includes calls that may come from a Group, Container or the Scene itself.
 	 * While it allows you to persist a Game Object across Scenes, please understand you are entirely

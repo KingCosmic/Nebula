@@ -207,7 +207,7 @@ class TimeStep {
       framesThisSecond = 0;
     }
 
-    framesThisSecond = framesThisSecond + 1;
+    framesThisSecond++;
 
     // Interpolation - how far between what is expected and where we are?
     // var interpolation = delta / _target;
@@ -217,7 +217,7 @@ class TimeStep {
 		// Shift time value over.
     lastTime = currentTime;
 
-    frame = frame + 1;
+    frame++;
   }
 
   // Sends the TimeStep to sleep, stopping RAF and toggling the `running` flag to false.
