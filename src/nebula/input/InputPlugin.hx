@@ -1,6 +1,6 @@
 package nebula.input;
 
-import nebula.gameobjects.RenderableGameObject;
+import nebula.gameobjects.GameObject;
 import nebula.input.keyboard.KeyboardPlugin;
 import nebula.geom.rectangle.Rectangle;
 import nebula.scene.Settings;
@@ -133,25 +133,25 @@ class InputPlugin extends EventEmitter {
   public var dragTimeThreshold:Float = 0;
 
   // Used to temporarily store the results of the Hit Test
-	public var _temp:Array<RenderableGameObject> = [];
+	public var _temp:Array<GameObject> = [];
 
   // Used to temporarily store the results of the Hit Test dropZones
   public var _tempZones = [];
 
   // A list of all Game Objects that have been set to be interactive in the Scene this Input Plugin is managing.
-	public var _list:Array<RenderableGameObject> = [];
+	public var _list:Array<GameObject> = [];
 
   // Objects waiting to be inserted to the list on the next call to 'begin'.
-	public var _pendingInsertion:Array<RenderableGameObject> = [];
+	public var _pendingInsertion:Array<GameObject> = [];
 
   // Objects waiting to be removed from the list on the next call to 'begin'.
-	public var _pendingRemoval:Array<RenderableGameObject> = [];
+	public var _pendingRemoval:Array<GameObject> = [];
 
   // A list of all Game Objects that have been enabled for dragging.
-	public var _draggable:Array<RenderableGameObject> = [];
+	public var _draggable:Array<GameObject> = [];
 
   //  A list of all Interactive Objects currently considered as being 'draggable' by any pointer, indexed by pointer ID.
-	public var _drag:Map<String, Array<RenderableGameObject>> = [
+	public var _drag:Map<String, Array<GameObject>> = [
     '0' => [],
     '1' => [],
     '2' => [],
@@ -169,7 +169,7 @@ class InputPlugin extends EventEmitter {
   public var _dragState:Array<Int> = [];
 
   // A list of all Interactive Objects currently considered as being 'over' by any pointer, indexed by pointer ID.
-	public var _over:Map<String, Array<RenderableGameObject>> = [
+	public var _over:Map<String, Array<GameObject>> = [
     '0' => [],
     '1' => [],
     '2' => [],
@@ -448,7 +448,7 @@ class InputPlugin extends EventEmitter {
    * Clears a Game Object so it no longer has an Interactive Object associated with it.
    * The Game Object is then queued for removal from the Input Plugin on the next update.
    */
-	public function clear(go:RenderableGameObject, ?skipQueue:Bool = false) {
+	public function clear(go:GameObject, ?skipQueue:Bool = false) {
 
     // If GameObject.input already cleared from higher class
     if (go.input != null) return;
@@ -486,7 +486,7 @@ class InputPlugin extends EventEmitter {
    * An input disabled Game Object still retains its Interactive Object component and can be re-enabled
    * at any time, by passing it to `InputPlugin.enable`.
    */
-	public function disable(go:RenderableGameObject) {
+	public function disable(go:GameObject) {
     go.input.enabled = false;
   }
 
@@ -507,7 +507,7 @@ class InputPlugin extends EventEmitter {
    *
    * You can also provide an Input Configuration Object as the only argument to this method.
    */
-	public function enable(go:RenderableGameObject, hitArea:Any, hitAreaCallback:Any, ?dropZone:Bool = false) {
+	public function enable(go:GameObject, hitArea:Any, hitAreaCallback:Any, ?dropZone:Bool = false) {
     if (go.input != null) {
       // If it already has an InteractiveObject then just enable it and return
       go.input.enabled = true;
@@ -702,7 +702,7 @@ class InputPlugin extends EventEmitter {
     setDragState(pointer, 1);
 
     // Get draggable objects, sort them, pick the top (or all) and store them somewhere
-		var dragList:Array<RenderableGameObject> = [];
+		var dragList:Array<GameObject> = [];
 
     for (go in _temp) {
       if (go.input.isDraggable && (go.input.dragState == 0)) {
@@ -1214,7 +1214,7 @@ class InputPlugin extends EventEmitter {
   /**
    * Queues a Game Object for insertion into this Input Plugin on the next update.
    */
-	public function queueForInsertion(go:RenderableGameObject) {
+	public function queueForInsertion(go:GameObject) {
 		if (_pendingInsertion.indexOf(go) == -1 && _list.indexOf(go) == -1) {
 			_pendingInsertion.push(go);
 		}
@@ -1225,7 +1225,7 @@ class InputPlugin extends EventEmitter {
   /**
    * Queues a Game Object for removal from this Input Plugin on the next update.
    */
-	public function queueForRemoval(go:RenderableGameObject) {
+	public function queueForRemoval(go:GameObject) {
     _pendingRemoval.push(go);
 
     return this;
@@ -1238,7 +1238,7 @@ class InputPlugin extends EventEmitter {
    *
    * A Game Object will not fire drag events unless it has been specifically enabled for drag.
    */
-	public function setDraggable(children:Array<RenderableGameObject>, ?value:Bool = true) {
+	public function setDraggable(children:Array<GameObject>, ?value:Bool = true) {
 		for (go in children) {
 			go.input.isDraggable = value;
 
@@ -1258,7 +1258,7 @@ class InputPlugin extends EventEmitter {
    * Given an array of Game Objects, sort the array and return it, so that the objects are in depth index order
    * with the lowest at the bottom.
    */
-	public function sortGameObjects(children:Array<RenderableGameObject>) {
+	public function sortGameObjects(children:Array<GameObject>) {
 		if (children.length < 2) {
 			return children;
 		}
@@ -1293,7 +1293,7 @@ class InputPlugin extends EventEmitter {
 	 * those values fall within the area of the shape or not. All of the Phaser geometry objects provide this,
 	 * such as `Phaser.Geom.Rectangle.Contains`.
    */
-	public function setHitArea(gameObjects:Array<RenderableGameObject>) {
+	public function setHitArea(gameObjects:Array<GameObject>) {
     // TODO: code for more complext hit areas
     return setHitAreaFromTexture(gameObjects);
   }
@@ -1302,9 +1302,9 @@ class InputPlugin extends EventEmitter {
    * Sets the hit area for an array of Game Objects to be a `Phaser.Geom.Rectangle` shape, using
    * the Game Objects texture frame to define the position and size of the hit area.
    */
-	public function setHitAreaFromTexture(gameObjects:Array<RenderableGameObject>, ?callback:Rectangle->Float->Float->RenderableGameObject->Bool) {
+	public function setHitAreaFromTexture(gameObjects:Array<GameObject>, ?callback:Rectangle->Float->Float->GameObject->Bool) {
 		if (callback == null)
-			callback = (rect:Rectangle, x:Float, y:Float, go:RenderableGameObject) -> { RectangleUtils.contains(rect, x, y); };
+			callback = (rect:Rectangle, x:Float, y:Float, go:GameObject) -> { RectangleUtils.contains(rect, x, y); };
 
     for (go in gameObjects) {
       var frame = go.frame;

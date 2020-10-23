@@ -1,7 +1,5 @@
 package nebula.cameras;
 
-import nebula.gameobjects.components.RenderableMixin;
-import nebula.gameobjects.components.ScrollFactor;
 import nebula.gameobjects.components.TransformMatrix;
 import nebula.geom.rectangle.Rectangle;
 import nebula.gameobjects.GameObject;
@@ -212,7 +210,7 @@ class BaseCamera extends EventEmitter {
   public var disableCull:Bool = false;
 
   // A temporary array of culled objects.
-  public var culledObjects:Array<RenderableMixin> = [];
+	public var culledObjects:Array<GameObject> = [];
 
   /**
    * The mid-point of the Camera in 'world' coordinates.
@@ -397,7 +395,7 @@ class BaseCamera extends EventEmitter {
    * Takes an array of Game Objects and returns a new array featuring only those objects
    * visible by this camera.
    */
-  public function cull(renderableObjects:Array<RenderableMixin>) {
+	public function cull(renderableObjects:Array<GameObject>) {
     if (disableCull) return renderableObjects;
 
     var cameraMatrix = matrix.matrix;

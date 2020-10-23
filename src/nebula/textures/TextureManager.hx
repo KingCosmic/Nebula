@@ -1,6 +1,5 @@
 package nebula.textures;
 
-import nebula.gameobjects.components.TextureCrop;
 import nebula.textures.Parser;
 import nebula.gameobjects.GameObject;
 
@@ -194,7 +193,7 @@ class TextureManager extends EventEmitter {
    * Sets the given Game Objects `texture` and `frame` properties so that it uses
    * the Texture and Frame specified in the `key` and `frame` arguments to this method.
    */
-	public function setTexture(gameObject:TextureCrop, key:String, frame:String) {
+	public function setTexture(gameObject:GameObject, key:String, frame:String) {
     if (list.exists(key)) {
       gameObject.texture = list.get(key);
       gameObject.frame = gameObject.texture.get(frame);

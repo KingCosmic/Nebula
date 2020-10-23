@@ -1,6 +1,6 @@
 package nebula.input;
 
-import nebula.gameobjects.RenderableGameObject;
+import nebula.gameobjects.GameObject;
 import nebula.input.keyboard.KeyboardManager;
 import kha.math.Vector2;
 import nebula.cameras.Camera;
@@ -371,7 +371,7 @@ class InputManager {
    * Checks if the Game Object has an input component that is enabled, that it will render,
    * and finally, if it has a parent, that the parent parent, or any ancestor, is visible or not.
    */
-  public function isInputCandidate(gameObject:RenderableGameObject, camera:Camera) {
+	public function isInputCandidate(gameObject:GameObject, camera:Camera) {
     var input = gameObject.input;
 
 		if (input == null || !input.enabled || (!input.alwaysEnabled && !gameObject.willRender(camera))) {
@@ -398,7 +398,7 @@ class InputManager {
    *
    * This method is called automatically by InputPlugin.hitTestPointer and doesn't usually need to be invoked directly.
    */
-	public function hitTest(pointer:Pointer, gameObjects:Array<RenderableGameObject>, camera:Camera, ?output:Array<RenderableGameObject>) {
+	public function hitTest(pointer:Pointer, gameObjects:Array<GameObject>, camera:Camera, ?output:Array<GameObject>) {
     if (output == null) output = _tempHitTest;
 
     var csx = camera.scrollX;
@@ -444,7 +444,7 @@ class InputManager {
    *
    * If the coordinates are within the hit area they are set into the Game Objects Input `localX` and `localY` properties.
    */
-	public function isPointWithinHitArea(go:RenderableGameObject, x:Float, y:Float) {
+	public function isPointWithinHitArea(go:GameObject, x:Float, y:Float) {
     // Normalize the origin
     x += go.displayOriginX;
     y += go.displayOriginY;

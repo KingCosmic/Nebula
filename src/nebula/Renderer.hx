@@ -1,7 +1,7 @@
 package nebula;
 
 import nebula.gameobjects.components.TransformMatrix;
-import nebula.gameobjects.RenderableGameObject;
+import nebula.gameobjects.GameObject;
 import nebula.gameobjects.DisplayList;
 import nebula.textures.Frame;
 import nebula.cameras.Camera;
@@ -203,7 +203,7 @@ class Renderer {
   }
 
   // Takes a Image Game Object, or any object that extends it, and draws it to the current context.
-  public function batchImage(child:RenderableGameObject, frame:Frame, camera:Camera) {
+	public function batchImage(child:GameObject, frame:Frame, camera:Camera) {
     var alpha = camera.alpha * child.alpha;
 
     // Nothing to see, so abort early

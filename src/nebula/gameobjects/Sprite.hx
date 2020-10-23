@@ -1,7 +1,7 @@
 package nebula.gameobjects;
 
 import nebula.cameras.Camera;
-import nebula.gameobjects.RenderableGameObject;
+import nebula.gameobjects.GameObject;
 import nebula.animations.AnimationState;
 import nebula.animations.AnimationFrame;
 import nebula.scene.Scene;
@@ -17,7 +17,7 @@ import nebula.scene.Scene;
  * As such, Sprites take a fraction longer to process and have a larger API footprint due to the Animation
  * Component. If you do not require animation then you can safely use Images to replace Sprites in all cases.
  */
-class Sprite extends RenderableGameObject {
+class Sprite extends GameObject {
   /**
    * The Animation State component of this Sprite.
    *
@@ -38,7 +38,6 @@ class Sprite extends RenderableGameObject {
     setPosition(x, y);
     setSizeToFrame();
     setOriginFromFrame();
-    initPipeline();
 
     on('ADDED_TO_SCENE', addedToScene);
     on('REMOVED_FROM_SCENE', removedFromScene);

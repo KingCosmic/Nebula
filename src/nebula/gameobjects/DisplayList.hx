@@ -1,6 +1,5 @@
 package nebula.gameobjects;
 
-import nebula.gameobjects.components.Depth;
 import nebula.scene.Systems;
 import nebula.scene.Scene;
 import nebula.structs.List;
@@ -83,7 +82,7 @@ class DisplayList extends List<GameObject> {
   }
 
   // Compare the depth of two Game Objects.
-	public function sortByDepth(childA:Depth, childB:Depth) {
+	public function sortByDepth(childA:GameObject, childB:GameObject) {
     return childA.depth - childB.depth;
   }
 

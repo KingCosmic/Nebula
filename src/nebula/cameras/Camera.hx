@@ -1,6 +1,6 @@
 package nebula.cameras;
 
-import nebula.gameobjects.components.TransformMixin;
+import nebula.gameobjects.GameObject;
 import nebula.geom.rectangle.Rectangle;
 import nebula.cameras.BaseCamera;
 import nebula.scene.Scene;
@@ -78,7 +78,7 @@ class Camera extends BaseCamera {
   public var deadzone:Rectangle;
 
   // Internal follow target reference.
-  public var _follow:TransformMixin;
+	public var _follow:GameObject;
 
   /**
    * Is this Camera rendering directly to the canvas or to a texture?
@@ -184,7 +184,7 @@ class Camera extends BaseCamera {
    * force full pixel rounding rendering. Note that this can still be broken if you have specified a non-integer zoom
    * value on the camera. So be sure to keep the camera zoom to integers.
    */
-	public function startFollow(target:TransformMixin, ?_roundPixels:Bool = false, ?lerpX:Float = 1, ?lerpY:Float = 1, ?offsetX:Float = 0, ?offsetY:Float = 0) {
+	public function startFollow(target:GameObject, ?_roundPixels:Bool = false, ?lerpX:Float = 1, ?lerpY:Float = 1, ?offsetX:Float = 0, ?offsetY:Float = 0) {
     if (lerpY == null) lerpY = lerpX;
     if (offsetY == null) offsetY = offsetX;
 

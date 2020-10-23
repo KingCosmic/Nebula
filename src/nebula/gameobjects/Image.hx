@@ -1,6 +1,6 @@
 package nebula.gameobjects;
 
-import nebula.gameobjects.RenderableGameObject;
+import nebula.gameobjects.GameObject;
 import nebula.cameras.Camera;
 import nebula.scene.Scene;
 
@@ -12,7 +12,7 @@ import nebula.scene.Scene;
  * events and physics bodies, or be tweened, tinted or scrolled. The main difference between an
  * Image and a Sprite is that you cannot animate an Image as they do not have the Animation component.
  */
-class Image extends RenderableGameObject {
+class Image extends GameObject {
 	public function new(scene:Scene, x:Float, y:Float, texture:String, ?frame:String = '') {
 		super(scene, 'Image');
 
@@ -21,7 +21,6 @@ class Image extends RenderableGameObject {
 		this.setPosition(x, y);
 		this.setSizeToFrame();
 		this.setOriginFromFrame();
-		this.initPipeline();
 	}
 
 	/**
