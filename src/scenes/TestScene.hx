@@ -2,8 +2,11 @@ package scenes;
 
 import nebula.gameobjects.Image;
 import nebula.scene.Scene;
+import nebula.input.gamepad.GamepadPlugin;
 
 class TestScene extends Scene {
+	public var gamepad:GamepadPlugin;
+
   public function new() {
     super({
       key: 'test',
@@ -17,9 +20,13 @@ class TestScene extends Scene {
   }
 
   override public function create() {
+    gamepad = new GamepadPlugin(this);
+
     var helm = new Image(this, 400, 300, 'helmet');
 
-    // cameras.main.startFollow(helm);
+    helm.setScale(4);
+
+    cameras.main.startFollow(helm);
 
     sys.displayList.add([helm]);
   }

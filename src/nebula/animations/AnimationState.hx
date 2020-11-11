@@ -398,9 +398,8 @@ class AnimationState {
       isPlaying = _wasPlaying;
     }
 
-    if (fromFrame != null) {
+    if (fromFrame != null)
       setCurrentFrame(fromFrame);
-    }
 
     return parent;
   }
