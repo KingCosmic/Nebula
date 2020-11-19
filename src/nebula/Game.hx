@@ -7,7 +7,7 @@ import kha.Color;
 
 // core code
 import nebula.animations.AnimationManager;
-import nebula.textures.TextureManager;
+import nebula.assets.AssetManager;
 import nebula.input.InputManager;
 import nebula.scale.ScaleManager;
 import nebula.scene.SceneManager;
@@ -45,9 +45,9 @@ class Game {
   // An instance of the Animation Manager.
   public var anims:AnimationManager;
 
-  // An instance of the Texture Manager.
-	// The Texture Manager is a global system responsible for managing all textures being used by your game.
-  public var textures: TextureManager;
+  // An instance of the Asset Manager.
+  // The Asset Manager is a global system responsible for managing all textures being used by your game.
+  public var assets:AssetManager;
 
   // An instance of the Cache Manager.
   // The Cache Manager is a global system responsible for caching, accessing and releasing external game assets.
@@ -97,7 +97,7 @@ class Game {
 
     anims = new AnimationManager(this);
 
-    textures = new TextureManager(this);
+    assets = new AssetManager(this);
 
 		input = new InputManager(this, this.config);
     

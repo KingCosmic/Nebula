@@ -1,0 +1,285 @@
+package nebula.assets;
+
+import nebula.gameobjects.GameObject;
+import nebula.assets.Texture;
+import nebula.assets.Parser;
+import kha.Font;
+
+typedef FrameConfig = {
+	frameWidth:Int,
+	frameHeight:Int,
+	startFrame:Int,
+	endFrame:Int,
+	margin:Int,
+	spacing:Int
+}
+
+/**
+ * Assets are managed by the global AssetManager. This is a singleton class that is
+ * responsible for creating and delivering Assets to GameObjects.
+ *
+ * Access it via `scene.assets`.
+ */
+class AssetManager extends EventEmitter {
+	// The Game that this AssetManager belongs to.
+	public var game:Game;
+
+	// The name of this manager.
+	public var name:String = 'AssetManager';
+
+	/**
+	 * A Map that has all of textures that the AssetManager creates.
+	 * Textures are assigned to keys so we can access to any texture that this Map
+   * has directly by key value without iteration.
+	 */
+  public var textures:Map<String, Texture> = new Map();
+
+  /**
+   * A Map that has all of the fonts that the AssetManager creates.
+   * Fonts are assigned to keys so we can access any Font that this Map
+   * has directly by key without iteration.
+   */
+  public var fonts:Map<String, Font> = new Map();
+
+  public function new(_game:Game) {
+    super();
+
+    game = _game;
+
+    game.events.once('BOOT', boot);
+  }
+
+	/**
+	 * The Boot Handler called by Phaser.Game when it first starts up.
+	 */
+	public function boot() {
+		game.events.once('DESTROY', destroy);
+  }
+  
+	/**
+	 * Checks the given texture key and throws a console.warn if the key is already in use, then returns false.
+	 * If you wish to avoid the console.warn then use `AssetManager.textureExists` instead.
+	 */
+	public function checkTextureKey(key:String) {
+		if (textureExists(key)) {
+			trace('Texture key already in use: ' + key);
+			return false;
+		}
+
+		return true;
+  }
+
+	/**
+	 * Checks the given font key and throws a console.warn if the key is already in use, then returns false.
+   * If you wish to avoid the console.warn then use `AssetManager.fontExists` instead.
+   */
+	public function checkFontKey(key:String) {
+		if (fontExists(key)) {
+			trace('Font key already in use: ' + key);
+			return false;
+		}
+
+		return true;
+	}
+  
+	/**
+	 * Removes a Texture from the Texture Manager and destroys it. This will immediately
+	 * clear all references to it from the Texture Manager, and if it has one, destroy its
+	 * WebGLTexture. This will emit a `removetexture` event.
+	 *
+	 * Note: If you have any Game Objects still using this texture they will start throwing
+	 * errors the next time they try to render. Make sure that removing the texture is the final
+	 * step when clearing down to avoid this.
+	 */
+	public function removeTexture(key:String) {
+    var texture:Texture = null;
+
+		if (textureExists(key)) {
+			texture = getTexture(key);
+		} else {
+			trace('No texture found matching key: ' + key);
+			return this;
+		}
+
+		// By this point key should be a Texture, if not, the following fails anyway.
+		if (textures.exists(texture.key)) {
+			texture.destroy();
+
+			emit('REMOVE', texture.key);
+		}
+
+		return this;
+  }
+
+	/**
+	 * Removes a Font from the Font Manager and destroys it. This will immediately
+	 * clear all references to it from the Texture Manager. This will emit a `removeFont` event.
+	 *
+	 * Note: If you have any Game Objects still using this font they will start throwing
+	 * errors the next time they try to render. Make sure that removing the font is the final
+	 * step when clearing down to avoid this.
+	 */
+  public function removeFont(key:String) {
+    if (!fontExists(key)) {
+      trace('No Font found matching key: ' + key);
+      return this;
+    }
+
+    if (fonts.remove(key)) {
+      emit('REMOVE', key);
+    }
+
+    return this;
+  }
+  
+	/**
+	 * Removes a key from the Texture Manager but does not destroy the Texture that was using the key.
+	 */
+	public function removeTextureKey(key:String) {
+		textures.remove(key);
+
+		return this;
+  }
+  
+	/**
+	 * Adds a new Texture to the Asset Manager created from the given Image element.
+	 */
+	public function addImage(key:String, source:kha.Image) {
+		if (!checkTextureKey(key)) return null;
+
+		var texture = createTexture(key, source);
+
+		Parser.image(texture, 0);
+
+		emit('ADD', key, source);
+
+		return texture;
+  }
+
+	/**
+	 * Adds a new Font to the Asset Manager.
+   */
+  public function addFont(key:String, source:Font) {
+    if (!checkFontKey(key)) return null;
+
+    fonts.set(key, source);
+
+    return source;
+  }
+  
+	/**
+	 * Adds a Sprite Sheet to this Texture Manager.
+	 *
+	 * In Phaser terminology a Sprite Sheet is a texture containing different frames, but each frame is the exact
+	 * same size and cannot be trimmed or rotated.
+	 */
+	public function addSpriteSheet(key:String, source:kha.Image, config:FrameConfig) {
+		if (!checkTextureKey(key)) return null;
+
+		var texture = createTexture(key, source);
+
+		var width = texture.source[0].width;
+		var height = texture.source[0].height;
+
+		Parser.spriteSheet(texture, 0, 0, 0, width, height, config);
+
+		emit('ADD', key, texture);
+
+		return texture;
+	}
+
+	/**
+	 * Creates a new Texture using the given source and dimensions.
+	 */
+	public function createTexture(key:String, source:kha.Image, ?width:Int = 0, ?height:Int = 0) {
+		if (!checkTextureKey(key))
+			return null;
+
+		var texture = new Texture(this, key, [source], width, height);
+
+		textures.set(key, texture);
+
+		return texture;
+	}
+
+	/**
+	 * Checks the given key to see if a Texture using it exists within this Asset Manager.
+	 */
+	public function textureExists(key:String) {
+		return textures.exists(key);
+  }
+  
+	/**
+	 * Checks the given key to see if a Font using it exists within this Asset Manager.
+	 */
+	public function fontExists(key:String) {
+		return fonts.exists(key);
+  }
+  
+	/**
+	 * Returns a Font from the AssetManager that matches the given key.
+	 *
+	 * If the key is `undefined` it will return the `__DEFAULT` Font.
+	 *
+	 * If the key is an instance of a Font, it will return the key directly.
+	 */
+	public function getFont(?key:String = '__DEFAULT') {
+		if (fonts.exists(key))
+			return fonts.get(key);
+
+		return fonts.get('__DEFAULT');
+	}
+
+	/**
+	 * Returns a Texture from the Texture Manager that matches the given key.
+	 *
+	 * If the key is `undefined` it will return the `__DEFAULT` Texture.
+	 *
+	 * If the key is an instance of a Texture, it will return the key directly.
+	 *
+	 * Finally. if the key is given, but not found and not a Texture instance, it will return the `__MISSING` Texture.
+	 */
+	public function getTexture(?key:String = '__DEFAULT') {
+		if (textures.exists(key))
+			return textures.get(key);
+
+		return textures.get('__MISSING');
+	}
+
+	/**
+	 * Takes a Texture key and Frame name and returns a reference to that Frame, if found.
+	 */
+	public function getFrame(key:String, frame:Any) {
+		return textures.exists(key) ? textures.get(key).get(frame) : null;
+	}
+
+	/**
+	 * Sets the given Game Objects `texture` and `frame` properties so that it uses
+	 * the Texture and Frame specified in the `key` and `frame` arguments to this method.
+	 */
+	public function setTexture(go:GameObject, key:String, frame:String) {
+		if (textures.exists(key)) {
+			go.texture = textures.get(key);
+			go.frame = go.texture.get(frame);
+		}
+
+		return go;
+  }
+
+	/**
+	 * Destroys the Texture Manager and all Textures stored within it.
+	 */
+	public function destroy() {
+		for (texture in textures.iterator()) {
+			texture.destroy();
+    }
+    
+    // TODO: Look into unloading these Textures
+    // and Fonts.
+
+    textures.clear();
+    fonts.clear();
+
+		game = null;
+	}
+}

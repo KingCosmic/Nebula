@@ -1,7 +1,8 @@
 package nebula.loader;
 
+import nebula.loader.filetypes.FontFile;
+import nebula.assets.AssetManager;
 import nebula.loader.filetypes.SpriteSheetFile;
-import nebula.textures.TextureManager;
 import nebula.loader.filetypes.ImageFile;
 import nebula.scene.SceneManager;
 import nebula.scene.Systems;
@@ -45,8 +46,8 @@ class LoaderPlugin extends EventEmitter {
   // A reference to the global Cache Manager.
   public var cacheManager:Any;
 
-  // A reference to the global Texture Manager.
-  public var textureManager:TextureManager;
+  // A reference to the global AssetManager.
+  public var assetManager:AssetManager;
 
   // A reference to the global Scene Manager.
   public var sceneManager:SceneManager;
@@ -58,26 +59,6 @@ class LoaderPlugin extends EventEmitter {
    * from that point on. It does _not_ change any file already in the load queue.
    */
   public var prefix:String = '';
-
-  /**
-   * The value of `path`, if set, is placed before any _relative_ file path given. For example:
-   *
-   * ```haxe
-   * this.load.path = "images/sprites/";
-   * this.load.image("ball", "ball.png");
-   * this.load.image("tree", "level1/oaktree.png");
-   * this.load.image("boom", "http://server.com/explode.png");
-   * ```
-   *
-   * Would load the `ball` file from `images/sprites/ball.png` and the tree from
-   * `images/sprites/level1/oaktree.png` but the file `boom` would load from the URL
-   * given as it's an absolute URL.
-   *
-   * Please note that the path is added before the filename but *after* the baseURL (if set.)
-   *
-   * If you set this property directly then it _must_ end with a "/". Alternatively, call `setPath()` and it'll do it for you.
-   */
-  public var path:String = '';
 
   /**
    * The total number of files to load. It may not always be accurate because you may add to the Loader during the process
@@ -100,7 +81,7 @@ class LoaderPlugin extends EventEmitter {
    *
    * By the end of the load process this Set will be empty.
    */
-  public var list:Set<File> = new Set<File>();
+  public var list:Set<File<Any>> = new Set<File<Any>>();
 
   /**
    * Files are stored in this Set while they're in the process of being loaded.
@@ -109,7 +90,7 @@ class LoaderPlugin extends EventEmitter {
    *
    * By the end of the load process this Set will be empty.
    */
-	public var inflight:Set<File> = new Set<File>();
+	public var inflight:Set<File<Any>> = new Set<File<Any>>();
 
   /**
    * Files are stored in this Set while they're being processed.
@@ -119,13 +100,13 @@ class LoaderPlugin extends EventEmitter {
    *
    * At the end of the load process this Set will be empty.
    */
-	public var queue:Set<File> = new Set<File>();
+	public var queue:Set<File<Any>> = new Set<File<Any>>();
 
   /**
    * A temporary Set in which files are stored after processing,
    * awaiting destruction at the end of the load process.
    */
-	public var _deleteQueue:Set<File> = new Set<File>();
+	public var _deleteQueue:Set<File<Any>> = new Set<File<Any>>();
 
   /**
    * The total number of files that failed to load during the most recent load.
@@ -142,16 +123,13 @@ class LoaderPlugin extends EventEmitter {
   // The current state of the Loader.
   public var state:Int = 0;
 
-  // The current index being used by multi-file loaders to avoid key clashes.
-  public var multiKeyIndex:Int = 0;
-
   public function new(_scene:Scene) {
     super();
 
     scene = _scene;
     systems = scene.sys;
     // cacheManager = scene.sys.cache;
-    textureManager = scene.sys.textures;
+    assetManager = scene.sys.assets;
     sceneManager = scene.sys.scenePlugin;
 
     systems.events.once('BOOT', boot);
@@ -164,9 +142,8 @@ class LoaderPlugin extends EventEmitter {
   * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
   *
   * ```javascript
-  * function preload ()
-  * {
-  *     this.load.image('logo', 'images/phaserLogo.png');
+  * function preload () {
+  *   this.load.image('logo', 'images/phaserLogo.png');
   * }
   * ```
   *
@@ -187,23 +164,10 @@ class LoaderPlugin extends EventEmitter {
   * Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
   * then remove it from the Texture Manager first, before loading a new one.
   *
-  * Instead of passing arguments you can pass a configuration object, such as:
-  *
-  * ```javascript
-  * this.load.image({
-  *     key: 'logo',
-  *     url: 'images/AtariLogo.png'
-  * });
-  * ```
-  *
-  * See the documentation for `Phaser.Types.Loader.FileTypes.ImageFileConfig` for more details.
-  *
   * Once the file has finished loading you can use it as a texture for a Game Object by referencing its key:
   *
   * ```javascript
   * this.load.image('logo', 'images/AtariLogo.png');
-  * // and later in your game ...
-  * this.add.image(x, y, 'logo');
   * ```
   *
   * If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
@@ -223,24 +187,11 @@ class LoaderPlugin extends EventEmitter {
   * this.load.image('logo', [ 'images/AtariLogo.png', 'images/AtariLogo-n.png' ]);
   * ```
   *
-  * Or, if you are using a config object use the `normalMap` property:
-  *
-  * ```javascript
-  * this.load.image({
-  *     key: 'logo',
-  *     url: 'images/AtariLogo.png',
-  *     normalMap: 'images/AtariLogo-n.png'
-  * });
-  * ```
-  *
   * The normal map file is subject to the same conditions as the image file with regard to the path, baseURL, CORs and XHR Settings.
   * Normal maps are a WebGL only feature.
-  *
-  * Note: The ability to load this type of file will only be available if the Image File type has been built into Phaser.
-  * It is available in the default build but can be excluded from custom builds.
   */
   public function image(key:String, url:String) {
-    addFile([new ImageFile(this, key, url)]);
+    addFile([cast new ImageFile(this, key, url)]);
 
     return this;
   }
@@ -257,9 +208,8 @@ class LoaderPlugin extends EventEmitter {
 		* You can call this method from within your Scene's `preload`, along with any other files you wish to load:
 		*
 		* ```javascript
-		* function preload ()
-		* {
-		*     this.load.spritesheet('bot', 'images/robot.png', { frameWidth: 32, frameHeight: 38 });
+		* function preload () {
+		*   this.load.spritesheet('bot', 'images/robot.png', { frameWidth: 32, frameHeight: 38 });
 		* }
 		* ```
 		*
@@ -343,10 +293,27 @@ class LoaderPlugin extends EventEmitter {
 		* It is available in the default build but can be excluded from custom builds.
     */
   public function spritesheet(key:String, url:String, frameConfig:{}) {
-    addFile([new SpriteSheetFile(this, key, url, frameConfig)]);
+    addFile([cast new SpriteSheetFile(this, key, url, frameConfig)]);
 
     return this;
   }
+
+	/**
+	 * Adds a Font to the current load queue.
+	 *
+	 * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+	 *
+	 * ```javascript
+	 * function preload () {
+	 *   this.load.font('fontname', 'fontname');
+	 * }
+	 * ```
+	 */
+	public function font(key:String, url:String) {
+		addFile([cast new FontFile(this, key, url)]);
+
+		return this;
+	}
 
   /**
    * This method is called automatically, only once, when the Scene is first created.
@@ -363,35 +330,6 @@ class LoaderPlugin extends EventEmitter {
    */
   public function pluginStart() {
     systems.events.once('SHUTDOWN', shutdown);
-  }
-
-  /**
-   * The value of `path`, if set, is placed before any _relative_ file path given. For example:
-   *
-   * ```haxe
-   * this.load.setPath("images/sprites/");
-   * this.load.image("ball", "ball.png");
-   * this.load.image("tree", "level1/oaktree.png");
-   * this.load.image("boom", "http://server.com/explode.png");
-   * ```
-   *
-   * Would load the `ball` file from `images/sprites/ball.png` and the tree from
-   * `images/sprites/level1/oaktree.png` but the file `boom` would load from the URL
-   * given as it's an absolute URL.
-   *
-   * Please note that the path is added before the filename but *after* the baseURL (if set.)
-   *
-   * Once a path is set it will then affect every file added to the Loader from that point on. It does _not_ change any
-   * file _already_ in the load queue. To reset it, call this method with no arguments.
-   */
-  public function setPath(?_path:String = '') {
-    if (_path != '' && _path.substr(-1) == '/') {
-      _path = _path + '/';
-    }
-
-    path = _path;
-
-    return this;
   }
 
   /**
@@ -419,7 +357,7 @@ class LoaderPlugin extends EventEmitter {
    * You should not normally call this method directly, but rather use one of the Loader methods like `image` or `atlas`,
    * however you can call this as long as the file given to it is well formed.
    */
-  public function addFile(files:Array<File>) {
+  public function addFile(files:Array<File<Any>>) {
     for (file in files) {
 			// Does the file already exist in the cache or texture manager?
       // Or will it conflict with a file already in the queue or inflight?
@@ -440,7 +378,7 @@ class LoaderPlugin extends EventEmitter {
    * Checks the key and type of the given file to see if it will conflict with anything already
    * in a Cache, the Texture Manager, or the list or inflight queues.
    */
-  public function keyExists(file:File) {
+  public function keyExists(file:File<Any>) {
     var keyConflict = file.hasCacheConflict();
 
     if (!keyConflict) {
@@ -506,28 +444,37 @@ class LoaderPlugin extends EventEmitter {
    * If the Loader is already running this method will simply return.
    */
   public function start() {
+    // If we're not ready just return.
     if (!isReady()) return;
 
+    // Reset our progress.
     progress = 0;
 
+    // Aswell as internal stats.
     totalFailed = 0;
     totalComplete = 0;
     totalToLoad = list.size;
 
     emit('START', this);
 
+    // If there's no files to be loaded, just complete the load.
     if (list.size == 0) {
       loadComplete();
     } else {
+      // Otherwise we update the state.
       state = LOADER_CONST.LOADING;
       
+      // Reset the current inflight and queue list.
       inflight.clear();
       queue.clear();
 
+      // Reset the progess.
       updateProgress();
 
+      // Check the queue.
       checkLoadQueue();
 
+      // Setup the update event.
       systems.events.on('UPDATE', update);
     }
   }
@@ -580,7 +527,7 @@ class LoaderPlugin extends EventEmitter {
    * This method will remove the given file from the inflight Set and update the load progress.
    * If the file was successful its `onProcess` method is called, otherwise it is added to the delete queue.
    */
-  public function nextFile(file:File, success:Bool) {
+  public function nextFile(file:File<Any>, success:Bool) {
 		//  Has the game been destroyed during load? If so, bail out now.
     if (inflight == null) return;
 
@@ -614,13 +561,13 @@ class LoaderPlugin extends EventEmitter {
    *
    * It this then removed from the queue. If there are no more files to load `loadComplete` is called.
    */
-  public function fileProcessComplete(file:File) {
+  public function fileProcessComplete(file:File<Any>) {
 		//  Has the game been destroyed during load? If so, bail out now.
 		if (scene == null || systems == null || systems.game == null || systems.game.pendingDestroy) {
 			return;
     }
 
-		//  This file has failed, so move it to the failed Set
+		// This file has failed, so move it to the failed Set
 		if (file.state == LOADER_CONST.FILE_COMPLETE) {
       // If we got here, then the file processed, so let it add itself to its cache
       file.addToCache();
@@ -682,7 +629,6 @@ class LoaderPlugin extends EventEmitter {
     inflight.clear();
     queue.clear();
 
-    setPath();
     setPrefix();
 
     state = LOADER_CONST.IDLE;
@@ -718,7 +664,7 @@ class LoaderPlugin extends EventEmitter {
 
     scene = null;
     systems = null;
-    textureManager = null;
+    assetManager = null;
     cacheManager = null;
     sceneManager = null;
   }

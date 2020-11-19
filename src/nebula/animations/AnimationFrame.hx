@@ -1,6 +1,6 @@
 package nebula.animations;
 
-import nebula.textures.Frame;
+import nebula.assets.Frame;
 
 /**
  * A single frame in an Animation sequence.

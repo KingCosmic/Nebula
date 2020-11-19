@@ -1,15 +1,15 @@
 package nebula;
 
-import kha.Display;
 import nebula.gameobjects.components.TransformMatrix;
 import nebula.gameobjects.GameObject;
 import nebula.gameobjects.DisplayList;
-import nebula.textures.Frame;
 import nebula.cameras.Camera;
+import nebula.assets.Frame;
 import nebula.structs.Size;
 import nebula.scene.Scene;
 import kha.math.Vector2;
 import kha.Framebuffer;
+import kha.Display;
 import kha.System;
 import kha.Scaler;
 import kha.Color;
@@ -150,7 +150,7 @@ class Renderer {
   public function preRender(_buffer:Framebuffer) {
     framebuffer = _buffer;
 
-    final graphics = backbuffer.g2;
+    final graphics = framebuffer.g2;
 
 		// Start drawing, and clear the framebuffer to `petrol`
     graphics.begin(config.clearBeforeRender, Color.fromBytes(0, 0, 0));
@@ -200,11 +200,11 @@ class Renderer {
 
 	public function postRender() {
     // Finish the drawing operations
-    backbuffer.g2.end();
+    // backbuffer.g2.end();
 
-    framebuffer.g2.begin(true);
+    // framebuffer.g2.begin(true);
 
-		Scaler.scale(backbuffer, framebuffer, System.screenRotation);
+		// Scaler.scale(backbuffer, framebuffer, System.screenRotation);
 
 		framebuffer.g2.end();
   }
@@ -216,15 +216,11 @@ class Renderer {
     // Nothing to see, so abort early
     if (alpha == 0) return;
 
-    var x = Math.round(child.x - (child.originX * child.displayWidth));
-    var y = Math.round(child.y - (child.originY * child.displayHeight));
-
-    var realX:Float = cast Scaler.transformX(x, y, backbuffer, framebuffer, System.screenRotation);
-    var realY:Float = cast Scaler.transformY(x, y, backbuffer, framebuffer, System.screenRotation);
+    var x = child.x - (child.originX * child.displayWidth);
+    var y = child.y - (child.originY * child.displayHeight);
 
     // grab our backbuffer so we can draw to it.
-    final g = backbuffer.g2;
-
+    final g = framebuffer.g2;
 
     /*
     if (child.isCropped) {
@@ -259,7 +255,7 @@ class Renderer {
 
     if (child.flipX) {
       // TODO: add custom pivot
-      realX += (-frame.realWidth + (child.displayOriginX * 2));
+      x += (-frame.realWidth + (child.displayOriginX * 2));
 
       flipX = -1;
     }
@@ -267,7 +263,7 @@ class Renderer {
     // Auto-invert the flipY if this is coming from a GLTexture
     if (child.flipY) {
       // TODO: add custom pivot
-      realY += (-frame.realHeight + (child.displayOriginY * 2));
+      y += (-frame.realHeight + (child.displayOriginY * 2));
 
       flipY = -1;
     }
@@ -275,10 +271,10 @@ class Renderer {
     _tempMatrix2.applyITRS(child.x, child.y, child.rotation, child.scale * flipX, child.scaleY * flipY);
 
 		// grab our childs center.
-		var cameraPos = new Vector2(child.scrollFactorX * camera.scrollX, child.scrollFactorY * camera.scrollY);
+    var cameraPos = new Vector2(child.scrollFactorX * camera.scrollX, child.scrollFactorY * camera.scrollY);
 
 		// rotate our graphics.
-		g.rotate(child.rotation, realX - cameraPos.x, realY - cameraPos.y);
+		g.rotate(child.rotation, x - cameraPos.x, y - cameraPos.y);
 
     // set our alpha.
     g.pushOpacity(alpha);
@@ -289,13 +285,13 @@ class Renderer {
       frame.cutY,
       frame.cutWidth,
       frame.cutHeight,
-      realX - cameraPos.x,
-      realY - cameraPos.y,
+      x - cameraPos.x,
+      y - cameraPos.y,
       frame.cutWidth * child.scaleX,
       frame.cutHeight * child.scaleY
     );
 
-		g.rotate(-child.rotation, realX - cameraPos.x, realY - cameraPos.y);
+		g.rotate(-child.rotation, x - cameraPos.x, y - cameraPos.y);
 		g.popOpacity();
   }
 

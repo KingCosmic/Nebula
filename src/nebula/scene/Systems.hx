@@ -1,11 +1,11 @@
 package nebula.scene;
 
 import nebula.animations.AnimationManager;
-import nebula.textures.TextureManager;
 import nebula.scene.Scene.SceneConfig;
 import nebula.gameobjects.DisplayList;
 import nebula.gameobjects.UpdateList;
 import nebula.cameras.CameraManager;
+import nebula.assets.AssetManager;
 import nebula.loader.LoaderPlugin;
 import nebula.scale.ScaleManager;
 import nebula.input.InputPlugin;
@@ -45,12 +45,12 @@ class Systems {
    */
   public var scale:ScaleManager;
 
-	/**
-   * A reference to the global Texture Manager.
-   *
-   * In the default set-up you can access this from within a Scene via the `this.textures` property.
+  /**
+   * A reference to the global Asset Manager.
+   * 
+   * In the default set-up you can access this from within a Scene via the `this.assets` property.
    */
-  public var textures:TextureManager;
+  public var assets:AssetManager;
 
   // TODO: get the rest of the global plugins.
 
@@ -141,8 +141,8 @@ class Systems {
     cameras = new CameraManager(scene);
     scene.cameras = cameras;
 
-    textures = game.textures;
-    scene.textures = textures;
+    assets = game.assets;
+    scene.assets = assets;
 
     load = new LoaderPlugin(scene);
     scene.load = load;
@@ -253,10 +253,6 @@ class Systems {
     
     events.emit('WAKE', this, data);
 
-    if (settings.isTransition) {
-      events.emit('TRANSITION_WAKE', settings.transitionFrom, settings.transitionDuration);
-    }
-
     return this;
   }
 
@@ -283,21 +279,6 @@ class Systems {
   // Is this Scene paused?
   public function isPaused() {
     return (settings.status ==  6);
-  }
-
-  // Is this Scene currently transitioning out to, or in from another Scene?
-  public function isTransitioning() {
-    return (settings.isTransition || scenePlugin._target != null);
-  }
-
-  // Is this Scene currently transitioning out from itself to another Scene?
-  public function isTransitionOut() {
-		return (scenePlugin._target != null && scenePlugin._duration > 0);
-  }
-
-  // Is this Scene currently transitioning in from another Scene?
-  public function isTransitionIn() {
-    return settings.isTransition;
   }
 
   // Is this Scene visible and rendering?
@@ -386,7 +367,7 @@ class Systems {
     // cache = null;
     // registry = null;
     // sound = null;
-    textures = null;
+    assets = null;
     cameras = null;
     displayList = null;
     events = null;

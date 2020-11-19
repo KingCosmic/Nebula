@@ -1,16 +1,23 @@
 package nebula.loader;
 
-import kha.Assets;
-import nebula.textures.TextureManager;
-import nebula.loader.const.LOADER_CONST;
+import nebula.assets.AssetManager;
 import nebula.loader.LoaderPlugin;
 
-class File {
+import nebula.loader.const.LOADER_CONST;
+
+typedef FileConfig = {
+	type:String,
+	key:String,
+	url:String,
+	config:{}
+};
+
+class File<FT> {
   // A reference to the loader that is going to load this file.
   public var loader:LoaderPlugin;
 
-	// A reference to the Cache, or Texture Manager, that is going to store this file if it loads.
-  public var cache:TextureManager;
+	// A reference to the Asset Manager, that is going to store this file if it loads.
+  public var cache:AssetManager;
 
   // The file type string (image, json, etc) for sorting within the Loader.
   public var type:String = '';
@@ -28,19 +35,13 @@ class File {
   public var state:Int = LOADER_CONST.FILE_PENDING;
 
   // The processed file data, stored here after the file has loaded.
-  public var data:kha.Image;
+  public var data:FT;
 
   public var config:Dynamic;
 
-	public function new(_loader:LoaderPlugin, fileConfig:{
-		type:String,
-		cache:TextureManager,
-		key:String,
-    url:String,
-    config:{}
-	}) {
+	public function new(_loader:LoaderPlugin, fileConfig:FileConfig) {
     loader = _loader;
-    cache = fileConfig.cache;
+		cache = loader.assetManager;
 
     key = fileConfig.key;
     type = fileConfig.type;
@@ -66,26 +67,29 @@ class File {
   public function load() {
     if (state == LOADER_CONST.FILE_POPULATED) {
 			// Can happen for example in a JSONFile if they've provided a JSON object instead of a URL
-      loader.nextFile(this, true);
+      loader.nextFile(cast this, true);
     } else {
       state = LOADER_CONST.FILE_LOADING;
 
-      Assets.loadImage(src, onLoad, onError);
+      loadFile();
     }
   }
 
+  // here for other files to override.
+  public function loadFile() {}
+
   // Called when the file finishes loading, is sent a DOM ProgressEvent.
-  public function onLoad(_data:kha.Image) {
+  public function onLoad(_data:FT) {
     data = _data;
 
-    loader.nextFile(this, true);
+    loader.nextFile(cast this, true);
   }
 
   // Called if the file errors while loading, is sent a DOM ProgressEvent.
   public function onError(error:kha.AssetError) {
     trace(error.error);
     trace('errored');
-    loader.nextFile(this, false);
+    loader.nextFile(cast this, false);
   }
 
   // Called during the file load progress.
@@ -111,7 +115,7 @@ class File {
   public function onProcessComplete() {
     state = LOADER_CONST.FILE_COMPLETE;
 
-    loader.fileProcessComplete(this);
+    loader.fileProcessComplete(cast this);
   }
 
   /**
@@ -121,7 +125,7 @@ class File {
   public function onProcessError() {
     state = LOADER_CONST.FILE_ERRORED;
 
-    loader.fileProcessComplete(this);
+    loader.fileProcessComplete(cast this);
   }
 
   /**
@@ -130,7 +134,7 @@ class File {
    * loaded or will conflict.
    */
   public function hasCacheConflict() {
-    return (cache != null && cache.exists(key));
+		return (cache != null && cache.textureExists(key));
   }
 
   /**

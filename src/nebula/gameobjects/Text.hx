@@ -1,0 +1,85 @@
+package nebula.gameobjects;
+
+import nebula.gameobjects.GameObject;
+import nebula.cameras.Camera;
+import nebula.scene.Scene;
+import kha.math.Vector2;
+import nebula.Renderer;
+import kha.Color;
+import kha.Font;
+
+typedef TextStyle = {
+	?fontName:String,
+	?fontSize:Int,
+	?backgroundColor:Color,
+	?color:Color
+};
+
+class Text extends GameObject {
+	public var text:String = '';
+
+	public var font:Null<Font> = null;
+
+	public var fontSize:Int = 16;
+
+	public function new(_s:Scene, ?_x:Float = 0, ?_y:Float = 0, ?text:String = '', ?style:TextStyle) {
+		super(_s, 'Text');
+
+		setPosition(_x, _y);
+		setOrigin(0, 0);
+
+		font = scene.assets.getFont(style.fontName);
+		fontSize = (style.fontSize != null) ? style.fontSize : 16;
+
+		setText(text);
+	}
+
+	public function calculateSize() {
+		width = text.length * fontSize;
+		height = fontSize;
+	}
+
+	public function setText(value:String) {
+		text = value;
+
+		calculateSize();
+	}
+
+	override public function render(renderer:Renderer, camera:Camera) {
+		// hacky solution.
+		if (font == null)
+			return;
+
+		var calcAlpha = camera.alpha * alpha;
+
+		// Nothing to see, so abort early
+		if (calcAlpha == 0)
+			return;
+
+		var calcX = x - (originX * width);
+		var calcY = y - (originY * height);
+
+		// grab our backbuffer so we can draw to it.
+		final g = renderer.framebuffer.g2;
+
+		// grab our childs center.
+		var cameraPos = new Vector2(scrollFactorX * camera.scrollX, scrollFactorY * camera.scrollY);
+
+		// rotate our graphics.
+		g.rotate(rotation, calcX - cameraPos.x, calcY - cameraPos.y);
+
+		// set our alpha.
+		g.pushOpacity(alpha);
+
+		// set our font.
+		g.font = font;
+		g.fontSize = fontSize;
+
+		// draw our text
+		g.drawString(text, calcX - cameraPos.x, calcY - cameraPos.y);
+
+		// remove our transformations.
+		g.rotate(-rotation, calcX - cameraPos.x, calcY - cameraPos.y);
+		g.popOpacity();
+	}
+}

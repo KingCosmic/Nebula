@@ -1,8 +1,8 @@
 package nebula.animations;
 
+import nebula.assets.AssetManager;
 import nebula.utils.ArrayUtils;
 import nebula.math.CMath;
-import nebula.textures.TextureManager;
 
 typedef AnimationConfig = {
   ?key:String,
@@ -87,7 +87,7 @@ class Animation {
     manager = _manager;
     key = _key;
 
-    frames = getFrames(manager.textureManager, config.frames, null);
+    frames = getFrames(manager.assetManager, config.frames, null);
 
     frameRate = (config.frameRate != null) ? config.frameRate : null;
     duration = (config.duration != null) ? config.duration : null;
@@ -145,7 +145,7 @@ class Animation {
    * Add frame/s into the animation.
    */
   public function addFrameAt(index:Int, config:Array<{ key:String, frame:String }>) {
-    var newFrames = getFrames(manager.textureManager, config);
+    var newFrames = getFrames(manager.assetManager, config);
 
     if (newFrames.length > 0) {
       if (index == 0) {
@@ -194,10 +194,10 @@ class Animation {
 	/**
 	 * Creates AnimationFrame instances based on the given string.
    */
-	public function getFramesFromString(textureManager:TextureManager, textureKey:String, ?sortFrames:Bool = true) {
+	public function getFramesFromString(assetManager:AssetManager, textureKey:String, ?sortFrames:Bool = true) {
 		var frames:Array<{key:String, frame:String}> = [];
     
-    var texture = textureManager.get(textureKey);
+		var texture = assetManager.getTexture(textureKey);
     var frameKeys = texture.getFrameNames();
 
     if (sortFrames) {
@@ -208,13 +208,13 @@ class Animation {
       frames.push({ key: textureKey, frame: frame });
     }
 
-    return getFrames(textureManager, frames, textureKey);
+		return getFrames(assetManager, frames, textureKey);
   }
 
   /**
    * Creates AnimationFrame instances based on the given frame data.
    */
-	public function getFrames(textureManager:TextureManager, _frames:Array<Dynamic>, ?defaultTextureKey:String) {
+	public function getFrames(assetManager:AssetManager, _frames:Array<Dynamic>, ?defaultTextureKey:String) {
     var out:Array<AnimationFrame> = [];
 
     var prev:AnimationFrame = null;
@@ -230,7 +230,7 @@ class Animation {
       var frame:Dynamic = (item.frame != null) ? item.frame : 0;
 
       // The actual texture frame
-      var textureFrame = textureManager.getFrame(key, frame);
+			var textureFrame = assetManager.getFrame(key, frame);
 
       animationFrame = new AnimationFrame(key, frame, i, textureFrame);
 

@@ -53,10 +53,6 @@ class SceneManager {
   // If not we can skip scissor tests.
   public var customViewports = 0;
 
-  // these vars are just here to fix issues in Systems
-  public var _target:Scene;
-  public var _duration:Float = 0;
-
   public function new(_game: Game, ?sceneConfigs: Array<Class<Scene>>) {
     game = _game;
 
@@ -223,7 +219,7 @@ class SceneManager {
     } else {
       var sceneToRemove = getScene(key);
 
-      if (sceneToRemove == null || sceneToRemove.sys.isTransitioning()) {
+      if (sceneToRemove == null) {
         return this;
       }
 
@@ -256,10 +252,6 @@ class SceneManager {
     scene.init(settings.data);
 
     settings.status = 1;
-
-    if (settings.isTransition) {
-      sys.events.emit('TRANSITION_INIT', settings.transitionFrom, settings.transitionDuration);
-    }
 
     var loader = null;
 
@@ -340,10 +332,6 @@ class SceneManager {
     scene.create();
 
     if (settings.status == 9) return;
-
-    if (settings.isTransition) {
-			sys.events.emit('TRANSITION_START', settings.transitionFrom, settings.transitionDuration);
-    }
 
     // If the Scene has an update function we'll set it now, otherwise it'll remain as NOOP
     sys.runSceneUpdate = true;
@@ -477,7 +465,7 @@ class SceneManager {
 	public function sleep(key:String, ?data:Any) {
 		var scene = getScene(key);
 
-		if (scene != null && !scene.sys.isTransitioning()) {
+		if (scene != null) {
 			scene.sys.sleep(data);
 		}
 
@@ -590,7 +578,7 @@ class SceneManager {
   public function stop(key:String, data:Any) {
     var scene = getScene(key);
 
-    if (scene != null && !scene.sys.isTransitioning()) {
+    if (scene != null) {
       scene.sys.shutdown(data);
     }
 

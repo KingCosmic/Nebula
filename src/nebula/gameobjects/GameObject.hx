@@ -1,18 +1,19 @@
 package nebula.gameobjects;
 
-import nebula.math.MATH_CONST;
-import nebula.math.Angle;
-import nebula.math.RotateAround;
-import nebula.math.Clamp;
-import nebula.renderer.BlendModes;
-import nebula.input.InteractiveObject;
 import nebula.gameobjects.components.TransformMatrix;
-import nebula.textures.Texture;
-import nebula.textures.Frame;
 import nebula.geom.rectangle.Rectangle;
-import kha.math.Vector2;
+import nebula.input.InteractiveObject;
+import nebula.renderer.BlendModes;
+import nebula.math.RotateAround;
+import nebula.assets.Texture;
 import nebula.cameras.Camera;
+import nebula.assets.Frame;
 import nebula.scene.Scene;
+import nebula.math.Angle;
+import nebula.math.Clamp;
+import kha.math.Vector2;
+
+import nebula.math.MATH_CONST;
 
 /**
  * The base class that all Game Objects extend.
@@ -1064,7 +1065,7 @@ class GameObject extends EventEmitter {
 	 * Textures are referenced by their string-based keys, as stored in the Texture Manager.
 	 */
 	public function setTexture(key:String, frame:String):GameObject {
-		texture = scene.sys.textures.get(key);
+		texture = scene.sys.assets.getTexture(key);
 		return setFrame(frame);
 	}
 

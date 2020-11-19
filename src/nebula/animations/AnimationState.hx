@@ -1,6 +1,6 @@
 package nebula.animations;
 
-import nebula.textures.TextureManager;
+import nebula.assets.AssetManager;
 import nebula.gameobjects.Sprite;
 import nebula.structs.CustomMap;
 
@@ -38,7 +38,7 @@ class AnimationState {
   public var animationManager:AnimationManager;
 
   // A reference to the Texture Manager.
-  public var textureManager:TextureManager;
+	public var assetManager:AssetManager;
 
   /**
    * The Animations stored locally in this Animation component.
@@ -261,7 +261,7 @@ class AnimationState {
   public function new(_parent:Sprite) {
     parent = _parent;
     animationManager = parent.scene.sys.anims;
-    textureManager = animationManager.textureManager;
+		assetManager = animationManager.assetManager;
 
     animationManager.on('REMOVE_ANIMATION', globalRemove);
   }

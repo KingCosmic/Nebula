@@ -1,4 +1,6 @@
-package nebula.textures;
+package nebula.assets;
+
+import nebula.assets.AssetManager;
 
 /**
  * A Texture consists of a source, usually an Image from the Cache, and a collection of Frames.
@@ -15,8 +17,8 @@ package nebula.textures;
  * Sprites and other Game Objects get the texture data they need from the TextureManager.
  */
 class Texture {
-  // A reference to the Texture Manager this Texture belongs to.
-  public var manager:TextureManager;
+  // A reference to the AssetManager this Texture belongs to.
+  public var manager:AssetManager;
 
   // The unique string-based key of this Texture.
   public var key:String;
@@ -45,7 +47,7 @@ class Texture {
    */
   public var frameTotal:Int = 0;
 
-  public function new(_manager:TextureManager, _key:String, _sources:Array<kha.Image>, width:Int, height:Int) {
+  public function new(_manager:AssetManager, _key:String, _sources:Array<kha.Image>, width:Int, height:Int) {
     manager = _manager;
     key = _key;
 
@@ -210,7 +212,7 @@ class Texture {
     source = [];
     frames.clear();
 
-    manager.removeKey(key);
+    manager.removeTextureKey(key);
 
     manager = null;
   }

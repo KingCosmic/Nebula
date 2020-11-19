@@ -1,6 +1,6 @@
-package nebula.textures;
+package nebula.assets;
 
-import nebula.textures.Texture;
+import nebula.assets.Texture;
 
 class Parser {
 	// Adds an Image Element to a Texture.

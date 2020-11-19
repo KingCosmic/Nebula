@@ -1,4 +1,4 @@
-package nebula.textures;
+package nebula.assets;
 
 /**
  * A Texture Source is the encapsulation of the actual source data for a Texture.

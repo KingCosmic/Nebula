@@ -1,4 +1,4 @@
-package nebula.textures;
+package nebula.assets;
 
 /**
  * A Frame is a section of a Texture.

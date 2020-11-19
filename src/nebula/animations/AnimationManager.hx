@@ -1,12 +1,12 @@
 package nebula.animations;
 
 import nebula.animations.Animation.AnimationConfig;
-import nebula.utils.ArrayUtils;
-import nebula.gameobjects.Sprite;
 import nebula.gameobjects.GameObject;
-import nebula.textures.TextureManager;
-import nebula.EventEmitter;
+import nebula.assets.AssetManager;
+import nebula.gameobjects.Sprite;
 import nebula.structs.CustomMap;
+import nebula.utils.ArrayUtils;
+import nebula.EventEmitter;
 
 // TODO: Stagger play
 
@@ -22,8 +22,8 @@ class AnimationManager extends EventEmitter {
   // A reference to the Phaser.Game instance.
   public var game:Game;
 
-  // A reference to the Texture Manager.
-  public var textureManager:TextureManager;
+  // A reference to the Asset Manager.
+  public var assetManager:AssetManager;
 
   // The global time scale of the Animation Manager.
   // This scales the time delta between two frames, thus influencing the speed of time for the Animation Manager.
@@ -56,7 +56,7 @@ class AnimationManager extends EventEmitter {
 
 	// Registers event listeners after the Game boots.
   public function boot() {
-    textureManager = game.textures;
+    assetManager = game.assets;
 
     game.events.once('DESTROY', destroy);
   }
@@ -224,7 +224,7 @@ class AnimationManager extends EventEmitter {
 		var out = (config.out != null) ? config.out : [];
     var frames:Array<Dynamic> = (config.frames != null) ? config.frames : [];
     
-    var texture = textureManager.get(key);
+    var texture = assetManager.getTexture(key);
 
 		if (texture == null) {
       var output:Array<AnimationFrame> = cast out;
@@ -311,10 +311,10 @@ class AnimationManager extends EventEmitter {
    * This method should not be called directly. It will be called automatically as a response to a `destroy` event from the Phaser.Game instance.
    */
   public function destroy() {
-		this.anims.clear();
+		anims.clear();
 
-		this.textureManager = null;
+		assetManager = null;
 
-		this.game = null;
+		game = null;
   }
 }

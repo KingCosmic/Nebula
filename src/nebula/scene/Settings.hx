@@ -19,16 +19,7 @@ class Settings {
 
   public var isBooted:Bool = false;
 
-  public var isTransition:Bool = false;
-
-  public var transitionFrom:Scene;
-  
-  public var transitionDuration:Int = 0;
-  
-  public var transitionAllowInput:Bool = true;
-
   // Loader payload array
-
   public var data = {};
 
   public var pack:Bool = false;

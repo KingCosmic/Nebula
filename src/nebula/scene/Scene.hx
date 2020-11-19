@@ -1,16 +1,13 @@
 package nebula.scene;
 
 import nebula.animations.AnimationManager;
-import nebula.input.InputPlugin;
-import nebula.loader.LoaderPlugin;
-import nebula.textures.TextureManager;
-import nebula.scale.ScaleManager;
 import nebula.gameobjects.DisplayList;
 import nebula.cameras.CameraManager;
+import nebula.assets.AssetManager;
+import nebula.loader.LoaderPlugin;
+import nebula.scale.ScaleManager;
+import nebula.input.InputPlugin;
 import nebula.EventEmitter;
-
-// import nebula.animations.AnimationManager;
-
 
 typedef SceneConfig = {
   key:String,
@@ -28,17 +25,15 @@ class Scene {
   // A reference to the Phaser.Game instance
   public var game:Game;
 
-
 	/**
 	 * A reference to the global Animations Manager.
 	 */
 	public var anims:AnimationManager;
 
   /**
-   * A reference to the Texture Manager.
-   * This property will only be available if defined in the Scene Injection Map.
+   * A reference to the AssetManager.
    */
-  public var textures:TextureManager;
+  public var assets:AssetManager;
 
   // A Scene level EventEmitter
   public var events:EventEmitter = new EventEmitter();
