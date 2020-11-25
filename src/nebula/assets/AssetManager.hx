@@ -1,5 +1,6 @@
 package nebula.assets;
 
+import kha.Blob;
 import nebula.gameobjects.GameObject;
 import nebula.assets.Texture;
 import nebula.assets.Parser;
@@ -41,6 +42,15 @@ class AssetManager extends EventEmitter {
    */
   public var fonts:Map<String, Font> = new Map();
 
+  /**
+   * A Map that has all of the Json that the AssetManager loads.
+	 * Json is assigned to keys so we can access any Json that this Map
+	 * has directly by key without iteration.
+   * 
+   * Note this holds the Blob that was loaded.
+   */
+  public var json:Map<String, Blob> = new Map();
+
   public function new(_game:Game) {
     super();
 
@@ -76,6 +86,19 @@ class AssetManager extends EventEmitter {
 	public function checkFontKey(key:String) {
 		if (fontExists(key)) {
 			trace('Font key already in use: ' + key);
+			return false;
+		}
+
+		return true;
+  }
+  
+	/**
+	 * Checks the given json key and throws a console.warn if the key is already in use, then returns false.
+	 * If you wish to avoid the console.warn then use `AssetManager.jsonExists` instead.
+	 */
+	public function checkJsonKey(key:String) {
+		if (jsonExists(key)) {
+			trace('Json key already in use: ' + key);
 			return false;
 		}
 
@@ -166,6 +189,18 @@ class AssetManager extends EventEmitter {
 
     return source;
   }
+
+	/**
+	 * Adds a new Json to the Asset Manager.
+	 */
+	public function addJson(key:String, source:Blob) {
+		if (!checkJsonKey(key))
+			return null;
+
+		json.set(key, source);
+
+		return source;
+	}
   
 	/**
 	 * Adds a Sprite Sheet to this Texture Manager.
@@ -215,6 +250,13 @@ class AssetManager extends EventEmitter {
 	public function fontExists(key:String) {
 		return fonts.exists(key);
   }
+
+	/**
+	 * Checks the given key to see if a Json using it exists within this Asset Manager.
+	 */
+	public function jsonExists(key:String) {
+		return json.exists(key);
+	}
   
 	/**
 	 * Returns a Font from the AssetManager that matches the given key.
@@ -228,6 +270,17 @@ class AssetManager extends EventEmitter {
 			return fonts.get(key);
 
 		return fonts.get('__DEFAULT');
+  }
+  
+	/**
+	 * Returns a Font from the AssetManager that matches the given key.
+	 *
+	 * If the key is `undefined` it will return the `__DEFAULT` Font.
+	 *
+	 * If the key is an instance of a Font, it will return the key directly.
+	 */
+	public function getJson(?key:String = '') {
+		return json.get(key);
 	}
 
 	/**
@@ -279,6 +332,7 @@ class AssetManager extends EventEmitter {
 
     textures.clear();
     fonts.clear();
+    json.clear();
 
 		game = null;
 	}

@@ -1,10 +1,7 @@
 package nebula.loader.filetypes;
 
-import nebula.loader.File.FileConfig;
 import kha.Assets;
 import kha.Image;
-
-import nebula.loader.const.LOADER_CONST;
 
 /**
  * A single Image File suitable for loading by the Loader.

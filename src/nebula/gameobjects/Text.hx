@@ -35,7 +35,7 @@ class Text extends GameObject {
 	}
 
 	public function calculateSize() {
-		width = text.length * fontSize;
+		width = font.width(fontSize, text);
 		height = fontSize;
 	}
 
@@ -46,15 +46,10 @@ class Text extends GameObject {
 	}
 
 	override public function render(renderer:Renderer, camera:Camera) {
-		// hacky solution.
-		if (font == null)
-			return;
-
 		var calcAlpha = camera.alpha * alpha;
 
 		// Nothing to see, so abort early
-		if (calcAlpha == 0)
-			return;
+		if (calcAlpha == 0) return;
 
 		var calcX = x - (originX * width);
 		var calcY = y - (originY * height);

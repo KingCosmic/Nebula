@@ -1,7 +1,7 @@
 package nebula.loader.filetypes;
 
 import kha.Assets;
-import kha.Font;
+import kha.Blob;
 
 /**
  * A single Font File suitable for loading by the Loader.
@@ -10,11 +10,10 @@ import kha.Font;
  *
  * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#font.
  */
-class FontFile extends File<Font> {
+class JsonFile extends File<Blob> {
 	public function new(loader:LoaderPlugin, key:String, url:String) {
-
 		var fileConfig = {
-			type: 'font',
+			type: 'json',
 			key: key,
 			url: url,
 			config: {}
@@ -24,14 +23,14 @@ class FontFile extends File<Font> {
 	}
 
 	override public function loadFile() {
-		Assets.loadFont(src, onLoad, onError);
+		Assets.loadBlob(src, onLoad, onError);
 	}
 
 	/**
 	 * Adds this file to its target cache upon successful loading and processing.
 	 */
 	override public function addToCache() {
-		var texture = cache.addFont(key, data);
+		var texture = cache.addJson(key, data);
 
 		pendingDestroy(texture);
 	}

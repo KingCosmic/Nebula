@@ -1,9 +1,9 @@
 package nebula.loader;
 
-import nebula.loader.filetypes.FontFile;
-import nebula.assets.AssetManager;
 import nebula.loader.filetypes.SpriteSheetFile;
 import nebula.loader.filetypes.ImageFile;
+import nebula.loader.filetypes.FontFile;
+import nebula.assets.AssetManager;
 import nebula.scene.SceneManager;
 import nebula.scene.Systems;
 import nebula.scene.Scene;
