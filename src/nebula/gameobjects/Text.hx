@@ -49,7 +49,8 @@ class Text extends GameObject {
 		var calcAlpha = camera.alpha * alpha;
 
 		// Nothing to see, so abort early
-		if (calcAlpha == 0) return;
+		if (calcAlpha == 0)
+			return;
 
 		var calcX = x - (originX * width);
 		var calcY = y - (originY * height);

@@ -1,4 +1,4 @@
-package nebula.gameobjects.components;
+package nebula.structs;
 
 import haxe.io.Float32Array;
 

@@ -1,11 +1,11 @@
 package nebula.loader;
 
+import nebula.loader.filetypes.JsonFile;
 import nebula.loader.filetypes.SpriteSheetFile;
 import nebula.loader.filetypes.ImageFile;
 import nebula.loader.filetypes.FontFile;
 import nebula.assets.AssetManager;
 import nebula.scene.SceneManager;
-import nebula.scene.Systems;
 import nebula.scene.Scene;
 import nebula.structs.Set;
 
@@ -39,9 +39,6 @@ import nebula.loader.const.LOADER_CONST;
 class LoaderPlugin extends EventEmitter {
   // The Scene which owns this Loader instance
   public var scene:Scene;
-
-  // A reference to the Scene Systems.
-  public var systems:Systems;
 
   // A reference to the global Cache Manager.
   public var cacheManager:Any;
@@ -127,13 +124,13 @@ class LoaderPlugin extends EventEmitter {
     super();
 
     scene = _scene;
-    systems = scene.sys;
-    // cacheManager = scene.sys.cache;
-    assetManager = scene.sys.assets;
-    sceneManager = scene.sys.scenePlugin;
 
-    systems.events.once('BOOT', boot);
-		systems.events.on('START', pluginStart);
+    // cacheManager = scene.sys.cache;
+    assetManager = scene.assets;
+    sceneManager = scene.manager;
+
+    scene.events.once('BOOT', boot);
+		scene.events.on('START', pluginStart);
   }
 
 	/**
@@ -313,6 +310,23 @@ class LoaderPlugin extends EventEmitter {
 		addFile([cast new FontFile(this, key, url)]);
 
 		return this;
+  }
+  
+	/**
+	 * Adds a Font to the current load queue.
+	 *
+	 * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+	 *
+	 * ```javascript
+	 * function preload () {
+	 *   this.load.font('fontname', 'fontname');
+	 * }
+	 * ```
+	 */
+	public function json(key:String, url:String) {
+		addFile([cast new JsonFile(this, key, url)]);
+
+		return this;
 	}
 
   /**
@@ -320,7 +334,10 @@ class LoaderPlugin extends EventEmitter {
    * Do not invoke it directly.
    */
   public function boot() {
-    systems.events.once('DESTROY', destroy);
+		assetManager = scene.assets;
+		sceneManager = scene.manager;
+
+    scene.events.once('DESTROY', destroy);
   }
 
   /**
@@ -329,7 +346,7 @@ class LoaderPlugin extends EventEmitter {
    * Do not invoke it directly.
    */
   public function pluginStart() {
-    systems.events.once('SHUTDOWN', shutdown);
+    scene.events.once('SHUTDOWN', shutdown);
   }
 
   /**
@@ -475,7 +492,7 @@ class LoaderPlugin extends EventEmitter {
       checkLoadQueue();
 
       // Setup the update event.
-      systems.events.on('UPDATE', update);
+      scene.events.on('UPDATE', update);
     }
   }
 
@@ -563,7 +580,7 @@ class LoaderPlugin extends EventEmitter {
    */
   public function fileProcessComplete(file:File<Any>) {
 		//  Has the game been destroyed during load? If so, bail out now.
-		if (scene == null || systems == null || systems.game == null || systems.game.pendingDestroy) {
+		if (scene == null || scene.game == null || scene.game.pendingDestroy) {
 			return;
     }
 
@@ -600,7 +617,7 @@ class LoaderPlugin extends EventEmitter {
 
     state = LOADER_CONST.COMPLETE;
 
-    systems.events.removeListener('UPDATE', update);
+    scene.events.removeListener('UPDATE', update);
 
     // Call 'destroy' on each file ready for deletion
     _deleteQueue.iterateLocal('destroy');
@@ -643,8 +660,8 @@ class LoaderPlugin extends EventEmitter {
 
     state = LOADER_CONST.SHUTDOWN;
 
-    systems.events.removeListener('UPDATE', update);
-    systems.events.removeListener('SHUTDOWN', shutdown);
+    scene.events.removeListener('UPDATE', update);
+    scene.events.removeListener('SHUTDOWN', shutdown);
   }
 
   /**
@@ -656,14 +673,13 @@ class LoaderPlugin extends EventEmitter {
 
     state = LOADER_CONST.DESTROYED;
 
-		systems.events.removeListener('START', pluginStart);
+		scene.events.removeListener('START', pluginStart);
 
     list = null;
     inflight = null;
     queue = null;
 
     scene = null;
-    systems = null;
     assetManager = null;
     cacheManager = null;
     sceneManager = null;

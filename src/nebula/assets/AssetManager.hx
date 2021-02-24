@@ -1,9 +1,10 @@
 package nebula.assets;
 
-import kha.Blob;
 import nebula.gameobjects.GameObject;
 import nebula.assets.Texture;
 import nebula.assets.Parser;
+
+import kha.Blob;
 import kha.Font;
 
 typedef FrameConfig = {
@@ -25,47 +26,44 @@ class AssetManager extends EventEmitter {
 	// The Game that this AssetManager belongs to.
 	public var game:Game;
 
-	// The name of this manager.
-	public var name:String = 'AssetManager';
-
 	/**
 	 * A Map that has all of textures that the AssetManager creates.
 	 * Textures are assigned to keys so we can access to any texture that this Map
-   * has directly by key value without iteration.
+	 * has directly by key value without iteration.
 	 */
-  public var textures:Map<String, Texture> = new Map();
-
-  /**
-   * A Map that has all of the fonts that the AssetManager creates.
-   * Fonts are assigned to keys so we can access any Font that this Map
-   * has directly by key without iteration.
-   */
-  public var fonts:Map<String, Font> = new Map();
-
-  /**
-   * A Map that has all of the Json that the AssetManager loads.
-	 * Json is assigned to keys so we can access any Json that this Map
-	 * has directly by key without iteration.
-   * 
-   * Note this holds the Blob that was loaded.
-   */
-  public var json:Map<String, Blob> = new Map();
-
-  public function new(_game:Game) {
-    super();
-
-    game = _game;
-
-    game.events.once('BOOT', boot);
-  }
+	public var textures:Map<String, Texture> = new Map();
 
 	/**
-	 * The Boot Handler called by Phaser.Game when it first starts up.
+	 * A Map that has all of the fonts that the AssetManager creates.
+	 * Fonts are assigned to keys so we can access any Font that this Map
+	 * has directly by key without iteration.
+	 */
+	public var fonts:Map<String, Font> = new Map();
+
+	/**
+	 * A Map that has all of the Json that the AssetManager loads.
+	 * Json is assigned to keys so we can access any Json that this Map
+	 * has directly by key without iteration.
+	 * 
+	 * Note this holds the Blob that was loaded.
+	 */
+	public var json:Map<String, Blob> = new Map();
+
+	public function new(_game:Game) {
+		super();
+
+		game = _game;
+
+		game.events.once('BOOT', boot);
+	}
+
+	/**
+	 * The Boot Handler called by Nebula.Game when it first starts up.
 	 */
 	public function boot() {
 		game.events.once('DESTROY', destroy);
-  }
-  
+	}
+
 	/**
 	 * Checks the given texture key and throws a console.warn if the key is already in use, then returns false.
 	 * If you wish to avoid the console.warn then use `AssetManager.textureExists` instead.
@@ -77,12 +75,12 @@ class AssetManager extends EventEmitter {
 		}
 
 		return true;
-  }
+	}
 
 	/**
 	 * Checks the given font key and throws a console.warn if the key is already in use, then returns false.
-   * If you wish to avoid the console.warn then use `AssetManager.fontExists` instead.
-   */
+	 * If you wish to avoid the console.warn then use `AssetManager.fontExists` instead.
+	 */
 	public function checkFontKey(key:String) {
 		if (fontExists(key)) {
 			trace('Font key already in use: ' + key);
@@ -90,8 +88,8 @@ class AssetManager extends EventEmitter {
 		}
 
 		return true;
-  }
-  
+	}
+
 	/**
 	 * Checks the given json key and throws a console.warn if the key is already in use, then returns false.
 	 * If you wish to avoid the console.warn then use `AssetManager.jsonExists` instead.
@@ -104,7 +102,7 @@ class AssetManager extends EventEmitter {
 
 		return true;
 	}
-  
+
 	/**
 	 * Removes a Texture from the Texture Manager and destroys it. This will immediately
 	 * clear all references to it from the Texture Manager, and if it has one, destroy its
@@ -115,7 +113,7 @@ class AssetManager extends EventEmitter {
 	 * step when clearing down to avoid this.
 	 */
 	public function removeTexture(key:String) {
-    var texture:Texture = null;
+		var texture:Texture = null;
 
 		if (textureExists(key)) {
 			texture = getTexture(key);
@@ -132,7 +130,7 @@ class AssetManager extends EventEmitter {
 		}
 
 		return this;
-  }
+	}
 
 	/**
 	 * Removes a Font from the Font Manager and destroys it. This will immediately
@@ -142,19 +140,19 @@ class AssetManager extends EventEmitter {
 	 * errors the next time they try to render. Make sure that removing the font is the final
 	 * step when clearing down to avoid this.
 	 */
-  public function removeFont(key:String) {
-    if (!fontExists(key)) {
-      trace('No Font found matching key: ' + key);
-      return this;
-    }
+	public function removeFont(key:String) {
+		if (!fontExists(key)) {
+			trace('No Font found matching key: ' + key);
+			return this;
+		}
 
-    if (fonts.remove(key)) {
-      emit('REMOVE', key);
-    }
+		if (fonts.remove(key)) {
+			emit('REMOVE', key);
+		}
 
-    return this;
-  }
-  
+		return this;
+	}
+
 	/**
 	 * Removes a key from the Texture Manager but does not destroy the Texture that was using the key.
 	 */
@@ -162,13 +160,14 @@ class AssetManager extends EventEmitter {
 		textures.remove(key);
 
 		return this;
-  }
-  
+	}
+
 	/**
 	 * Adds a new Texture to the Asset Manager created from the given Image element.
 	 */
 	public function addImage(key:String, source:kha.Image) {
-		if (!checkTextureKey(key)) return null;
+		if (!checkTextureKey(key))
+			return null;
 
 		var texture = createTexture(key, source);
 
@@ -177,18 +176,19 @@ class AssetManager extends EventEmitter {
 		emit('ADD', key, source);
 
 		return texture;
-  }
+	}
 
 	/**
 	 * Adds a new Font to the Asset Manager.
-   */
-  public function addFont(key:String, source:Font) {
-    if (!checkFontKey(key)) return null;
+	 */
+	public function addFont(key:String, source:Font) {
+		if (!checkFontKey(key))
+			return null;
 
-    fonts.set(key, source);
+		fonts.set(key, source);
 
-    return source;
-  }
+		return source;
+	}
 
 	/**
 	 * Adds a new Json to the Asset Manager.
@@ -201,7 +201,7 @@ class AssetManager extends EventEmitter {
 
 		return source;
 	}
-  
+
 	/**
 	 * Adds a Sprite Sheet to this Texture Manager.
 	 *
@@ -209,7 +209,8 @@ class AssetManager extends EventEmitter {
 	 * same size and cannot be trimmed or rotated.
 	 */
 	public function addSpriteSheet(key:String, source:kha.Image, config:FrameConfig) {
-		if (!checkTextureKey(key)) return null;
+		if (!checkTextureKey(key))
+			return null;
 
 		var texture = createTexture(key, source);
 
@@ -242,14 +243,14 @@ class AssetManager extends EventEmitter {
 	 */
 	public function textureExists(key:String) {
 		return textures.exists(key);
-  }
-  
+	}
+
 	/**
 	 * Checks the given key to see if a Font using it exists within this Asset Manager.
 	 */
 	public function fontExists(key:String) {
 		return fonts.exists(key);
-  }
+	}
 
 	/**
 	 * Checks the given key to see if a Json using it exists within this Asset Manager.
@@ -257,7 +258,7 @@ class AssetManager extends EventEmitter {
 	public function jsonExists(key:String) {
 		return json.exists(key);
 	}
-  
+
 	/**
 	 * Returns a Font from the AssetManager that matches the given key.
 	 *
@@ -270,8 +271,8 @@ class AssetManager extends EventEmitter {
 			return fonts.get(key);
 
 		return fonts.get('__DEFAULT');
-  }
-  
+	}
+
 	/**
 	 * Returns a Font from the AssetManager that matches the given key.
 	 *
@@ -317,7 +318,7 @@ class AssetManager extends EventEmitter {
 		}
 
 		return go;
-  }
+	}
 
 	/**
 	 * Destroys the Texture Manager and all Textures stored within it.
@@ -325,14 +326,14 @@ class AssetManager extends EventEmitter {
 	public function destroy() {
 		for (texture in textures.iterator()) {
 			texture.destroy();
-    }
-    
-    // TODO: Look into unloading these Textures
-    // and Fonts.
+		}
 
-    textures.clear();
-    fonts.clear();
-    json.clear();
+		// TODO: Look into unloading these Textures
+		// and Fonts.
+
+		textures.clear();
+		fonts.clear();
+		json.clear();
 
 		game = null;
 	}

@@ -17,203 +17,207 @@ import nebula.assets.AssetManager;
  * Sprites and other Game Objects get the texture data they need from the TextureManager.
  */
 class Texture {
-  // A reference to the AssetManager this Texture belongs to.
-  public var manager:AssetManager;
+	// A reference to the AssetManager this Texture belongs to.
+	public var manager:AssetManager;
 
-  // The unique string-based key of this Texture.
-  public var key:String;
+	// The unique string-based key of this Texture.
+	public var key:String;
 
-  /**
-   * An array of TextureSource instances.
-   * These are unique to this Texture and contain the actual Image (or Canvas) data.
-   */
-  public var source:Array<TextureSource> = [];
+	/**
+	 * An array of TextureSource instances.
+	 * These are unique to this Texture and contain the actual Image (or Canvas) data.
+	 */
+	public var source:Array<TextureSource> = [];
 
-  // TODO: data source
+	// TODO: data source
 
-  /**
-   * A key-value object pair associating the unique Frame keys with the Frames objects.
-   */
-  public var frames:Map<String, Frame> = new Map();
+	/**
+	 * A key-value object pair associating the unique Frame keys with the Frames objects.
+	 */
+	public var frames:Map<String, Frame> = new Map();
 
-  // The name of the first frame of the texture.
-  public var firstFrame = '__BASE';
+	// The name of the first frame of the texture.
+	public var firstFrame = '__BASE';
 
-  /**
-   * The total number of Frames in this Texture, including the `__BASE` frame.
-   * 
-   * A Texture will always contain at least 1 frame because every Texture contains a `__BASE` frame by default,
-   * in addition to any extra frames that have been added to it, such as when parsing a Sprite Sheet or Texture Atlas.
-   */
-  public var frameTotal:Int = 0;
+	/**
+	 * The total number of Frames in this Texture, including the `__BASE` frame.
+	 * 
+	 * A Texture will always contain at least 1 frame because every Texture contains a `__BASE` frame by default,
+	 * in addition to any extra frames that have been added to it, such as when parsing a Sprite Sheet or Texture Atlas.
+	 */
+	public var frameTotal:Int = 0;
 
-  public function new(_manager:AssetManager, _key:String, _sources:Array<kha.Image>, width:Int, height:Int) {
-    manager = _manager;
-    key = _key;
+	public function new(_manager:AssetManager, _key:String, _sources:Array<kha.Image>, width:Int, height:Int) {
+		manager = _manager;
+		key = _key;
 
-    for (_source in _sources) {
-      source.push(new TextureSource(this, _source, width, height));
-    }
-  }
+		for (_source in _sources) {
+			source.push(new TextureSource(this, _source, width, height));
+		}
+	}
 
-  /**
-   * Adds a new Frame to this Texture.
-   *
-   * A Frame is a rectangular region of a TextureSource with a unique index or string-based key.
-   * 
-   * The name given must be unique within this Texture. If it already exists, this method will return `null`.
-   */
-  public function add(name:String, sourceIndex:Int, x:Int, y:Int, width:Int, height:Int) {
-    if (has(name)) return null;
+	/**
+	 * Adds a new Frame to this Texture.
+	 *
+	 * A Frame is a rectangular region of a TextureSource with a unique index or string-based key.
+	 * 
+	 * The name given must be unique within this Texture. If it already exists, this method will return `null`.
+	 */
+	public function add(name:String, sourceIndex:Int, x:Int, y:Int, width:Int, height:Int) {
+		if (has(name))
+			return null;
 
-    var frame = new Frame(this, name, sourceIndex, x, y, width, height);
+		var frame = new Frame(this, name, sourceIndex, x, y, width, height);
 
-    frames.set(name, frame);
+		frames.set(name, frame);
 
 		// Set the first frame of the Texture (other than __BASE)
 		// This is used to ensure we don't spam the display with entire
 		// atlases of sprite sheets, but instead just the first frame of them
-    // should the dev incorrectly specify the frame index
-    if (firstFrame == '__BASE') {
-      firstFrame = name;
-    }
+		// should the dev incorrectly specify the frame index
+		if (firstFrame == '__BASE') {
+			firstFrame = name;
+		}
 
-    frameTotal++;
+		frameTotal++;
 
-    return frame;
-  }
+		return frame;
+	}
 
-  /**
-   * Removes the given Frame from this Texture. The Frame is destroyed immediately.
-   * 
-   * Any Game Objects using this Frame should stop using it _before_ you remove it,
-   * as it does not happen automatically.
-   */
-  public function remove(name:String) {
-    if (!has(name)) return false;
+	/**
+	 * Removes the given Frame from this Texture. The Frame is destroyed immediately.
+	 * 
+	 * Any Game Objects using this Frame should stop using it _before_ you remove it,
+	 * as it does not happen automatically.
+	 */
+	public function remove(name:String) {
+		if (!has(name))
+			return false;
 
-    var frame = get(name);
+		var frame = get(name);
 
-    frame.destroy();
+		frame.destroy();
 
-    frames.remove(name);
+		frames.remove(name);
 
-    return true;
-  }
+		return true;
+	}
 
-  /**
-   * Checks to see if a Frame matching the given key exists within this Texture.
-   */
-  public function has(name:String) {
-    return frames.exists(name);
-  }
+	/**
+	 * Checks to see if a Frame matching the given key exists within this Texture.
+	 */
+	public function has(name:String) {
+		return frames.exists(name);
+	}
 
-  /**
-   * Gets a Frame from this Texture based on either the key or the index of the Frame.
-   *
-   * In a Texture Atlas Frames are typically referenced by a key.
-   * In a Sprite Sheet Frames are referenced by an index.
-   * Passing no value for the name returns the base texture.
-   */
-  public function get(?name:String = '') {
-    if (name == '') name = firstFrame;
+	/**
+	 * Gets a Frame from this Texture based on either the key or the index of the Frame.
+	 *
+	 * In a Texture Atlas Frames are typically referenced by a key.
+	 * In a Sprite Sheet Frames are referenced by an index.
+	 * Passing no value for the name returns the base texture.
+	 */
+	public function get(?name:String = '') {
+		if (name == '')
+			name = firstFrame;
 
-    var frame = frames.get(name);
+		var frame = frames.get(name);
 
-    if (frame == null) {
-      trace('TEXTURE MISSING :' + name);
+		if (frame == null) {
+			trace('TEXTURE MISSING :' + name);
 
-      frame = frames.get(firstFrame);
-    }
+			frame = frames.get(firstFrame);
+		}
 
-    return frame;
-  }
+		return frame;
+	}
 
-  /**
-   * Takes the given TextureSource and returns the index of it within this Texture.
-   * If it's not in this Texture, it returns -1.
-   * Unless this Texture has multiple TextureSources, such as with a multi-atlas, this
-   * method will always return zero or -1.
-   */
-  public function getTextureSourceIndex(_source:TextureSource) {
-    for (i in 0...source.length) {
-      if (source[i] == _source) {
-        return i;
-      }
-    }
+	/**
+	 * Takes the given TextureSource and returns the index of it within this Texture.
+	 * If it's not in this Texture, it returns -1.
+	 * Unless this Texture has multiple TextureSources, such as with a multi-atlas, this
+	 * method will always return zero or -1.
+	 */
+	public function getTextureSourceIndex(_source:TextureSource) {
+		for (i in 0...source.length) {
+			if (source[i] == _source) {
+				return i;
+			}
+		}
 
-    return -1;
-  }
+		return -1;
+	}
 
-  /**
-   * Returns an array of all the Frames in the given TextureSource.
-   */
-  public function getFramesFromTextureSource() {
-    // TODO:
-  }
+	/**
+	 * Returns an array of all the Frames in the given TextureSource.
+	 */
+	public function getFramesFromTextureSource() {
+		// TODO:
+	}
 
-  /**
-   * Returns an array with all of the names of the Frames in this Texture.
-   *
-   * Useful if you want to randomly assign a Frame to a Game Object, as you can
-   * pick a random element from the returned array.
-   */
-  public function getFrameNames(?includeBase:Bool = false) {
-    var out:Array<String> = [];
+	/**
+	 * Returns an array with all of the names of the Frames in this Texture.
+	 *
+	 * Useful if you want to randomly assign a Frame to a Game Object, as you can
+	 * pick a random element from the returned array.
+	 */
+	public function getFrameNames(?includeBase:Bool = false) {
+		var out:Array<String> = [];
 
-    for (key in frames.keys()) {
-      out.push(key);
-    }
+		for (key in frames.keys()) {
+			out.push(key);
+		}
 
-    if (!includeBase) {
-      var idx = out.indexOf('__BASE');
+		if (!includeBase) {
+			var idx = out.indexOf('__BASE');
 
-      if (idx != -1) out.splice(idx, 1);
-    }
+			if (idx != -1)
+				out.splice(idx, 1);
+		}
 
-    return out;
-  }
+		return out;
+	}
 
-  /**
-   * Given a Frame name, return the source image it uses to render with.
-   *
-   * This will return the actual DOM Image or Canvas element.
-   */
-  public function getSourceImage() {
-    // TODO:
-  }
+	/**
+	 * Given a Frame name, return the source image it uses to render with.
+	 *
+	 * This will return the actual DOM Image or Canvas element.
+	 */
+	public function getSourceImage() {
+		// TODO:
+	}
 
-  /**
-   * Given a Frame name, return the data source image it uses to render with.
-   * You can use this to get the normal map for an image for example.
-   */
-  public function getDataSourceImage() {
-    // TODO:
-  }
+	/**
+	 * Given a Frame name, return the data source image it uses to render with.
+	 * You can use this to get the normal map for an image for example.
+	 */
+	public function getDataSourceImage() {
+		// TODO:
+	}
 
-  /**
-   * Adds a data source image to this Texture.
-   *
-   * An example of a data source image would be a normal map, where all of the Frames for this Texture
-   * equally apply to the normal map.
-   */
-  public function setDataSource() {
-    // TODO:
-  }
+	/**
+	 * Adds a data source image to this Texture.
+	 *
+	 * An example of a data source image would be a normal map, where all of the Frames for this Texture
+	 * equally apply to the normal map.
+	 */
+	public function setDataSource() {
+		// TODO:
+	}
 
-  /**
-   * Destroys this Texture and releases references to its sources and frames.
-   */
-  public function destroy() {
-    for (frame in frames.iterator()) {
-      frame.destroy();
-    }
+	/**
+	 * Destroys this Texture and releases references to its sources and frames.
+	 */
+	public function destroy() {
+		for (frame in frames.iterator()) {
+			frame.destroy();
+		}
 
-    source = [];
-    frames.clear();
+		source = [];
+		frames.clear();
 
-    manager.removeTextureKey(key);
+		manager.removeTextureKey(key);
 
-    manager = null;
-  }
+		manager = null;
+	}
 }

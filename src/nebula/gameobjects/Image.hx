@@ -16,11 +16,11 @@ class Image extends GameObject {
 	public function new(scene:Scene, x:Float, y:Float, texture:String, ?frame:String = '') {
 		super(scene, 'Image');
 
-		this._crop = this.resetCropObject();
-		this.setTexture(texture, frame);
-		this.setPosition(x, y);
-		this.setSizeToFrame();
-		this.setOriginFromFrame();
+		_crop = resetCropObject();
+		setTexture(texture, frame);
+		setPosition(x, y);
+		setSizeToFrame();
+		setOriginFromFrame();
 	}
 
 	/**
@@ -29,6 +29,6 @@ class Image extends GameObject {
 	 * This method should not be called directly. It is a utility function of the Render module.
 	 */
 	override public function render(renderer:Renderer, camera:Camera) {
-    renderer.batchImage(this, frame, camera);
+		renderer.batchImage(this, frame, camera);
 	}
 }
