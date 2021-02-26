@@ -1,14 +1,10 @@
 package nebula.gameobjects;
 
-import nebula.structs.TransformMatrix;
-import nebula.math.RotateAround;
-import nebula.math.MATH_CONST;
 import nebula.assets.Texture;
 import nebula.cameras.Camera;
 import nebula.assets.Frame;
 import nebula.scene.Scene;
 import nebula.math.Angle;
-import nebula.math.CMath;
 import kha.math.Vector2;
 
 /**
@@ -60,14 +56,6 @@ class GameObject extends EventEmitter {
 	 * set this property directly using the Camera.id property:
 	 */
 	public var cameraFilter:Int = 0;
-
-	/**
-	 * This Game Object will ignore all calls made to its destroy method if this flag is set to `true`.
-	 * This includes calls that may come from a Group, Container or the Scene itself.
-	 * While it allows you to persist a Game Object across Scenes, please understand you are entirely
-	 * responsible for managing references to and from this Game Object.
-	 */
-	public var ignoreDestroy:Bool = false;
 
 	/**
 	 * The alpha value of the Game Object.
@@ -221,143 +209,6 @@ class GameObject extends EventEmitter {
 		flipY = false;
 
 		return this;
-	}
-
-	/**
-	 * Processes the bounds output vector before returning it.
-	 */
-	public function prepareBoundsOutput(output:Vector2, includeParent:Bool = false):Vector2 {
-		if (rotation != 0) {
-			RotateAround.rotateAround(output, x, y, rotation);
-		}
-
-		return output;
-	}
-
-	/**
-	 * Gets the center coordinate of this Game Object, regardless of origin.
-	 * The returned point is calculated in local space and does not factor in any parent containers
-	 */
-	public function getCenter(?output:Vector2, ?includeParent:Bool = false):Vector2 {
-		if (output == null)
-			output = new Vector2();
-
-		output.x = x - (displayWidth * originX) + (displayWidth / 2);
-		output.y = y - (displayHeight * originY) + (displayHeight / 2);
-
-		return output;
-	}
-
-	/**
-	 * Gets the top-left corner coordinate of this Game Object, regardless of origin.
-	 * The returned point is calculated in local space and does not factor in any parent containers
-	 */
-	public function getTopLeft(?output:Vector2, includeParent:Bool = false):Vector2 {
-		if (output == null)
-			output = new Vector2(0, 0);
-
-		output.x = x - (displayWidth * originX);
-		output.y = y - (displayHeight * originY);
-
-		return prepareBoundsOutput(output, includeParent);
-	}
-
-	/**
-	 * Gets the top-center coordinate of this Game Object, regardless of origin.
-	 * The returned point is calculated in local space and does not factor in any parent containers
-	 */
-	public function getTopCenter(?output:Vector2, includeParent:Bool = false):Vector2 {
-		if (output == null)
-			output = new Vector2(0, 0);
-
-		output.x = (x - (displayWidth * originX)) + (displayWidth / 2);
-		output.y = y - (displayHeight * originY);
-
-		return prepareBoundsOutput(output, includeParent);
-	}
-
-	/**
-	 * Gets the top-right corner coordinate of this Game Object, regardless of origin.
-	 * The returned point is calculated in local space and does not factor in any parent containers
-	 */
-	public function getTopRight(?output:Vector2, includeParent:Bool = false):Vector2 {
-		if (output == null)
-			output = new Vector2(0, 0);
-
-		output.x = (x - (displayWidth * originX)) + displayWidth;
-		output.y = y - (displayHeight * originY);
-
-		return prepareBoundsOutput(output, includeParent);
-	}
-
-	/**
-	 * Gets the left-center coordinate of this Game Object, regardless of origin.
-	 * The returned point is calculated in local space and does not factor in any parent containers
-	 */
-	public function getLeftCenter(?output:Vector2, includeParent:Bool = false):Vector2 {
-		if (output == null)
-			output = new Vector2(0, 0);
-
-		output.x = x - (displayWidth * originX);
-		output.y = (y - (displayHeight * originY)) + (displayHeight / 2);
-
-    return prepareBoundsOutput(output, includeParent);
-	}
-
-	/**
-	 * Gets the right-center coordinate of this Game Object, regardless of origin.
-	 * The returned point is calculated in local space and does not factor in any parent containers
-	 */
-	public function getRightCenter(?output:Vector2, includeParent:Bool = false):Vector2 {
-		if (output == null)
-			output = new Vector2(0, 0);
-
-		output.x = (x - (displayWidth * originX)) + displayWidth;
-		output.y = (y - (displayHeight * originY)) + (displayHeight / 2);
-
-    return prepareBoundsOutput(output, includeParent);
-	}
-
-	/**
-	 * Gets the bottom-left corner coordinate of this Game Object, regardless of origin.
-	 * The returned point is calculated in local space and does not factor in any parent containers
-	 */
-	public function getBottomLeft(?output:Vector2, includeParent:Bool = false):Vector2 {
-		if (output == null)
-			output = new Vector2(0, 0);
-
-		output.x = x - (displayWidth * originX);
-		output.y = (y - (displayHeight * originY)) + displayHeight;
-
-    return prepareBoundsOutput(output, includeParent);
-	}
-
-	/**
-	 * Gets the bottom-center coordinate of this Game Object, regardless of origin.
-	 * The returned point is calculated in local space and does not factor in any parent containers
-	 */
-	public function getBottomCenter(?output:Vector2, includeParent:Bool = false):Vector2 {
-		if (output == null)
-			output = new Vector2(0, 0);
-
-		output.x = (x - (displayWidth * originX)) + (displayWidth / 2);
-		output.y = (y - (displayHeight * originY)) + displayHeight;
-
-    return prepareBoundsOutput(output, includeParent);
-	}
-
-	/**
-	 * Gets the bottom-right corner coordinate of this Game Object, regardless of origin.
-	 * The returned point is calculated in local space and does not factor in any parent containers
-	 */
-	public function getBottomRight(?output:Vector2, includeParent:Bool = false):Vector2 {
-		if (output == null)
-			output = new Vector2(0, 0);
-
-		output.x = (x - (displayWidth * originX)) + displayWidth;
-		output.y = (y - (displayHeight * originY)) + displayHeight;
-
-    return prepareBoundsOutput(output, includeParent);
 	}
 
 	/**
@@ -956,7 +807,7 @@ class GameObject extends EventEmitter {
 
 	/**
 	 * Gets the local transform matrix for this Game Object.
-	 */
+
   // TODO: what's this for?
 	public function getLocalTransformMatrix(?tempMatrix:TransformMatrix = null):TransformMatrix {
 		if (tempMatrix == null) {
@@ -968,7 +819,7 @@ class GameObject extends EventEmitter {
 
 	/**
 	 * Gets the world transform matrix for this Game Object, factoring in any parent Containers.
-	 */
+
 	public function getWorldTransformMatrix(?tempMatrix:TransformMatrix = null):TransformMatrix {
 		if (tempMatrix == null) {
 			tempMatrix = new TransformMatrix();
@@ -977,7 +828,7 @@ class GameObject extends EventEmitter {
 		tempMatrix.applyITRS(x, y, _rotation, _scaleX, _scaleY);
 
 		return tempMatrix;
-	}
+	}*/
 
 	/**
 	 * The visible state of the Game Object.
@@ -1116,7 +967,7 @@ class GameObject extends EventEmitter {
 	 */
 	public function destroy(?fromScene:Bool = false) {
 		// This Game Object has already been destroyed
-		if (scene == null || ignoreDestroy) {
+		if (scene == null) {
 			return;
 		}
 

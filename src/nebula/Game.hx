@@ -4,9 +4,9 @@ package nebula;
 import kha.Framebuffer;
 import kha.Window;
 import kha.System;
-import kha.Color;
 
 // core code
+import nebula.Renderer.RendererConfig;
 import nebula.assets.AssetManager;
 import nebula.scene.SceneManager;
 import nebula.EventEmitter;
@@ -18,10 +18,8 @@ typedef GameConfig = {
 	?height:Int,
 	scenes:Array<Class<Scene>>,
 	?version:String,
-	// ?input:Input.InputConfig,
 	?fps:Int,
-	// ?render:RenderConfig,
-	?backgroundColor:Color,
+	?render:RendererConfig
 }
 
 class Game {
@@ -86,7 +84,7 @@ class Game {
       width: config.width,
       height: config.height
     }, (window) -> {
-			renderer = new Renderer(this);
+			renderer = new Renderer(this, config.render);
 
 			// now we can boot the game.
 			boot(window);

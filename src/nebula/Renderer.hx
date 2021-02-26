@@ -8,7 +8,6 @@ import nebula.assets.Frame;
 import nebula.structs.Size;
 import nebula.scene.Scene;
 
-
 import kha.math.Vector2;
 import kha.Framebuffer;
 import kha.Display;
@@ -17,13 +16,22 @@ import kha.Scaler;
 import kha.Color;
 import kha.Image;
 
+typedef RendererConfig = {
+  backBuffer:Vector2,
+  backgroundColor:Color
+}
+
+// TODO: swap this to use transformation matrix's
+// instead of simple maths and see if that helps
+// with the scaling issues.
+
 /**
  * The game class prepares a backbuffer to which states draw. The
  * backbuffer is defined by the game's rendering resolution (width
  * and height). It also handles states and state changes.
  */
 class Renderer {
-	// The Phaser Game isntance that owns this renderer.
+	// The Nebula Game isntance that owns this renderer.
 	public var game:Game;
 
 	/*
@@ -36,12 +44,6 @@ class Renderer {
 	// The total number of Game Objects which were rendered in a frame.
 	public var drawCount:Int = 0;
 
-	// The width of the canvas being rendered to.
-	public var width:Float = 0;
-
-	// The height of the canvas being rendered to.
-	public var height:Float = 0;
-
 	// The local configuration settings of the Renderer.
 	public var config = {
 		clearBeforeRender: true,
@@ -53,35 +55,14 @@ class Renderer {
 	// current Graphics (updated every time notifyFrames runs)
 	public var framebuffer:Framebuffer;
 
-	public var contextOptions = {
-		alpha: true,
-		desynchronized: false
-	};
-
 	// Should the Canvas use Image Smoothing or not when drawing Sprites?
 	public var antialias:Bool = true;
 
-	// The blend modes supported by the renderer
-	public var blendModes = [
-		'source-over', 'lighter', 'multiply', 'screen', 'overlay', 'darken', 'lighten', 'color-dodge', 'color-burn', 'hard-light', 'soft-light', 'difference',
-		'exclusion', 'hue', 'saturation', 'color', 'luminosity', 'destination-out', 'source-in', 'source-out', 'source-atop', 'destination-over',
-		'destination-in', 'destination-out', 'destination-atop', 'lighter', 'copy', 'xor'
-	];
-
-	// A temporary Transform Matrix, re-used internally during batching.
-	public var _tempMatrix1 = new TransformMatrix();
-
-	// A temporary Transform Matrix, re-used internally during batching.
-	public var _tempMatrix2 = new TransformMatrix();
-
-	// A temporary Transform Matrix, re-used internally during batching.
-	public var _tempMatrix3 = new TransformMatrix();
-
-	// A temporary Transform Matrix, re-used internally during batching.
-	public var _tempMatrix4 = new TransformMatrix();
-
-	public function new(_game:Game) {
+	public function new(_game:Game, _config:RendererConfig) {
 		game = _game;
+
+    // TODO: swap rendering to the backbuffer.
+    // maybe? idk
 
 		// our backbuffer we render to.
 		backbuffer = Image.createRenderTarget(Display.primary.width, Display.primary.height);
@@ -90,28 +71,7 @@ class Renderer {
 	}
 
 	// Prepares the game canvas for rendering.
-	public function init() {
-		// game.scale.on('RESIZE', onResize);
-
-		// var baseSize = game.scale.baseSize;
-
-		// resize(baseSize.width, baseSize.height);
-	}
-
-	// TODO: make sure this onResize and resize stuff is necessary.
-	// The event handler that manages the `resize` event dispatched by the Scale Manager.
-	public function onResize(gameSize:Size, baseSize:Size) {
-		// Hase the underlying canvas size changed?
-		if (baseSize.width != width || baseSize.height != height) {
-			resize(baseSize.width, baseSize.height);
-		}
-	}
-
-	// Resize the main game canvas.
-	public function resize(_width:Float, _height:Float) {
-		width = _width;
-		height = _height;
-	}
+	public function init() {}
 
 	// Resets the transformation matrix of the current context to the identity matrix, thus resetting any transformation.
 	public function resetTransform() {
@@ -128,10 +88,8 @@ class Renderer {
 
 		final graphics = framebuffer.g2;
 
-		// Start drawing, and clear the framebuffer to `petrol`
+		// Start drawing, and clear the framebuffer
 		graphics.begin(config.clearBeforeRender, Color.fromBytes(0, 0, 0));
-
-		// save?
 
 		drawCount = 0;
 	}
@@ -208,15 +166,12 @@ class Renderer {
 			flipX = -1;
 		}
 
-		// Auto-invert the flipY if this is coming from a GLTexture
 		if (child.flipY) {
 			// TODO: add custom pivot
 			y += (-frame.realHeight + (child.displayOriginY * 2));
 
 			flipY = -1;
 		}
-
-		_tempMatrix2.applyITRS(child.x, child.y, child.rotation, child.scale * flipX, child.scaleY * flipY);
 
 		// grab our childs center.
 		var cameraPos = new Vector2(child.scrollFactorX * camera.scrollX, child.scrollFactorY * camera.scrollY);
