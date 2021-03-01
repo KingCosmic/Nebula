@@ -5,6 +5,8 @@ import nebula.gameobjects.Text;
 import nebula.scene.Scene;
 
 class TestScene extends Scene {
+  public var helm:Image;
+
   public function new() {
     super({
       key: 'test',
@@ -19,14 +21,20 @@ class TestScene extends Scene {
   }
 
   override public function create() {
-    var helm = new Image(this, 400, 300, 'helmet');
+    helm = new Image(this, 400, 300, 'helmet');
 
-		var text = new Text(this, 10, 10, 'TEST', { fontSize: 40 });
+    var test = new Image(this, 400, 10, 'helmet');
+
+		var text:Text = new Text(this, 10, 10, 'TEST', { fontSize: 40 }).setScrollFactor(0);
 
     helm.setScale(4);
 
     cameras.main.startFollow(helm);
 
-    displayList.add([helm, text]);
+    displayList.add([helm, text, test]);
+  }
+
+  override public function update(time:Float, delta:Float) {
+    helm.x += 2;
   }
 }

@@ -377,7 +377,7 @@ class GameObject extends EventEmitter {
 	 * the scroll factor is a visual adjustment to where the textures are rendered, which can offset
 	 * them from physics bodies if not accounted for in your code.
 	 */
-	function setScrollFactor(x:Float, ?y:Float = null):Dynamic {
+	public function setScrollFactor(x:Float, ?y:Float = null):Dynamic {
 		if (y == null) {
 			y = x;
 		}
