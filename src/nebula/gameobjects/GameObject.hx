@@ -3,9 +3,9 @@ package nebula.gameobjects;
 import nebula.assets.Texture;
 import nebula.cameras.Camera;
 import nebula.assets.Frame;
+import nebula.utils.Nanoid;
 import nebula.scene.Scene;
 import nebula.math.Angle;
-import kha.math.Vector2;
 
 /**
  * The base class that all Game Objects extend.
@@ -42,6 +42,12 @@ class GameObject extends EventEmitter {
 	 * Empty by default and never populated by Nebula, this is left for developers to use.
 	 */
 	public var name:String = '';
+
+  /**
+   * The id of this object, used so plugins can tell objects apart without having
+   * to store them themselves.
+   */
+  public var id:String = Nanoid.generate();
 
 	/**
 	 * The active state of this Game Object.

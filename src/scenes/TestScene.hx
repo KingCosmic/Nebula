@@ -25,7 +25,7 @@ class TestScene extends Scene {
 
     var test = new Image(this, 400, 10, 'helmet');
 
-		var text:Text = new Text(this, 10, 10, 'TEST', { fontSize: 40 }).setScrollFactor(0);
+		var text:Text = new Text(this, 10, 10, helm.id, { fontSize: 40 }).setScrollFactor(0);
 
     helm.setScale(4);
 
