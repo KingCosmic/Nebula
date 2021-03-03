@@ -89,7 +89,7 @@ class Renderer {
 		final graphics = framebuffer.g2;
 
 		// Start drawing, and clear the framebuffer
-		graphics.begin(config.clearBeforeRender, Color.fromBytes(0, 0, 0));
+		graphics.begin(config.clearBeforeRender, config.backgroundColor);
 
 		drawCount = 0;
 	}
