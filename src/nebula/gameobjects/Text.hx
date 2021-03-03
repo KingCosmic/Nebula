@@ -22,6 +22,8 @@ class Text extends GameObject {
 
 	public var fontSize:Int = 16;
 
+  public var color:Color = Color.White;
+
 	public function new(_s:Scene, ?_x:Float = 0, ?_y:Float = 0, ?text:String = '', ?style:TextStyle) {
 		super(_s, 'Text');
 
@@ -30,6 +32,7 @@ class Text extends GameObject {
 
 		font = scene.assets.getFont(style.fontName);
 		fontSize = (style.fontSize != null) ? style.fontSize : 16;
+    color = (style.color != null) ? style.color : Color.White;
 
 		setText(text);
 	}
@@ -70,6 +73,7 @@ class Text extends GameObject {
 		// set our font.
 		g.font = font;
 		g.fontSize = fontSize;
+    g.color = color;
 
 		// draw our text
 		g.drawString(text, calcX - cameraPos.x, calcY - cameraPos.y);
