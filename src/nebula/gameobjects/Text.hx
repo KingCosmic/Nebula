@@ -30,9 +30,11 @@ class Text extends GameObject {
 		setPosition(_x, _y);
 		setOrigin(0, 0);
 
+    style = (style != null) ? style : { fontName: null, fontSize: 16, color: Color.White };
+
 		font = scene.assets.getFont(style.fontName);
-		fontSize = (style.fontSize != null) ? style.fontSize : 16;
-    color = (style.color != null) ? style.color : Color.White;
+		fontSize = style.fontSize;
+    color = style.color;
 
 		setText(text);
 	}
