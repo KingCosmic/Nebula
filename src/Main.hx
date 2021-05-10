@@ -1,5 +1,6 @@
 package;
 
+
 import scenes.TestScene;
 import nebula.Game;
 
@@ -9,7 +10,7 @@ class Main {
 			title: 'Nebula Test',
 			width: 800,
 			height: 600,
-			scenes: [TestScene]
+			scene: [TestScene]
 		});
 	}
 }

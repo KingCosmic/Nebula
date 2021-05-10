@@ -1,8 +1,9 @@
 package nebula.gameobjects;
 
 import nebula.gameobjects.GameObject;
+import nebula.assets.AssetManager;
 import nebula.cameras.Camera;
-import nebula.scene.Scene;
+import nebula.scenes.Scene;
 import kha.math.Vector2;
 import nebula.Renderer;
 import kha.Color;
@@ -22,7 +23,7 @@ class Text extends GameObject {
 
 	public var fontSize:Int = 16;
 
-  public var color:Color = Color.White;
+	public var color:Color = Color.White;
 
 	public function new(_s:Scene, ?_x:Float = 0, ?_y:Float = 0, ?text:String = '', ?style:TextStyle) {
 		super(_s, 'Text');
@@ -30,11 +31,11 @@ class Text extends GameObject {
 		setPosition(_x, _y);
 		setOrigin(0, 0);
 
-    style = (style != null) ? style : { fontName: null, fontSize: 16, color: Color.White };
+		style = (style != null) ? style : { fontName: null, fontSize: 16, color: Color.White };
 
-		font = scene.assets.getFont(style.fontName);
+		font = AssetManager.getFont(style.fontName);
 		fontSize = style.fontSize;
-    color = style.color;
+		color = style.color;
 
 		setText(text);
 	}
@@ -75,7 +76,7 @@ class Text extends GameObject {
 		// set our font.
 		g.font = font;
 		g.fontSize = fontSize;
-    g.color = color;
+		g.color = color;
 
 		// draw our text
 		g.drawString(text, calcX - cameraPos.x, calcY - cameraPos.y);

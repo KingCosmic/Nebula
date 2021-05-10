@@ -1,12 +1,10 @@
 package nebula;
 
-import nebula.structs.TransformMatrix;
-import nebula.gameobjects.GameObject;
-import nebula.scene.DisplayList;
-import nebula.cameras.Camera;
 import nebula.assets.Frame;
-import nebula.structs.Size;
-import nebula.scene.Scene;
+import nebula.gameobjects.GameObject;
+import nebula.scenes.DisplayList;
+import nebula.cameras.Camera;
+import nebula.scenes.Scene;
 
 import kha.math.Vector2;
 import kha.Framebuffer;
@@ -17,13 +15,13 @@ import kha.Color;
 import kha.Image;
 
 typedef RendererConfig = {
-  backBuffer:Vector2,
-  backgroundColor:Color
+	backBuffer:Vector2,
+	backgroundColor:Color
 }
 
 // TODO: swap this to use transformation matrix's
 // instead of simple maths and see if that helps
-// with the scaling issues.
+// with the scaling issues, introduced from backbuffer.
 
 /**
  * The game class prepares a backbuffer to which states draw. The
@@ -41,10 +39,14 @@ class Renderer {
 	 */
 	public var backbuffer:Image;
 
-	// The total number of Game Objects which were rendered in a frame.
+	/**
+	 * The total number of Game Objects which were rendered in a frame.
+	 */
 	public var drawCount:Int = 0;
 
-	// The local configuration settings of the Renderer.
+	/**
+	 * The local configuration settings of the Renderer.
+	 */
 	public var config = {
 		clearBeforeRender: true,
 		backgroundColor: Color.fromBytes(0, 0, 0),
@@ -52,17 +54,22 @@ class Renderer {
 		roundPixels: false
 	}
 
-	// current Graphics (updated every time notifyFrames runs)
+	/**
+	 * current Graphics (updated every time notifyFrames runs)
+	 */
 	public var framebuffer:Framebuffer;
 
-	// Should the Canvas use Image Smoothing or not when drawing Sprites?
+	/**
+	 * Should the Canvas use Image Smoothing or not when drawing Sprites?
+	 */
 	public var antialias:Bool = true;
 
 	public function new(_game:Game, _config:RendererConfig) {
 		game = _game;
 
-    // TODO: swap rendering to the backbuffer.
-    // maybe? idk
+		// TODO: swap rendering to the backbuffer.
+    // backbuffer should only be used for pixel art games I believe, take a look at this
+		// video for our 2d pixelart renderer https://www.youtube.com/watch?v=jguyR4yJb1M
 
 		// our backbuffer we render to.
 		backbuffer = Image.createRenderTarget(Display.primary.width, Display.primary.height);
@@ -70,19 +77,21 @@ class Renderer {
 		init();
 	}
 
-	// Prepares the game canvas for rendering.
+	/**
+	 * Prepares the game canvas for rendering.
+	 */
 	public function init() {}
 
-	// Resets the transformation matrix of the current context to the identity matrix, thus resetting any transformation.
+	/**
+	 * Resets the transformation matrix of the current context to the identity matrix, thus resetting any transformation.
+	 */
 	public function resetTransform() {
 		// TODO:
 	}
 
-	// Sets the blend mode (compositing operation) of the current context.
-	public function setBlendMode(blendMode:String) {
-		// TODO:
-	}
-
+	/**
+	 * runs before we render. begins our graphics operations.
+	 */
 	public function preRender(_buffer:Framebuffer) {
 		framebuffer = _buffer;
 
@@ -91,6 +100,7 @@ class Renderer {
 		// Start drawing, and clear the framebuffer
 		graphics.begin(config.clearBeforeRender, config.backgroundColor);
 
+    // reset our draw count.
 		drawCount = 0;
 	}
 
@@ -142,7 +152,9 @@ class Renderer {
 		framebuffer.g2.end();
 	}
 
-	// Takes a Image Game Object, or any object that extends it, and draws it to the current context.
+	/**
+	 * Takes a Image Game Object, or any object that extends it, and draws it to the current context.
+	 */
 	public function batchImage(child:GameObject, frame:Frame, camera:Camera) {
 		var alpha = camera.alpha * child.alpha;
 
@@ -182,7 +194,7 @@ class Renderer {
 		// set our alpha.
 		g.pushOpacity(alpha);
 
-		g.drawScaledSubImage(frame.source.image, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, x - cameraPos.x, y - cameraPos.y,
+		g.drawScaledSubImage(frame.texture.source, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, x - cameraPos.x, y - cameraPos.y,
 			frame.cutWidth * child.scaleX, frame.cutHeight * child.scaleY);
 
 		g.rotate(-child.rotation, x - cameraPos.x, y - cameraPos.y);

@@ -1,9 +1,7 @@
 package nebula.cameras;
 
-import nebula.geom.rectangle.RectangleUtils;
-import nebula.scene.DisplayList;
-import nebula.structs.Size;
-import nebula.scene.Scene;
+import nebula.scenes.DisplayList;
+import nebula.scenes.Scene;
 
 /**
  * The Camera Manager is a plugin that belongs to a Scene and is responsible for managing all of the Scene Cameras.
@@ -93,7 +91,8 @@ class CameraManager {
 		main = cameras[0];
 
 		// Create a default camera
-		defaultCam = new Camera(0, 0, scene.game.width, scene.game.height).setScene(scene);
+		defaultCam = new Camera(0, 0, scene.game.window.width, scene.game.window.height);
+		defaultCam.setScene(scene);
 
 		scene.game.events.on('RESIZE', onResize);
 		scene.events.once('DESTROY', destroy);
@@ -132,15 +131,14 @@ class CameraManager {
 	 * 
 	 * See the Camera class documentation for more details.
 	 */
-	public function add(?x:Int = 0, ?y:Int = 0, ?width:Float, ?height:Float, ?makeMain = false, ?name:String = '') {
-    if (width == null)
-			width = scene.game.width;
+	public function add(?x:Int = 0, ?y:Int = 0, ?width:Float, ?height:Float, ?makeMain = false) {
+		if (width == null)
+			width = scene.game.window.width;
 		if (height == null)
-			height = scene.game.height;
+			height = scene.game.window.height;
 
 		var camera = new Camera(x, y, width, height);
 
-		camera.setName(name);
 		camera.setScene(scene);
 		camera.setRoundPixels(roundPixels);
 
@@ -164,7 +162,7 @@ class CameraManager {
 		var testID = 1;
 
 		// Find the first free camera ID we can use
-		for (t in 0...32) {
+		for (t in 0...31) {
 			var found = false;
 
 			for (camera in cameras) {
@@ -198,21 +196,6 @@ class CameraManager {
 		}
 
 		return total;
-	}
-
-	/**
-	 * Gets a Camera based on its name.
-	 * 
-	 * Camera names are optional and don't have to be set, so this method is only of any use if you
-	 * have given your Cameras unique names.
-	 */
-	public function getCamera(name:String) {
-		for (camera in cameras) {
-			if (camera.name == name)
-				return camera;
-		}
-
-		return null;
 	}
 
 	/**
@@ -250,20 +233,20 @@ class CameraManager {
 
 	/**
 	 * The internal render method. This is called automatically by
-   * the Scene and should not be invoked directly.
+	 * the Scene and should not be invoked directly.
 	 * 
 	 * It will iterate through all local cameras and
-   * render them in turn, as long as they're visible
-   * and have an alpha level > 0.
+	 * render them in turn, as long as they're visible
+	 * and have an alpha level > 0.
 	 */
 	public function render(renderer:Renderer, children:DisplayList) {
 		for (camera in cameras) {
-      // is this camera visible and has alpha
+			// is this camera visible and has alpha
 			if (camera.visible && camera.alpha > 0) {
-        // pre render the camera
+				// pre render the camera
 				camera.preRender();
 
-        // and now render
+				// and now render
 				renderer.render(scene, children, camera);
 			}
 		}
@@ -276,18 +259,18 @@ class CameraManager {
 	 * cameras array, reset the ID counter and create 1 new single camera using the default values.
 	 */
 	public function resetAll() {
-    // call all cameras destroy methods
+		// call all cameras destroy methods
 		for (camera in cameras) {
 			camera.destroy();
 		}
 
-    // remove all cameras
+		// remove all cameras
 		cameras = [];
 
-    // add a new primary camera
+		// add a new primary camera
 		main = add();
 
-    // return the primary camera
+		// return the primary camera
 		return main;
 	}
 
@@ -314,37 +297,38 @@ class CameraManager {
 	 *
 	 * The first camera in the array is the top-most camera in the camera list.
 	 */
-  /* TODO: move to input plugin.
-	public function getCamerasBelowPointer(pointer:Pointer) {
-		var x = pointer.x;
-		var y = pointer.y;
+	/* TODO: move to input plugin.
+		public function getCamerasBelowPointer(pointer:Pointer) {
+			var x = pointer.x;
+			var y = pointer.y;
 
-		var output = [];
+			var output = [];
 
-		for (camera in cameras) {
-			if (camera.visible && camera.inputEnabled && RectangleUtils.containsPoint(camera.worldView, x, y)) {
-				// So the top-most camera is at the top of the search array
-				output.unshift(camera);
+			for (camera in cameras) {
+				if (camera.visible && camera.inputEnabled && RectangleUtils.containsPoint(camera.worldView, x, y)) {
+					// So the top-most camera is at the top of the search array
+					output.unshift(camera);
+				}
 			}
-		}
 
-		return output;
+			return output;
 	}*/
 
+
 	/**
-	 * The Scene that owns this plugin is shutting down.
+	 * The Scene that owns this Manager is shutting down.
 	 * We need to kill and reset all internal properties as well as stop listening to Scene events.
 	 */
 	public function shutdown() {
-    // run each cameras destroy method
+		// run each cameras destroy method
 		for (camera in cameras) {
 			camera.destroy();
 		}
 
-    // empty our cameras
+		// empty our cameras
 		cameras = [];
 
-    // remove our update and shutdown listeners
+		// remove our update and shutdown listeners
 		scene.events.removeListener('UPDATE', update);
 		scene.events.removeListener('SHUTDOWN', shutdown);
 	}

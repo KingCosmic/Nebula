@@ -1,10 +1,11 @@
 package nebula.gameobjects;
 
+import nebula.assets.AssetManager;
 import nebula.assets.Texture;
 import nebula.cameras.Camera;
 import nebula.assets.Frame;
 import nebula.utils.Nanoid;
-import nebula.scene.Scene;
+import nebula.scenes.Scene;
 import nebula.math.Angle;
 
 /**
@@ -26,28 +27,10 @@ class GameObject extends EventEmitter {
 	public var type:String;
 
 	/**
-	 * The current state of this Game Object.
-	 *
-	 * Nebula itself will never modify this value, although plugins may do so.
-	 *
-	 * Use this property to track the state of a Game Object during its lifetime. For example, it could change from
-	 * a state of 'moving', to 'attacking', to 'dead'. The state value should be an integer (ideally mapped to a constant
-	 * in your game code), or a string. These are recommended to keep it light and simple, with fast comparisons.
-	 * If you need to store complex data about your Game Object, look at using the Data Component instead.
+	 * The id of this object, used so plugins can tell objects apart without having
+	 * to store them themselves.
 	 */
-	public var state:String = 'default';
-
-	/**
-	 * The name of this Game Object.
-	 * Empty by default and never populated by Nebula, this is left for developers to use.
-	 */
-	public var name:String = '';
-
-  /**
-   * The id of this object, used so plugins can tell objects apart without having
-   * to store them themselves.
-   */
-  public var id:String = Nanoid.generate();
+	public var id:String = Nanoid.generate();
 
 	/**
 	 * The active state of this Game Object.
@@ -78,16 +61,10 @@ class GameObject extends EventEmitter {
 	 * correspond to the four corners of the Game Object. Under Canvas only the `topLeft` value given is used.
 	 */
 	public function setAlpha(value:Float = 1):Dynamic {
-		
-    alpha = value;
+		alpha = value;
 
 		return this;
 	}
-
-	/**
-	 * Private internal value. Holds the depth of the Game Object.
-	 */
-	public var _depth:Int = 0;
 
 	/**
 	 * The depth of this Game Object within the Scene.
@@ -100,18 +77,14 @@ class GameObject extends EventEmitter {
 	 *
 	 * Setting the depth will queue a depth sort event within the Scene.
 	 */
-	public var depth(get, set):Int;
-
-	function get_depth():Int {
-		return _depth;
-	}
+	public var depth(default, set):Int = 0;
 
 	function set_depth(value:Int):Int {
 		scene.queueDepthSort();
 
-		_depth = value;
+		depth = value;
 
-		return _depth;
+		return value;
 	}
 
 	/**
@@ -233,6 +206,9 @@ class GameObject extends EventEmitter {
 	 */
 	public var originY:Float = 0.5;
 
+	/**
+	 * Private internal values for displayOrigin
+	 */
 	public var _displayOriginX:Float = 0;
 	public var _displayOriginY:Float = 0;
 
@@ -270,6 +246,17 @@ class GameObject extends EventEmitter {
 		originY = value / height;
 
 		return value;
+	}
+
+	/**
+	 * Updates the Display Origin cached values internally stored on this Game Object.
+	 * You don't usually call this directly, but it is exposed for edge-cases where you may.
+	 */
+	public function updateDisplayOrigin():Dynamic {
+		_displayOriginX = originX * width;
+		_displayOriginY = originY * height;
+
+		return this;
 	}
 
 	/**
@@ -313,17 +300,6 @@ class GameObject extends EventEmitter {
 
 		displayOriginX = x;
 		displayOriginY = y;
-
-		return this;
-	}
-
-	/**
-	 * Updates the Display Origin cached values internally stored on this Game Object.
-	 * You don't usually call this directly, but it is exposed for edge-cases where you may.
-	 */
-	public function updateDisplayOrigin():Dynamic {
-		_displayOriginX = originX * width;
-		_displayOriginY = originY * height;
 
 		return this;
 	}
@@ -509,74 +485,12 @@ class GameObject extends EventEmitter {
 	public var frame:Frame = null;
 
 	/**
-	 * A boolean flag indicating if this Game Object is being cropped or not.
-	 * You can toggle this at any time after `setCrop` has been called, to turn cropping on or off.
-	 * Equally, calling `setCrop` with no arguments will reset the crop and disable it.
-	 */
-	public var isCropped:Bool = false;
-
-	/**
-	 * The internal crop data object, as used by `setCrop` and passed to the `Frame.setCropUVs` method.
-	 */ // To-Do Why Isn't this used by a Component?
-	public var _crop:{
-		u0:Float,
-		v0:Float,
-		u1:Float,
-		v1:Float,
-		x:Float,
-		y:Float,
-		cx:Float,
-		cy:Float,
-		cw:Float,
-		ch:Float,
-		width:Float,
-		height:Float,
-		flipX:Bool,
-		flipY:Bool
-	};
-
-	/**
-	 * Applies a crop to a texture based Game Object, such as a Sprite or Image.
-	 *
-	 * The crop is a rectangle that limits the area of the texture frame that is visible during rendering.
-	 *
-	 * Cropping a Game Object does not change its size, dimensions, physics body or hit area, it just
-	 * changes what is shown when rendered.
-	 *
-	 * The crop coordinates are relative to the texture frame, not the Game Object, meaning 0 x 0 is the top-left.
-	 *
-	 * Therefore, if you had a Game Object that had an 800x600 sized texture, and you wanted to show only the left
-	 * half of it, you could call `setCrop(0, 0, 400, 600)`.
-	 *
-	 * It is also scaled to match the Game Object scale automatically. Therefore a crop rect of 100x50 would crop
-	 * an area of 200x100 when applied to a Game Object that had a scale factor of 2.
-	 *
-	 * You can either pass in numeric values directly, or you can provide a single Rectangle object as the first argument.
-	 *
-	 * Call this method with no arguments at all to reset the crop, or toggle the property `isCropped` to `false`.
-	 *
-	 * You should do this if the crop rectangle becomes the same size as the frame itself, as it will allow
-	 * the renderer to skip several internal calculations.
-	 */
-	// TODO: Rectangle Version
-	public function setCrop(?x:Float, ?y:Float, ?width:Float, ?height:Float):GameObject {
-		if (x == null) {
-			isCropped = false;
-		} else if (frame != null) {
-			frame.setCropUVs(_crop, x, y, width, height, flipX, flipY);
-			isCropped = true;
-		}
-
-		return this;
-	}
-
-	/**
 	 * Sets the texture and frame this Game Object will use to render with.
 	 *
 	 * Textures are referenced by their string-based keys, as stored in the Texture Manager.
 	 */
 	public function setTexture(key:String, frame:String):GameObject {
-		texture = scene.assets.getTexture(key);
+		texture = AssetManager.getTexture(key);
 		return setFrame(frame);
 	}
 
@@ -607,58 +521,6 @@ class GameObject extends EventEmitter {
 	}
 
 	/**
-	 * Internal method that returns a blank, well-formed crop object for use by a Game Object.
-	 */
-	private function resetCropObject():{
-		u0:Float,
-		v0:Float,
-		u1:Float,
-		v1:Float,
-		x:Float,
-		y:Float,
-		cx:Float,
-		cy:Float,
-		cw:Float,
-		ch:Float,
-		width:Float,
-		height:Float,
-		flipX:Bool,
-		flipY:Bool
-	} {
-		return {
-			u0: 0,
-			v0: 0,
-			u1: 0,
-			v1: 0,
-			x: 0,
-			y: 0,
-			cx: 0,
-			cy: 0,
-			cw: 0,
-			ch: 0,
-			width: 0,
-			height: 0,
-			flipX: false,
-			flipY: false
-		};
-	}
-
-	/**
-	 * Private internal value. Holds the horizontal scale value.
-	 */
-	public var _scaleX:Float = 1;
-
-	/**
-	 * Private internal value. Holds the vertical scale value.
-	 */
-	public var _scaleY:Float = 1;
-
-	/**
-	 * Private internal value. Holds the rotation value in radians.
-	 */
-	public var _rotation:Float = 0;
-
-	/**
 	 * The x position of this Game Object.
 	 */
 	public var x:Float = 0;
@@ -675,12 +537,12 @@ class GameObject extends EventEmitter {
 	public var scale(get, set):Float;
 
 	function get_scale():Float {
-		return (_scaleX + _scaleY) / 2;
+		return (scaleX + scaleY) / 2;
 	}
 
 	function set_scale(value:Float):Float {
-		_scaleX = value;
-		_scaleY = value;
+		scaleX = value;
+		scaleY = value;
 
 		return get_scale();
 	}
@@ -692,50 +554,26 @@ class GameObject extends EventEmitter {
 	 * Use of this property implies you wish the horizontal and vertical scales to be equal to each other. If this
 	 * isn't the case, use the `scaleX` or `scaleY` properties instead.
 	 */
-	public var scaleX(get, set):Float;
-
-	function get_scaleX():Float {
-		return _scaleX;
-	}
-
-	function set_scaleX(value:Float):Float {
-		_scaleX = value;
-
-		return get_scaleX();
-	}
+	public var scaleX:Float = 1;
 
 	/**
 	 * The vertical scale of this Game Object.
 	 */
-	public var scaleY(get, set):Float;
-
-	function get_scaleY():Float {
-		return _scaleY;
-	}
-
-	function set_scaleY(value:Float):Float {
-		_scaleY = value;
-
-		return get_scaleY();
-	}
+	public var scaleY:Float = 1;
 
 	/**
 	 * The angle of this Game Object in radians.
 	 *
 	 * Nebula uses a right-hand clockwise rotation system, where 0 is right, 90 is down, 180/-180 is left
 	 * and -90 is up.
-   */
-	public var rotation(get, set):Float;
-
-	function get_rotation():Float {
-		return _rotation;
-	}
+	 */
+	public var rotation(default, set):Float;
 
 	function set_rotation(value:Float):Float {
-		//  value is in degrees
-		_rotation = Angle.wrap(value);
+		// value is in degrees
+		rotation = Angle.wrap(value);
 
-		return get_rotation();
+		return rotation;
 	}
 
 	/**
@@ -748,24 +586,6 @@ class GameObject extends EventEmitter {
 
 		x = _x;
 		y = _y;
-
-		return this;
-	}
-
-	/**
-	 * Sets the position of this Game Object to be a random position within the confines of
-	 * the given area.
-	 */
-	public function setRandomPosition(?_x:Float = 0.0, ?_y:Float = 0.0, ?width:Float = null, ?height:Float = null):Dynamic {
-		if (width == null) {
-			width = scene.game.width;
-		}
-		if (height == null) {
-			height = scene.game.height;
-		}
-
-		x = _x + (Math.random() * width);
-		y = _y + (Math.random() * height);
 
 		return this;
 	}
@@ -787,8 +607,8 @@ class GameObject extends EventEmitter {
 			y = x;
 		}
 
-    scaleX = x;
-    scaleY = y;
+		scaleX = x;
+		scaleY = y;
 
 		return this;
 	}
@@ -812,36 +632,11 @@ class GameObject extends EventEmitter {
 	}
 
 	/**
-	 * Gets the local transform matrix for this Game Object.
-
-  // TODO: what's this for?
-	public function getLocalTransformMatrix(?tempMatrix:TransformMatrix = null):TransformMatrix {
-		if (tempMatrix == null) {
-			tempMatrix = new TransformMatrix();
-		}
-
-		return tempMatrix.applyITRS(x, y, _rotation, _scaleX, _scaleY);
-	}
-
-	/**
-	 * Gets the world transform matrix for this Game Object, factoring in any parent Containers.
-
-	public function getWorldTransformMatrix(?tempMatrix:TransformMatrix = null):TransformMatrix {
-		if (tempMatrix == null) {
-			tempMatrix = new TransformMatrix();
-		}
-
-		tempMatrix.applyITRS(x, y, _rotation, _scaleX, _scaleY);
-
-		return tempMatrix;
-	}*/
-
-	/**
 	 * The visible state of the Game Object.
 	 *
 	 * An invisible Game Object will skip rendering, but will still process update logic.
 	 */
-	private var visible:Bool = true;
+	public var visible:Bool = true;
 
 	/**
 	 * Sets the visibility of this Game Object.
@@ -875,30 +670,6 @@ class GameObject extends EventEmitter {
 	}
 
 	/**
-	 * Sets the `name` property of this Game Object and returns this Game Object for further chaining.
-	 * The `name` property is not populated by Phaser and is presented for your own use.
-	 */
-	public function setName(value:String) {
-		name = value;
-		return this;
-	}
-
-	/**
-	 * Sets the current state of this Game Object.
-	 *
-	 * Phaser itself will never modify the State of a Game Object, although plugins may do so.
-	 *
-	 * For example, a Game Object could change from a state of 'moving', to 'attacking', to 'dead'.
-	 * The state value should typically be an integer (ideally mapped to a constant
-	 * in your game code), but could also be a string. It is recommended to keep it light and simple.
-	 * If you need to store complex data about your Game Object, look at using the Data Component instead.
-	 */
-	public function setState(value:String) {
-		state = value;
-		return this;
-	}
-
-	/**
 	 * This callback is invoked when this Game Object is added to a Scene.
 	 *
 	 * Can be overriden by custom Game Objects, but be aware of some Game Objects that
@@ -928,11 +699,13 @@ class GameObject extends EventEmitter {
 	 * Also checks the Game Object against the given Cameras exclusion list.
 	 */
 	public function willRender(camera:Camera) {
-    // TODO: not sure why we do a reverse reverse, will look into it.
+		// TODO: not sure why we do a reverse reverse, will look into it.
 		return !(!visible || alpha == 0 || (cameraFilter != 0 && (cameraFilter & camera.id) == 1));
 	}
 
-  // This is for GameObjects to override
+	/**
+	 * This is for GameObjects to override
+	 */
 	public function render(renderer:Renderer, camera:Camera) {}
 
 	/**
@@ -953,8 +726,8 @@ class GameObject extends EventEmitter {
 
 	/**
 	 * This method is called before the GameObject is destroyed
-   * 
-   * It is for personal use.
+	 * 
+	 * It is for personal use.
 	 */
 	public function preDestroy() {};
 

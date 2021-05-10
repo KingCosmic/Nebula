@@ -1,10 +1,10 @@
 package nebula.cameras;
 
-import nebula.geom.rectangle.Rectangle;
-import nebula.structs.TransformMatrix;
+import kha.math.FastMatrix4;
 import nebula.gameobjects.GameObject;
-import nebula.scene.SceneManager;
-import nebula.scene.Scene;
+import nebula.scenes.SceneManager;
+import nebula.geom.Rectangle;
+import nebula.scenes.Scene;
 import kha.math.Vector2;
 import kha.Color;
 
@@ -36,26 +36,35 @@ import kha.Color;
  * to when they were added to the Camera class.
  */
 class BaseCamera extends EventEmitter {
-	// A reference to teh Scene this camera belongs to.
+	/**
+	 * A reference to the Scene this camera belongs to.
+	 */
 	public var scene:Scene;
 
-	// A reference to the Game Scene Manager.
+	/**
+	 * A reference to the Game Scene Manager.
+	 */
 	public var sceneManager:SceneManager;
 
-	// A reference to the Scene's Camera Manager to which this Camera belongs.
+	/**
+	 * A reference to the Scene's Camera Manager to which this Camera belongs.
+	 */
 	public var cameraManager:CameraManager;
 
-	// The Camera ID. Assigned by the Camera Manager and used to handle camera exclusion.
-	// This value is a bitmask.
+	/**
+	 * The Camera ID. Assigned by the Camera Manager and used to handle camera exclusion.
+	 * This value is a bitmask.
+	 */
 	public var id:Int = 0;
 
-	// The name of the Camera. This is left empty for your own use.
-	public var name:String = '';
-
-	// The resolution of the Game, used in most Camera calculations.
+	/**
+	 * The resolution of the Game, used in most Camera calculations.
+	 */
 	public var _resolution:Float = 1;
 
-	// Should this camera round it's pixel values to integers?
+	/**
+	 * Should this camera round it's pixel values to integers?
+	 */
 	public var roundPixels:Bool = false;
 
 	/**
@@ -82,6 +91,11 @@ class BaseCamera extends EventEmitter {
 	public var worldView:Rectangle = new Rectangle();
 
 	/**
+	 * A local transform matrix used for internal calculations.
+	 */
+	public var matrix:FastMatrix4 = FastMatrix4.empty();
+
+	/**
 	 * Is this Camera dirty?
 	 * 
 	 * A dirty Camera has had either its viewport size, bounds, scroll, rotation or zoom levels changed since the last frame.
@@ -104,16 +118,24 @@ class BaseCamera extends EventEmitter {
 	 */
 	public var _y:Float;
 
-	// Internal Camera X value multiplied by the resolution.
+	/**
+	 * Internal Camera X value multiplied by the resolution.
+	 */
 	public var _cx:Float = 0;
 
-	// Internal Camera Y value multiplied by the resolution.
+	/**
+	 * Internal Camera Y value multiplied by the resolution.
+	 */
 	public var _cy:Float = 0;
 
-	// Internal Camera Width value multiplied by the resolution.
+	/**
+	 * Internal Camera Width value multiplied by the resolution.
+	 */
 	public var _cw:Float = 0;
 
-	// Internal Camera Height value multiplied by the resolution.
+	/**
+	 * Internal Camera Height value multiplied by the resolution.
+	 */
 	public var _ch:Float = 0;
 
 	/**
@@ -132,7 +154,9 @@ class BaseCamera extends EventEmitter {
 	 */
 	public var _height:Float;
 
-	// The bounds the camera is restrained to during scrolling.
+	/**
+	 * The bounds the camera is restrained to during scrolling.
+	 */
 	public var _bounds:Rectangle = new Rectangle();
 
 	/**
@@ -183,13 +207,14 @@ class BaseCamera extends EventEmitter {
 	 */
 	public var _rotation:Float = 0;
 
-	// A local transform matrix used for internal calculations.
-	public var matrix:TransformMatrix = new TransformMatrix();
-
-	// Does this Camera have a transparent background?
+	/**
+	 * Does this Camera have a transparent background?
+	 */
 	public var transparent:Bool = true;
 
-	// The background color of this Camera. Only used if `transparent` is `false`.
+	/**
+	 * The background color of this Camera. Only used if `transparent` is `false`.
+	 */
 	public var backgroundColor:Color = Color.Black;
 
 	/**
@@ -205,7 +230,9 @@ class BaseCamera extends EventEmitter {
 	 */
 	public var disableCull:Bool = false;
 
-	// A temporary array of culled objects.
+	/**
+	 * A temporary array of culled objects.
+	 */
 	public var culledObjects:Array<GameObject> = [];
 
 	/**
@@ -242,7 +269,9 @@ class BaseCamera extends EventEmitter {
 	 */
 	public var originY:Float = 0.5;
 
-	// Does this Camera have a custom viewport?
+	/**
+	 * Does this Camera have a custom viewport?
+	 */
 	public var _customViewport:Bool = false;
 
 	/**
@@ -368,7 +397,9 @@ class BaseCamera extends EventEmitter {
 		return this;
 	}
 
-	// Moved the Camera so that it is looking at the center of the Camera Bounds, if enabled.
+	/**
+	 * Moved the Camera so that it is looking at the center of the Camera Bounds, if enabled.
+	 */
 	public function centerToBounds() {
 		if (useBounds) {
 			var xOrigin = width * 0.5;
@@ -381,7 +412,9 @@ class BaseCamera extends EventEmitter {
 		return this;
 	}
 
-	// Moves the Camera so that it is re-centered based on its viewport size.
+	/**
+	 * Moves the Camera so that it is re-centered based on its viewport size.
+	 */
 	public function centerToSize() {
 		scrollX = width * 0.5;
 		scrollY = height * 0.5;
@@ -392,17 +425,17 @@ class BaseCamera extends EventEmitter {
 	/**
 	 * Takes an array of Game Objects and returns a new array featuring only those objects
 	 * visible by this camera.
+   * 
+   * TODO: see if this was what was making some objects dissapear in making the renderer scale up for pixel art.
 	 */
 	public function cull(renderableObjects:Array<GameObject>) {
 		if (disableCull)
 			return renderableObjects;
 
-		var cameraMatrix = matrix.matrix;
-
-		var mva = cameraMatrix[0];
-		var mvb = cameraMatrix[1];
-		var mvc = cameraMatrix[2];
-		var mvd = cameraMatrix[3];
+		var mva = matrix._00;
+		var mvb = matrix._01;
+		var mvc = matrix._02;
+		var mvd = matrix._03;
 
 		// First Invert Matrix
 		var determinant = (mva * mvd) - (mvb * mvc);
@@ -411,8 +444,8 @@ class BaseCamera extends EventEmitter {
 		if (determinant == 0)
 			return renderableObjects;
 
-		var mve = cameraMatrix[4];
-		var mvf = cameraMatrix[5];
+		var mve = matrix._10;
+		var mvf = matrix._11;
 
 		var cullTop = y;
 		var cullBottom = y + height;
@@ -425,7 +458,7 @@ class BaseCamera extends EventEmitter {
 
 		for (object in renderableObjects) {
 			/* TODO: make containers
-					  if (object.parentContainer != null) {
+			if (object.parentContainer != null) {
 				culledObjects.push(object);
 				continue;
 			}*/
@@ -455,16 +488,14 @@ class BaseCamera extends EventEmitter {
 		if (out == null)
 			out = new Vector2();
 
-		var cameraMatrix = matrix.matrix;
+		var mva = matrix._00;
+		var mvb = matrix._01;
+		var mvc = matrix._02;
+		var mvd = matrix._03;
+		var mve = matrix._10;
+		var mvf = matrix._11;
 
-		var mva = cameraMatrix[0];
-		var mvb = cameraMatrix[1];
-		var mvc = cameraMatrix[2];
-		var mvd = cameraMatrix[3];
-		var mve = cameraMatrix[4];
-		var mvf = cameraMatrix[5];
-
-		//  Invert Matrix
+		// Invert Matrix
 		var determinant = (mva * mvd) - (mvb * mvc);
 
 		// TODO: make sure this is correct
@@ -516,7 +547,9 @@ class BaseCamera extends EventEmitter {
 		return this;
 	}
 
-	// Internal preRender step.
+	/**
+	 * Internal preRender step.
+	 */
 	public function preRender() {
 		var halfWidth = width * 0.5;
 		var halfHeight = height * 0.5;
@@ -547,12 +580,11 @@ class BaseCamera extends EventEmitter {
 		var displayHeight = height / zoom;
 
 		worldView.setTo(midX - (displayWidth / 2), midY - (displayHeight / 2), displayWidth, displayHeight);
-
-		matrix.applyITRS(x + xOrigin, y + yOrigin, rotation, zoom, zoom);
-		matrix.translate(-xOrigin, -yOrigin);
 	}
 
-	// Calculates a linear (interpolation) value over t.
+	/**
+	 * Calculates a linear (interpolation) value over t.
+	 */
 	public function linear(p0:Float, p1:Float, t:Float) {
 		return (p1 - p0) * t + p0;
 	}
@@ -595,7 +627,9 @@ class BaseCamera extends EventEmitter {
 		return y;
 	}
 
-	// If this Camera has previously had movement bounds set on it, this will remove them.
+	/**
+	 * If this Camera has previously had movement bounds set on it, this will remove them.
+	 */
 	public function removeBounds() {
 		useBounds = false;
 
@@ -685,16 +719,6 @@ class BaseCamera extends EventEmitter {
 	}
 
 	/**
-	 * Sets the name of this Camera.
-	 * This value is for your own use and isn't used internally.
-	 */
-	public function setName(?value:String = '') {
-		name = value;
-
-		return this;
-	}
-
-	/**
 	 * Set the position of the Camera viewport within the game.
 	 *
 	 * This does not change where the camera is 'looking'. See `setScroll` to control that.
@@ -737,13 +761,9 @@ class BaseCamera extends EventEmitter {
 	 * Also populates the `resolution` property and updates the internal size values.
 	 */
 	public function setScene(_scene:Scene) {
-		if (scene != null && _customViewport) {
-			sceneManager.customViewports--;
-		}
-
 		scene = _scene;
 
-		sceneManager = scene.game.sceneManager;
+		sceneManager = scene.game.scenes;
 		cameraManager = scene.cameras;
 
 		var res = 1;
@@ -859,18 +879,6 @@ class BaseCamera extends EventEmitter {
 		return this;
 	}
 
-	// Clears the mask that this Camera was using.
-
-	/*
-		  public function clearMask(?destroyMask:Bool = false) {
-		if (destroyMask && mask != null) {
-		  mask.desroy();
-		}
-
-		mask = null;
-
-		return this;
-	}*/
 	/**
 	 * Sets the visibility of this Camera.
 	 *
@@ -882,25 +890,18 @@ class BaseCamera extends EventEmitter {
 		return this;
 	}
 
-	// Internal method called automatically by the Camera Manager.
+	/**
+	 * Internal method called automatically by the Camera Manager.
+	 */
 	public function update(time:Float, delta:Float) {}
 
-	// TODO: rework this if we need custom viewports
-	// Internal method called automatically when the viewport changes.
+	/**
+	 * Internal method called automatically when the viewport changes.
+   * 
+	 * TODO: rework this if we need custom viewports
+	 */
 	public function updateSystem() {
-		/*
-			var custom = (x != 0 || y != 0 || scaleManager.game.config.width != width || scaleManager.game.config.height != height);
-
-			if (custom && !_customViewport) {
-				//  We need a custom viewport for this Camera
-				sceneManager.customViewports++;
-			} else if (!custom && _customViewport) {
-				//  We're turning off a custom viewport for this Camera
-				sceneManager.customViewports--;
-		}*/
-
 		dirty = true;
-		// _customViewport = custom;
 		_customViewport = false;
 	}
 
@@ -918,20 +919,15 @@ class BaseCamera extends EventEmitter {
 
 		removeAllListeners();
 
-		matrix.destroy();
-
 		culledObjects = [];
-
-		if (_customViewport) {
-			// We're turning off a custom viewport for this Camera
-			sceneManager.customViewports--;
-		}
 
 		_bounds = null;
 		scene = null;
 		sceneManager = null;
 		cameraManager = null;
 	}
+
+  // TODO: give all of these comments.
 
 	public var x(get, set):Float;
 

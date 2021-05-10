@@ -1,5 +1,6 @@
 package nebula.assets;
 
+import kha.Image;
 import nebula.assets.AssetManager;
 
 /**
@@ -17,26 +18,35 @@ import nebula.assets.AssetManager;
  * Sprites and other Game Objects get the texture data they need from the TextureManager.
  */
 class Texture {
-	// A reference to the AssetManager this Texture belongs to.
-	public var manager:AssetManager;
-
-	// The unique string-based key of this Texture.
+	/**
+	 * The unique string-based key of this Texture.
+	 */
 	public var key:String;
 
 	/**
 	 * An array of TextureSource instances.
 	 * These are unique to this Texture and contain the actual Image (or Canvas) data.
 	 */
-	public var source:Array<TextureSource> = [];
+	public var source:Image;
 
-	// TODO: data source
+	/**
+	 * The width of the source image.
+	 */
+	public var width:Int;
+
+	/**
+	 * The height of the source image.
+	 */
+	public var height:Int;
 
 	/**
 	 * A key-value object pair associating the unique Frame keys with the Frames objects.
 	 */
 	public var frames:Map<String, Frame> = new Map();
 
-	// The name of the first frame of the texture.
+	/**
+	 * The name of the first frame of the texture.
+	 */
 	public var firstFrame = '__BASE';
 
 	/**
@@ -47,13 +57,26 @@ class Texture {
 	 */
 	public var frameTotal:Int = 0;
 
-	public function new(_manager:AssetManager, _key:String, _sources:Array<kha.Image>, width:Int, height:Int) {
-		manager = _manager;
+	/**
+	 * The Scale Mode the image will use when rendering.
+	 * Either Linear or Nearest.
+	 */
+	public var scaleMode:Int = 0;
+
+	/**
+	 * Are the source image dimensions a power of two?
+	 */
+	public var isPowerOf2:Bool = false;
+
+	public function new(_key:String, _source:Image) {
 		key = _key;
 
-		for (_source in _sources) {
-			source.push(new TextureSource(this, _source, width, height));
-		}
+		source = _source;
+
+    width = source.realWidth;
+    height = source.realHeight;
+
+		isPowerOf2 = (width > 0 && (width & (width - 1)) == 0 && height > 0 && (height & (height - 1)) == 0);
 	}
 
 	/**
@@ -63,11 +86,11 @@ class Texture {
 	 * 
 	 * The name given must be unique within this Texture. If it already exists, this method will return `null`.
 	 */
-	public function add(name:String, sourceIndex:Int, x:Int, y:Int, width:Int, height:Int) {
+	public function add(name:String, x:Int, y:Int, width:Int, height:Int) {
 		if (has(name))
 			return null;
 
-		var frame = new Frame(this, name, sourceIndex, x, y, width, height);
+		var frame = new Frame(this, name, x, y, width, height);
 
 		frames.set(name, frame);
 
@@ -133,25 +156,9 @@ class Texture {
 	}
 
 	/**
-	 * Takes the given TextureSource and returns the index of it within this Texture.
-	 * If it's not in this Texture, it returns -1.
-	 * Unless this Texture has multiple TextureSources, such as with a multi-atlas, this
-	 * method will always return zero or -1.
+	 * Returns an array of all the Frames in the given Texture.
 	 */
-	public function getTextureSourceIndex(_source:TextureSource) {
-		for (i in 0...source.length) {
-			if (source[i] == _source) {
-				return i;
-			}
-		}
-
-		return -1;
-	}
-
-	/**
-	 * Returns an array of all the Frames in the given TextureSource.
-	 */
-	public function getFramesFromTextureSource() {
+	public function getFramesFromTexture() {
 		// TODO:
 	}
 
@@ -171,8 +178,9 @@ class Texture {
 		if (!includeBase) {
 			var idx = out.indexOf('__BASE');
 
-			if (idx != -1)
+			if (idx != -1) {
 				out.splice(idx, 1);
+      }
 		}
 
 		return out;
@@ -206,18 +214,16 @@ class Texture {
 	}
 
 	/**
-	 * Destroys this Texture and releases references to its sources and frames.
+	 * Destroys this Texture and releases references to its source and frames.
 	 */
 	public function destroy() {
 		for (frame in frames.iterator()) {
 			frame.destroy();
 		}
 
-		source = [];
+		source = null;
 		frames.clear();
 
-		manager.removeTextureKey(key);
-
-		manager = null;
+		AssetManager.removeTextureKey(key);
 	}
 }

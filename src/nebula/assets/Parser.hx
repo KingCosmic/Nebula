@@ -2,18 +2,30 @@ package nebula.assets;
 
 import nebula.assets.Texture;
 
+typedef SpriteSheetConfig = {
+  ?frameWidth:Int,
+  ?frameHeight:Int,
+  ?startFrame:Int,
+  ?endFrame:Int,
+  ?margin:Int,
+  ?spacing:Int
+}
+
 class Parser {
-	// Adds an Image Element to a Texture.
-	static public function image(texture:Texture, sourceIndex:Int) {
-		var source = texture.source[sourceIndex];
-		texture.add('__BASE', sourceIndex, 0, 0, source.width, source.height);
+	/**
+	 * Adds an Image Element to a Texture.
+	 */
+	static public function image(texture:Texture) {
+		texture.add('__BASE', 0, 0, texture.width, texture.height);
 		return texture;
 	}
 
-	// Parses a Sprite Sheet and adds the Frames to the Texture.
-	// In Phaser terminology a Sprite Sheet is a texture containing different frames, but each frame is the exact
-	// same size and cannot be trimmed or rotated.
-	static public function spriteSheet(texture:Texture, sourceIndex:Int, x:Int, y:Int, width:Int, height:Int, ?config:{ ?frameWidth:Int, ?frameHeight:Int, ?startFrame:Int, ?endFrame:Int, ?margin:Int, ?spacing:Int}) {
+	/**
+	 * Parses a Sprite Sheet and adds the Frames to the Texture.
+	 * In Phaser terminology a Sprite Sheet is a texture containing different frames,
+   * but each frame is the exact same size and cannot be trimmed or rotated.
+	 */
+	static public function spriteSheet(texture:Texture, sourceIndex:Int, x:Int, y:Int, width:Int, height:Int, ?config:SpriteSheetConfig) {
 		if (config == null) {
 			config = {
 				frameWidth: 0,
@@ -32,10 +44,8 @@ class Parser {
 			throw 'TextureManager.SpriteSheet: Invalid frameWidth given.';
 		}
 
-		// Add in a __BASE entry (for the entire atlas)
-		var source = texture.source[sourceIndex];
-
-		texture.add('__BASE', sourceIndex, 0, 0, source.width, source.height);
+		// Add in a __BASE entry (for the entire spritesheet)
+		texture.add('__BASE', 0, 0, texture.width, texture.height);
 
 		var startFrame:Int = config.startFrame != null ? config.startFrame : 0;
 		var endFrame = config.endFrame != null ? config.endFrame : -1;
@@ -83,7 +93,7 @@ class Parser {
 				ay = h - height;
 			}
 
-			texture.add(Std.string(i), sourceIndex, x + fx, y + fy, frameWidth - ax, frameHeight - ay);
+			texture.add(Std.string(i), x + fx, y + fy, frameWidth - ax, frameHeight - ay);
 
 			fx += frameWidth + spacing;
 

@@ -1,5 +1,7 @@
 package nebula.loader.filetypes;
 
+import nebula.assets.AssetManager;
+
 import kha.Assets;
 import kha.Font;
 
@@ -11,8 +13,7 @@ import kha.Font;
  * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#font.
  */
 class FontFile extends File<Font> {
-	public function new(loader:LoaderPlugin, key:String, url:String) {
-
+	public function new(loader:Loader, key:String, url:String) {
 		var fileConfig = {
 			type: 'font',
 			key: key,
@@ -23,7 +24,7 @@ class FontFile extends File<Font> {
 		super(loader, fileConfig);
 	}
 
-	override public function loadFile() {
+	override public function loadFile() { 
 		Assets.loadFont(src, onLoad, onError);
 	}
 
@@ -31,7 +32,7 @@ class FontFile extends File<Font> {
 	 * Adds this file to its target cache upon successful loading and processing.
 	 */
 	override public function addToCache() {
-		var texture = cache.addFont(key, data);
+		var texture = AssetManager.addFont(key, data);
 
 		pendingDestroy(texture);
 	}

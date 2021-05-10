@@ -1,12 +1,18 @@
 {
   "configurations": [
     {
-      "type": "electron",
-      "request": "launch",
       "name": "Kha: HTML5",
-      "appDir": "${workspaceFolder}/build/debug-html5",
+      "request": "launch",
+      "type": "pwa-chrome",
       "cwd": "${workspaceFolder}/build/debug-html5",
-      "sourceMaps": true,
+      "runtimeExecutable": "c:\\Users\\KingC\\.vscode\\extensions\\kodetech.kha-21.4.0\\electron\\electron.exe",
+      "runtimeArgs": [
+        "--no-sandbox",
+        "."
+      ],
+      "outFiles": [
+        "${workspaceFolder}/build/debug-html5/*.js"
+      ],
       "preLaunchTask": "Kha: Build for Debug HTML5",
       "internalConsoleOptions": "openOnSessionStart"
     },

@@ -1,5 +1,7 @@
 package nebula.loader.filetypes;
 
+import nebula.assets.AssetManager;
+
 import kha.Assets;
 import kha.Blob;
 
@@ -11,7 +13,7 @@ import kha.Blob;
  * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#font.
  */
 class JsonFile extends File<Blob> {
-	public function new(loader:LoaderPlugin, key:String, url:String) {
+	public function new(loader:Loader, key:String, url:String) {
 		var fileConfig = {
 			type: 'json',
 			key: key,
@@ -30,7 +32,7 @@ class JsonFile extends File<Blob> {
 	 * Adds this file to its target cache upon successful loading and processing.
 	 */
 	override public function addToCache() {
-		var texture = cache.addJson(key, data);
+		var texture = AssetManager.addJson(key, data);
 
 		pendingDestroy(texture);
 	}

@@ -2,7 +2,7 @@ package nebula.gameobjects;
 
 import nebula.gameobjects.GameObject;
 import nebula.cameras.Camera;
-import nebula.scene.Scene;
+import nebula.scenes.Scene;
 
 /**
  * An Image Game Object.
@@ -16,7 +16,6 @@ class Image extends GameObject {
 	public function new(scene:Scene, x:Float, y:Float, texture:String, ?frame:String = '') {
 		super(scene, 'Image');
 
-		_crop = resetCropObject();
 		setTexture(texture, frame);
 		setPosition(x, y);
 		setSizeToFrame();

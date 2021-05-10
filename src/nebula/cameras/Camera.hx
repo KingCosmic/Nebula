@@ -1,9 +1,8 @@
 package nebula.cameras;
 
-import nebula.geom.rectangle.Rectangle;
 import nebula.gameobjects.GameObject;
 import nebula.cameras.BaseCamera;
-import nebula.scene.Scene;
+import nebula.geom.Rectangle;
 import kha.math.Vector2;
 
 /**
@@ -29,7 +28,9 @@ import kha.math.Vector2;
  * A Camera also has built-in special effects including Fade, Flash and Camera Shake.
  */
 class Camera extends BaseCamera {
-	// Does this Camera allow the Game Objects it renders to receive input events?
+	/**
+	 * Does this Camera allow the Game Objects it renders to receive input events?
+	 */
 	public var inputEnabled:Bool = true;
 
 	// TODO: add effects
@@ -76,7 +77,9 @@ class Camera extends BaseCamera {
 	 */
 	public var deadzone:Rectangle;
 
-	// Internal follow target reference.
+	/**
+	 * Internal follow target reference.
+	 */
 	public var _follow:GameObject;
 
 	/**
@@ -107,6 +110,9 @@ class Camera extends BaseCamera {
 		super(_x, _y, _width, _height);
 	}
 
+	/**
+	 * Internal preRender method.
+	 */
 	override public function preRender() {
 		var halfWidth = width * 0.5;
 		var halfHeight = height * 0.5;
@@ -121,10 +127,9 @@ class Camera extends BaseCamera {
 			var fx = (_follow.x - followOffset.x);
 			var fy = (_follow.y - followOffset.y);
 
-
 			if (deadzone != null) {
 				// TODO: deadzone
-      } else {
+			} else {
 				sx = linear(sx, fx - xOrigin, lerp.x);
 				sy = linear(sy, fy - yOrigin, lerp.y);
 			}
@@ -153,9 +158,6 @@ class Camera extends BaseCamera {
 		var displayHeight = height / zoom;
 
 		worldView.setTo(midX - (displayWidth / 2), midY - (displayHeight / 2), displayWidth, displayHeight);
-
-		matrix.applyITRS(x + xOrigin, y + yOrigin, rotation, zoom, zoom);
-		matrix.translate(-xOrigin, -yOrigin);
 
 		// shakeEffect.preRender();
 	}
@@ -213,21 +215,24 @@ class Camera extends BaseCamera {
 		return this;
 	}
 
-	// Stops a Camera from following a Game Object, if previously set via `Camera.startFollow`.
+	/**
+	 * Stops a Camera from following a Game Object, if previously set via `Camera.startFollow`.
+	 */
 	public function stopFollow() {
 		_follow = null;
 
 		return this;
 	}
 
-	override public function setScene(_scene:Scene) {
-		super.setScene(_scene);
-
-		return this;
-	}
-
-	override public function update(time:Float, delta:Float) {}
-
+	/**
+	 * Destroys this Camera instance and its internal properties and references.
+	 * Once destroyed you cannot use this Camera again, even if re-added to a Camera Manager.
+	 * 
+	 * This method is called automatically by `CameraManager.remove` if that methods `runDestroy` argument is `true`, which is the default.
+	 * 
+	 * Unless you have a specific reason otherwise, always use `CameraManager.remove` and allow it to handle the camera destruction,
+	 * rather than calling this method directly.
+	 */
 	override public function destroy() {
 		super.destroy();
 

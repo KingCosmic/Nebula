@@ -1,40 +1,71 @@
 package scenes;
 
+// import nebula.input.gamepad.GamepadPlugin;
+import nebula.input.keyboard.Keyboard;
+import nebula.input.keyboard.Key;
 import nebula.gameobjects.Image;
-import nebula.gameobjects.Text;
-import nebula.scene.Scene;
+// import nebula.gameobjects.Text;
+import nebula.scenes.Scene;
 
 class TestScene extends Scene {
-  public var helm:Image;
+  private var keyboard:Keyboard;
+
+  private var helm:Image;
+
+	private var keys:{
+		w:Key,
+		a:Key,
+		s:Key,
+		d:Key
+	};
 
   public function new() {
     super({
       key: 'test',
       active: false,
-      visible: false
+      visible: false,
+      loader: true
     });
   }
 
   override public function preload() {
     load.image('helmet', 'helmet');
-		load.font('__DEFAULT', 'TomorrowNight');
+		//load.font('__DEFAULT', 'TomorrowNight');
   }
 
   override public function create() {
+    // WIP
+    keyboard = new Keyboard(this);
+
     helm = new Image(this, 400, 300, 'helmet');
 
-    var test = new Image(this, 400, 10, 'helmet');
+		// var text = new Text(this, 10, 10, 'TEST', { fontSize: 40 });
 
-		var text:Text = new Text(this, 10, 10, helm.id, { fontSize: 40 }).setScrollFactor(0);
+    // helm.setScale(4);
 
-    helm.setScale(4);
+    // cameras.main.startFollow(helm);
 
-    cameras.main.startFollow(helm);
+    displayList.add([helm]);
 
-    displayList.add([helm, text, test]);
+		keys = {
+			w: keyboard.addKey('W'),
+			a: keyboard.addKey('A'),
+			s: keyboard.addKey('S'),
+			d: keyboard.addKey('D')
+		};
   }
 
-  override public function update(time:Float, delta:Float) {
-    helm.x += 2;
+  override function update(time:Float, delta:Float) {
+		if (keys.w.isDown) {
+			helm.y -= 100 * delta;
+		} else if (keys.s.isDown) {
+			helm.y += 100 * delta;
+		}
+
+		if (keys.a.isDown) {
+			helm.x -= 100 * delta;
+		} else if (keys.d.isDown) {
+			helm.x += 100 * delta;
+		}
   }
 }

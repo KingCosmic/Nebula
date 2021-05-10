@@ -4,7 +4,9 @@ package nebula.structs;
  * A Set is a collection of unique elements.
  */
 class Set<T> {
-	// The entries of this Set. Stored internally as an array.
+	/**
+	 * The entries of this Set. Stored internally as an array.
+	 */
 	public var entries:Array<T> = [];
 
 	public function new(?elements:Array<T>) {

@@ -1,5 +1,7 @@
 package nebula.loader.filetypes;
 
+import nebula.assets.AssetManager;
+
 import kha.Assets;
 import kha.Image;
 
@@ -11,29 +13,30 @@ import kha.Image;
  * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#image.
  */
 class ImageFile extends File<Image> {
-  public function new(loader:LoaderPlugin, key:String, url:String, ?frameConfig:{}) {
-    if (frameConfig == null) frameConfig = {};
-  
-    var fileConfig = {
-      type: 'image',
-      key: key,
-      url: url,
-      config: frameConfig
-    }
+	public function new(loader:Loader, key:String, url:String, ?frameConfig:{}) {
+		if (frameConfig == null)
+			frameConfig = {};
+
+		var fileConfig = {
+			type: 'image',
+			key: key,
+			url: url,
+			config: frameConfig
+		}
 
 		super(loader, fileConfig);
-  }
+	}
 
-  override public function loadFile() {
+	override public function loadFile() {
 		Assets.loadImage(src, onLoad, onError);
-  }
+	}
 
-  /**
-   * Adds this file to its target cache upon successful loading and processing.
-   */
-  override public function addToCache() {
-    var texture = cache.addImage(key, data);
+	/**
+	 * Adds this file to its target cache upon successful loading and processing.
+	 */
+	override public function addToCache() {
+		var texture = AssetManager.addImage(key, data);
 
-    pendingDestroy(texture);
-  }
+		pendingDestroy(texture);
+	}
 }

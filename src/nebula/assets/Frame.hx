@@ -4,7 +4,9 @@ package nebula.assets;
  * A Frame is a section of a Texture.
  */
 class Frame {
-  // The Texture this Frame is a part of.
+  /**
+	 * The Texture this Frame is a part of.
+   */
   public var texture:Texture;
 
   /**
@@ -13,34 +15,44 @@ class Frame {
    */
   public var name:String;
 
-  // The TextureSource this Frame is a part of.
-  public var source:TextureSource;
-
-  // The index of the TextureSource in the Texture sources array.
-  public var sourceIndex:Int;
-
-  // X position within the source image to cut from.
+  /**
+	 * X position within the source image to cut from.
+   */
   public var cutX:Int;
 
-  // Y position within the source image to cut from.
+  /**
+	 * Y position within the source image to cut from.
+   */
   public var cutY:Int;
 
-  // The width of the area in the source image to cut.
+  /**
+	 * The width of the area in the source image to cut.
+   */
   public var cutWidth:Int;
 
-  // The height of the area in the source image to cut.
+  /**
+	 * The height of the area in the source image to cut.
+   */
   public var cutHeight:Int;
 
-  // The X rendering offset of this Frame, taking trim into account.
+  /**
+	 * The X rendering offset of this Frame, taking trim into account.
+   */
   public var x:Float = 0;
 
-  // The Y rendering offset of this Frame, taking trim into account.
+  /**
+	 * The Y rendering offset of this Frame, taking trim into account.
+   */
   public var y:Float = 0;
 
-  // The rendering width of this Frame, taking trim into account.
+  /**
+	 * The rendering width of this Frame, taking trim into account.
+   */
   public var width:Float;
 
-  // The rendering height of this Frame, taking trim into account.
+  /**
+	 * The rendering height of this Frame, taking trim into account.
+   */
   public var height:Float;
 
   /**
@@ -55,19 +67,29 @@ class Frame {
    */
   public var halfHeight:Float;
 
-  // The x center of this frame, floored.
+  /**
+	 * The x center of this frame, floored.
+   */
   public var centerX:Int;
 
-  // The y center of this frame, floored.
+  /**
+	 * The y center of this frame, floored.
+   */
   public var centerY:Int;
 
-  // The horizontal pivot point of this Frame.
+  /**
+	 * The horizontal pivot point of this Frame.
+   */
   public var pivotX:Float = 0;
 
-  // The vertical pivot point of this Frame.
+  /**
+	 * The vertical pivot point of this Frame.
+   */
   public var pivotY:Float = 0;
 
-  // Does this Frame have a custom pivot point?
+  /**
+	 * Does this Frame have a custom pivot point?
+   */
   public var customPivot:Bool = false;
 
   /**
@@ -78,10 +100,14 @@ class Frame {
    */
   public var autoRound = -1;
 
-  // Any Frame specific custom data can be stored here.
+  /**
+	 * Any Frame specific custom data can be stored here.
+   */
   public var customData = {};
 
-  // The un-modified source frame, trim and UV data.
+	/**
+	 * The un-modified source frame, trim and UV data.
+	 */
 	public var data = {
 		cut:{
 			x:0.0, y:0.0, w:0.0, h:0.0, r:0.0, b:0.0
@@ -94,11 +120,9 @@ class Frame {
     }
   };
 
-  public function new(_texture:Texture, _name:String, _sourceIndex:Int, x:Int, y:Int, _width:Int, _height:Int)  {
+  public function new(_texture:Texture, _name:String, x:Int, y:Int, _width:Int, _height:Int)  {
     texture = _texture;
     name = _name;
-    sourceIndex = _sourceIndex;
-		source = texture.source[sourceIndex];
 
     setSize(_width, _height, x, y);
   }
@@ -224,8 +248,8 @@ class Frame {
 		if (data.trim) {
 			var ss = data.spriteSourceSize;
 
-			//  Need to check for intersection between the cut area and the crop area
-			//  If there is none, we set UV to be empty, otherwise set it to be the intersection area
+			// Need to check for intersection between the cut area and the crop area
+			// If there is none, we set UV to be empty, otherwise set it to be the intersection area
 
 			width = Math.max(0, Math.min(cw - x, width));
 			height = Math.max(0, Math.min(ch - y, height));
@@ -277,8 +301,8 @@ class Frame {
 			}
 		}
 
-		var tw = this.source.width;
-		var th = this.source.height;
+		var tw = texture.width;
+		var th = texture.height;
 
 		//  Map the given coordinates into UV space, clamping to the 0-1 range.
 
@@ -334,10 +358,8 @@ class Frame {
    * when the Frame is created.
    */
   public function setUVs(width:Int, height:Int, u0:Int, v0:Int, u1:Int, v1:Int) {
-
     data.drawImage.width = width;
     data.drawImage.height = height;
-
   }
 
   public function updateUVs() {
@@ -348,7 +370,6 @@ class Frame {
    * Destroys this Frame by nulling its reference to the parent Texture and and data objects.
    */
   public function destroy() {
-    source = null;
     texture = null;
     customData = null;
     data = null;
