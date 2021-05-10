@@ -145,6 +145,20 @@ class DisplayList {
 	}
 
 	/**
+	 * 
+	 */
+  public function getById(id:String):Null<GameObject> {
+    // grab our list of children with this id.
+		var res = children.filter(go -> go.id == id);
+
+    // do we have that go in list?
+    if (res.length == 0) return null;
+
+    // return it.
+    return res[0];
+  }
+
+	/**
 	 * Returns an array which contains all objects currently on the Display List.
 	 * This is a reference to the main list array, not a copy of it, so be careful not to modify it.
 	 */
