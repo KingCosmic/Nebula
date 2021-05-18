@@ -1,6 +1,7 @@
 package nebula.loader.filetypes;
 
 import nebula.assets.AssetManager;
+import nebula.scenes.Scene;
 
 import kha.Assets;
 import kha.Blob;
@@ -24,7 +25,14 @@ class JsonFile extends File<Blob> {
 		super(loader, fileConfig);
 	}
 
-	override public function loadFile() {
+	/**
+	 * Adds a Font to the current load queue.
+	 */
+	static public function loadFile(scene:Scene, key:String, url:String) {
+		scene.load.addFile([cast new JsonFile(scene.load, key, url)]);
+	}
+
+	override public function startLoad() {
 		Assets.loadBlob(src, onLoad, onError);
 	}
 

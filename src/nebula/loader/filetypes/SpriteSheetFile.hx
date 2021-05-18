@@ -1,6 +1,7 @@
 package nebula.loader.filetypes;
 
 import nebula.assets.AssetManager;
+import nebula.scenes.Scene;
 
 /**
  * A single Sprite Sheet Image File suitable for loading by the Loader.
@@ -14,6 +15,21 @@ class SpriteSheetFile extends ImageFile {
 		super(loader, key, url, frameConfig);
 
 		type = 'spritesheet';
+	}
+
+	/**
+	 * Adds a Sprite Sheet Image, or array of Sprite Sheet Images, to the current load queue.
+	 *
+	 * The term 'Sprite Sheet' in Phaser means a fixed-size sheet. Where every frame in the sheet is the exact same size,
+	 * and you reference those frames using numbers, not frame names. This is not the same thing as a Texture Atlas, where
+	 * the frames are packed in a way where they take up the least amount of space, and are referenced by their names,
+	 * not numbers. Some articles and software use the term 'Sprite Sheet' to mean Texture Atlas, so please be aware of
+	 * what sort of file you're actually trying to load.
+	 *
+	 * You can call this method from within your Scene's `preload`, along with any other files you wish to load.
+	 */
+	static public function loadFile(scene:Scene, key:String, url:String, frameConfig:{}) {
+		scene.load.addFile([cast new SpriteSheetFile(scene.load, key, url, frameConfig)]);
 	}
 
 	override public function addToCache() {

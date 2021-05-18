@@ -81,13 +81,13 @@ class File<FT> {
 	public function load() {
     state = LOADER_CONST.FILE_LOADING;
 
-    loadFile();
+    startLoad();
 	}
 
 	/**
 	 * here for other files to override.
 	 */
-	public function loadFile() {}
+  public function startLoad() {}
 
 	/**
 	 * Called when the file finishes loading.

@@ -83,7 +83,7 @@ class Scene {
 	/**
 	 * this scenes loader, populated by the user if they need to laod anything.
 	 */
-  public var load:Dynamic;
+  public var load:Loader;
 
 	public function new(_config:SceneConfig) {
 		config = _config;

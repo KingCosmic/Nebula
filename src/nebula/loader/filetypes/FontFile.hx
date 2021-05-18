@@ -1,6 +1,7 @@
 package nebula.loader.filetypes;
 
 import nebula.assets.AssetManager;
+import nebula.scenes.Scene;
 
 import kha.Assets;
 import kha.Font;
@@ -24,7 +25,22 @@ class FontFile extends File<Font> {
 		super(loader, fileConfig);
 	}
 
-	override public function loadFile() { 
+	/**
+	 * Adds a Font to the current load queue.
+	 *
+	 * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+	 *
+	 * ```javascript
+	 * function preload () {
+	 *   this.load.font('fontname', 'fontname');
+	 * }
+	 * ```
+	 */
+	static public function loadFile(scene:Scene, key:String, url:String) {
+		scene.load.addFile([cast new FontFile(scene.load, key, url)]);
+	}
+
+	override public function startLoad() { 
 		Assets.loadFont(src, onLoad, onError);
 	}
 

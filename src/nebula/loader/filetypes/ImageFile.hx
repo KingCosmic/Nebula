@@ -1,6 +1,7 @@
 package nebula.loader.filetypes;
 
 import nebula.assets.AssetManager;
+import nebula.scenes.Scene;
 
 import kha.Assets;
 import kha.Image;
@@ -27,7 +28,22 @@ class ImageFile extends File<Image> {
 		super(loader, fileConfig);
 	}
 
-	override public function loadFile() {
+	/**
+	 * Adds an Image, or array of Images, to the current load queue.
+	 *
+	 * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+	 *
+	 * ```javascript
+	 * function preload () {
+	 *   ImageFile.loadFile('logo', 'images/phaserLogo.png');
+	 * }
+	 * ```
+	 */
+	static public function loadFile(scene:Scene, key:String, url:String) {
+		scene.load.addFile([cast new ImageFile(scene.load, key, url)]);
+	}
+
+	override public function startLoad() {
 		Assets.loadImage(src, onLoad, onError);
 	}
 

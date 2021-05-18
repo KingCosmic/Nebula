@@ -1,5 +1,7 @@
 package scenes;
 
+import nebula.loader.filetypes.ImageFile;
+
 // import nebula.input.gamepad.GamepadPlugin;
 import nebula.input.keyboard.Keyboard;
 import nebula.input.keyboard.Key;
@@ -29,7 +31,7 @@ class TestScene extends Scene {
   }
 
   override public function preload() {
-    load.image('helmet', 'helmet');
+    ImageFile.loadFile(this, 'helmet', 'helmet');
 		//load.font('__DEFAULT', 'TomorrowNight');
   }
 
