@@ -33,14 +33,14 @@ class JsonFile extends File<Blob> {
 	}
 
 	override public function startLoad() {
-		Assets.loadBlob(src, onLoad, onError);
+		Assets.loadBlobFromPath(src, onLoad, onError);
 	}
 
 	/**
 	 * Adds this file to its target cache upon successful loading and processing.
 	 */
 	override public function addToCache() {
-		var texture = AssetManager.addJson(key, data);
+		var texture = AssetManager.get().addJson(key, data);
 
 		pendingDestroy(texture);
 	}

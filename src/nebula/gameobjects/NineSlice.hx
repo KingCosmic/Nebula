@@ -2,7 +2,7 @@ package nebula.gameobjects;
 
 import nebula.gameobjects.GameObject;
 import nebula.cameras.Camera;
-import nebula.scene.Scene;
+import nebula.scenes.Scene;
 import kha.math.Vector2;
 import nebula.Renderer;
 

@@ -1,11 +1,5 @@
 package nebula.loader;
 
-import nebula.loader.filetypes.JsonFile;
-import nebula.loader.filetypes.SpriteSheetFile;
-import nebula.loader.filetypes.ImageFile;
-import nebula.loader.filetypes.FontFile;
-import nebula.assets.AssetManager;
-import nebula.scenes.SceneManager;
 import nebula.scenes.Scene;
 import nebula.structs.Set;
 
@@ -40,11 +34,6 @@ class Loader extends EventEmitter {
 	 * The Scene which owns this Loader instance
 	 */
 	public var scene:Scene;
-
-	/**
-	 * A reference to the global Scene Manager.
-	 */
-	public var sceneManager:SceneManager;
 
 	/**
 	 * An optional prefix that is automatically prepended to the start of every file key.
@@ -124,8 +113,6 @@ class Loader extends EventEmitter {
 
 		scene = _scene;
 
-		sceneManager = scene.manager;
-
 		scene.events.once('BOOT', boot);
 		scene.events.on('START', pluginStart);
 	}
@@ -135,8 +122,6 @@ class Loader extends EventEmitter {
 	 * Do not invoke it directly.
 	 */
 	public function boot() {
-		sceneManager = scene.manager;
-
 		scene.events.once('DESTROY', destroy);
 	}
 
@@ -338,17 +323,24 @@ class Loader extends EventEmitter {
 	 * It will carrying on doing this for each file in the pending list until it runs out, or hits the max allowed parallel downloads.
 	 */
 	public function checkLoadQueue() {
-		list.each((file, index) -> {
+    final listArray = list.getArray();
+
+    for (i in 0...listArray.length) {
+      final file = listArray[i];
+
 			if (file.state == LOADER_CONST.FILE_POPULATED || (file.state == LOADER_CONST.FILE_PENDING)) {
+        trace('loading ' + file.key + '');
 				inflight.set(file);
+
+        for (i in 0...list.size) {
+          
+        }
 
 				list.delete(file);
 
 				file.load();
 			}
-
-			return false;
-		});
+    }
 	}
 
 	/**
@@ -394,7 +386,7 @@ class Loader extends EventEmitter {
 	 */
 	public function fileProcessComplete(file:File<Any>) {
 		//  Has the game been destroyed during load? If so, bail out now.
-		if (scene == null || scene.game == null) {
+		if (scene == null) {
 			return;
 		}
 
@@ -493,6 +485,5 @@ class Loader extends EventEmitter {
 		queue = null;
 
 		scene = null;
-		sceneManager = null;
 	}
 }

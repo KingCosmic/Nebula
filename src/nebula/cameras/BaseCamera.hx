@@ -763,7 +763,7 @@ class BaseCamera extends EventEmitter {
 	public function setScene(_scene:Scene) {
 		scene = _scene;
 
-		sceneManager = scene.game.scenes;
+		sceneManager = SceneManager.get();
 		cameraManager = scene.cameras;
 
 		var res = 1;

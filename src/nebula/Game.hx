@@ -1,6 +1,8 @@
 package nebula;
 
 // Kha imports
+import nebula.input.keyboard.KeyboardManager;
+import nebula.Config;
 import nebula.Renderer.RendererConfig;
 import nebula.assets.AssetManager;
 import kha.Window;
@@ -10,67 +12,60 @@ import kha.Color;
 
 // Core imports
 import nebula.scenes.SceneManager;
-import nebula.scenes.Scene;
-
-typedef GameConfig = {
-  title:String,
-  ?width:Int,
-  ?height:Int,
-  ?zoom:Float,
-  ?resolution:Float,
-  scene:Array<Class<Scene>>,
-  ?version:String,
-  // ?input:Input.InputConfig,
-  ?fps:Int,
-  ?render:RendererConfig,
-  ?backgroundColor:Color,
-}
 
 class Game {
-  public var config:GameConfig;
+  static public var instance:Game;
 
-  // The renderer this game is using.
-  public var renderer:Renderer;
-
-  // A flag indicating when this Game instance has finished its boot process.
+  /*
+   * A flag indicating when this Game instance has finished its boot process.
+   */
   public var isBooted:Bool = false;
 
-  // A flag indicating if this Game is currently running it's game step or not.
+  /*
+   * A flag indicating if this Game is currently running it's game step or not.
+   */
   public var isRunning:Bool = false;
 
-	// An Event Emitter which is used to broadcast game-level events from the global systems.
+	/*
+   * An Event Emitter which is used to broadcast game-level events from the global systems.
+   */
   public var events:EventEmitter = new EventEmitter();
 
-  public var scenes:SceneManager;
-
-  // An instance of the Time Step.
+  /*
+   * reference to the Time Step.
+   */
 	public var timestep:TimeStep;
 
-  /**
+  /*
    * The window this game is being rendered to.
    */
   public var window:Window;
 
-  // Does the window the game is running in currently have focus or not?
-  // This is modified by the VisibilityHandler.
-  public var hasFocus:Bool = false;
-
   public function new(_config:GameConfig) {
-    config = _config;
+    var config = Config.get();
 
-		scenes = new SceneManager(this, config.scene);
+    config.setConfig(_config);
+
+    // setup our instance manager for the game.
+    instance = this;
+
+    // calling get on our systems initializes them.
+    Renderer.get();
+    SceneManager.get();
+    // AssetManager.get();
 
 		System.start({ title: config.title, width: config.width, height: config.height }, (_window) -> {
-      // have to create our renderer after kha is initialized.
-      renderer = new Renderer(this, config.render);
-
       // now we can boot the game.
 			boot(_window);
 
 			// TODO: make some default textures that get placed when textures are missing.
-      // then call texturesReady.
+      // TODO: then call texturesReady.
       texturesReady();
 		});
+  }
+
+  static public function get():Game {
+    return instance;
   }
 
   public function boot(_window:Window) {
@@ -79,27 +74,32 @@ class Game {
     isBooted = true;
 
     // call our internal boot method on global required plugins.
-    AssetManager.boot(this);
+    AssetManager.get();
+    KeyboardManager.get();
 
     // emit our boot event for other custom plugins to listen to.
     events.emit('BOOT', window);
   }
 
-  // Called automatically when the Texture Manager has ...
-  // finished setting up and preparing the default textures
+  /*
+   * Called automatically when the Texture Manager has
+   * finished setting up and preparing the default textures
+   */
   public function texturesReady() {
     events.emit('READY');
 
     start();
   }
 
-  // Called automatically by Game.boot once all of the global systems have finished setting themselves up.
-  // By this point the Game is now ready to start the main loop running.
-  // It will also enable the Visibility Handler.
+  /*
+   * Called automatically by Game.boot once all of the global systems have finished setting themselves up.
+   * By this point the Game is now ready to start the main loop running.
+   * It will also enable the Visibility Handler.
+   */
   public function start() {
     isRunning = true;
 
-		timestep = new TimeStep(this, config.fps);
+		timestep = new TimeStep(Config.get().fps);
 
     timestep.start(step);
     System.notifyOnFrames(render);
@@ -107,7 +107,7 @@ class Game {
     // TODO: visibility changes.
   }
 
-  /**
+  /*
 	 * The main Game Step. Called automatically by the Time Step.
 	 *
 	 * The step will update the global managers first, then proceed to update each Scene in turn, via the Scene Manager.
@@ -123,9 +123,9 @@ class Game {
 
     // Update the Scene Manager and all active Scenes.
 
-    scenes.update(time, delta);
+    SceneManager.get().update(time, delta);
 
-    // Our final event before rendering starts.
+    // Event for after the whole game step runs.
 
     events.emit('POST_STEP', time, delta);
   }
@@ -134,6 +134,7 @@ class Game {
    * Render our game via the Renderer. This process emits `prerender` and `postrender` events.
    */
   public function render(frames:Array<Framebuffer>) {
+    var renderer = Renderer.get();
 
     // grab our buffer from the incoming frames.
     final buffer = frames[0];
@@ -146,7 +147,7 @@ class Game {
 
 		// The main render loop. Iterates all Scenes and all Cameras in those scenes,
     // rendering to the renderer instance.
-		scenes.render(renderer);
+		SceneManager.get().render(renderer);
 
 		// The Post-Render call. Tidies up loose end, takes snapshots, etc.
 		renderer.postRender();
@@ -156,64 +157,68 @@ class Game {
 		events.emit('POST_RENDER', renderer);
   }
 
-  // Called automatically by the Visibility Handler.
-  // This will pause the main loop and then emit a pause event.
+  /*
+   * Called automatically by the Visibility Handler.
+   * This will pause the main loop and then emit a pause event.
+   */
   public function onHidden() {
     timestep.pause();
 
     events.emit('PAUSE');
   }
 
-  // Called automatically by the Visibility Hanlder.
-  // This will resume the main loop and then emit a resume event.
+  /*
+   * Called automatically by the Visibility Hanlder.
+   * This will resume the main loop and then emit a resume event.
+   */
   public function onVisible() {
     timestep.resume();
 
     events.emit('RESUME');
   }
 
-  // Called automatically by the Visibility Handler.
-  // This will set the main loop into a 'blurred' state, which pauses it.
+  /*
+   * Called automatically by the Visibility Handler.
+   * This will set the main loop into a 'blurred' state, which pauses it.
+   */
   public function onBlur() {
-    hasFocus = false;
-
     timestep.blur();
   }
 
-  // Called automatically by the Visibility Handler.
-  // This will set the main loop into a 'focused' state, which resumes it.
+  /*
+   * Called automatically by the Visibility Handler.
+   * This will set the main loop into a 'focused' state, which resumes it.
+   */
   public function onFocus() {
-    hasFocus = true;
-
     timestep.focus();
   }
 
-  // Returns the current game frame.
-  // When the game starts running, the frame is incremented every time Request Animation Frame, or Set Timeout, fires.
+  /*
+   * Returns the current frame the game is on.
+   */
   public function getFrame() {
 		return timestep.frame;
   }
 
-  // Returns the time that the current game step started at, as based on `performance.now`
+  /*
+   * Returns the time that the current game step started at.
+   */
   public function getTime() {
 		return timestep.now;
   }
 
-  /**
+  /*
 	 * Flags this Game instance as needing to be destroyed on the _next frame_, making this an asynchronous operation.
 	 *
 	 * It will wait until the current frame has completed and then call `runDestroy` internally.
 	 *
 	 * If you need to react to the games eventual destruction, listen for the `DESTROY` event.
-	 *
-	 * If you **do not** need to run Phaser again on the same web page you can set the `noReturn` argument to `true` and it will free-up
-	 * memory being held by the core Phaser plugins. If you do need to create another game instance on the same page, leave this as `false`.
    */
   public function destroy() {
     // TODO: make this.
   }
 }
 
-/**
+/*
  * "Computers are good at following instructions, but not at reading your mind." - Donald Knuth
  */

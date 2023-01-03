@@ -10,7 +10,7 @@ class Main {
 			title: 'Nebula Test',
 			width: 800,
 			height: 600,
-			scene: [TestScene]
+			scenes: [TestScene]
 		});
 	}
 }

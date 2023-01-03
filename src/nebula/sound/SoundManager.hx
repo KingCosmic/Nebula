@@ -2,52 +2,47 @@ package nebula.sound;
 
 import kha.Sound as KhaSound;
 
-/**
+/*
  * Our games SoundManager it holds loaded sounds aswell as sounds currently playing.
  */
 class SoundManager {
-  /**
-   * Local reference to game.
-   */
-  static public var game:Game;
-
-  /**
+  /*
 	 * our EventEmitter.
    */
 	static public var events:EventEmitter = new EventEmitter();
 
-  /**
+  /*
    * An map of all loaded sounds for this game.
    */
 	static public var audio:Map<String, KhaSound> = new Map();
 
-  /**
+  /*
    * Array of all currently "active" sounds.
    */
   static public var sounds:Array<Sound> = [];
 
-  /**
+  /*
    * Global mute setting.
    */
   static public var mute:Bool = false;
 
-  /**
+  /*
    * Global volume setting.
    */
   static public var volume:Float = 1;
 
-  /**
+  /*
    * Flag indicating if sounds should be paused when game looses focus,
    * for instance when user switches to another tab/program/app.
    */
   static public var pauseOnBlur:Bool = true;
 
-  /**
+  /*
    * Property that actually holds the value of global playback rate.
    */
   static private var _rate:Float = 1;
 
-	/**
+	/*
 	 * Global playback rate at which all the sounds will be played.
 	 * Value of 1.0 plays the audio at full speed, 0.5 plays the audio at half speed
 	 * and 2.0 doubles the audio's playback speed.

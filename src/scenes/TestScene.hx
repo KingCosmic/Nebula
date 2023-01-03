@@ -1,12 +1,14 @@
 package scenes;
 
+import nebula.assets.AssetManager;
+import nebula.loader.filetypes.JsonFile;
+import nebula.gameobjects.Text;
+import nebula.loader.filetypes.FontFile;
 import nebula.loader.filetypes.ImageFile;
 
-// import nebula.input.gamepad.GamepadPlugin;
 import nebula.input.keyboard.Keyboard;
 import nebula.input.keyboard.Key;
 import nebula.gameobjects.Image;
-// import nebula.gameobjects.Text;
 import nebula.scenes.Scene;
 
 class TestScene extends Scene {
@@ -21,33 +23,37 @@ class TestScene extends Scene {
 		d:Key
 	};
 
-  public function new() {
+  public function new() { 
     super({
       key: 'test',
-      active: false,
-      visible: false,
+      active: true,
+      visible: true,
       loader: true
     });
   }
 
   override public function preload() {
     ImageFile.loadFile(this, 'helmet', 'helmet');
-		//load.font('__DEFAULT', 'TomorrowNight');
+    FontFile.loadFile(this, '__DEFAULT', 'TomorrowNight');
+    JsonFile.loadFile(this, 'mapdata', 'map.ldtk');
   }
 
   override public function create() {
+    trace('creating bro');
     // WIP
     keyboard = new Keyboard(this);
 
     helm = new Image(this, 400, 300, 'helmet');
 
-		// var text = new Text(this, 10, 10, 'TEST', { fontSize: 40 });
+		var text = new Text(this, 10, 10, 'TEST', { fontSize: 40 });
 
-    // helm.setScale(4);
+    helm.setScale(4);
 
     // cameras.main.startFollow(helm);
 
-    displayList.add([helm]);
+    displayList.add([helm, text]);
+
+    trace(AssetManager.get().json.get('mapdata'));
 
 		keys = {
 			w: keyboard.addKey('W'),

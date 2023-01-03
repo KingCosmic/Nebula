@@ -33,7 +33,7 @@ class SpriteSheetFile extends ImageFile {
 	}
 
 	override public function addToCache() {
-		var texture = AssetManager.addSpriteSheet(key, data, config.config);
+		var texture = AssetManager.get().addSpriteSheet(key, data, config.config);
 
 		pendingDestroy(texture);
 	}

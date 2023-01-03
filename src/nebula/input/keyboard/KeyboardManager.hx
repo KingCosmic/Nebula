@@ -19,10 +19,8 @@ typedef KeyEvent = {
  * input has been enabled in the Game Config.
  */
 class KeyboardManager extends EventEmitter {
-  /**
-   * The Game this keyboard manager belongs to.
-   */
-  public var game:Game;
+
+  static public var instance:KeyboardManager;
 
 	/**
 	 * An internal event queue.
@@ -54,15 +52,21 @@ class KeyboardManager extends EventEmitter {
 	 */
 	public var enabled:Bool = true;
 
-	public function new(_game:Game) {
+	public function new() {
     super();
-
-    game = _game;
 
 		startListeners();
 
-		game.events.on('POST_STEP', postUpdate);
+		Game.get().events.on('POST_STEP', postUpdate);
 	}
+
+  static public function get():KeyboardManager {
+    if (instance == null) {
+      instance = new KeyboardManager();
+    }
+
+    return instance;
+  }
 
 	/**
 	 * Starts the Keyboard Event listeners running.
@@ -130,7 +134,7 @@ class KeyboardManager extends EventEmitter {
 
 		queue = [];
 
-		game.events.removeListener('POST_STEP', postUpdate);
+		Game.get().events.removeListener('POST_STEP', postUpdate);
 
 		enabled = false;
 	}

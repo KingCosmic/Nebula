@@ -24,23 +24,23 @@ typedef FrameConfig = {
  */
 class AssetManager {
 	/**
-	 * The Game that this AssetManager belongs to.
+	 * The AssetManager instance for global use.
 	 */
-	static public var game:Game;
+	static public var instance:AssetManager;
 
 	/**
 	 * A Map that has all of textures that the AssetManager creates.
 	 * Textures are assigned to keys so we can access to any texture that this Map
 	 * has directly by key value without iteration.
 	 */
-	static public var textures:Map<String, Texture> = new Map();
+	public var textures:Map<String, Texture> = new Map();
 
 	/**
 	 * A Map that has all of the fonts that the AssetManager creates.
 	 * Fonts are assigned to keys so we can access any Font that this Map
 	 * has directly by key without iteration.
 	 */
-	static public var fonts:Map<String, Font> = new Map();
+	public var fonts:Map<String, Font> = new Map();
 
 	/**
 	 * A Map that has all of the Json that the AssetManager loads.
@@ -49,27 +49,33 @@ class AssetManager {
 	 * 
 	 * Note this holds the Blob that was loaded.
 	 */
-	static public var json:Map<String, Blob> = new Map();
+	public var json:Map<String, Blob> = new Map();
 
   /**
    * Our EventEmitter.
    */
-  static public var events:EventEmitter = new EventEmitter();
+  public var events:EventEmitter = new EventEmitter();
 
-	/**
+  /**
 	 * The Boot Handler called by Nebula.Game when it first starts up.
 	 */
-	static public function boot(_game:Game) {
-    game = _game;
+  public function new() {
+    Game.get().events.once('DESTROY', destroy);
+  }
 
-		game.events.once('DESTROY', destroy);
-	}
+  static public function get():AssetManager {
+    if (instance == null) {
+      instance = new AssetManager();
+    }
+
+    return instance;
+  }
 
 	/**
 	 * Checks the given texture key and throws a console.warn if the key is already in use, then returns false.
 	 * If you wish to avoid the console.warn then use `AssetManager.textureExists` instead.
 	 */
-	static public function checkTextureKey(key:String) {
+	public function checkTextureKey(key:String) {
 		if (textureExists(key)) {
 			trace('Texture key already in use: ' + key);
 			return false;
@@ -82,7 +88,7 @@ class AssetManager {
 	 * Checks the given font key and throws a console.warn if the key is already in use, then returns false.
 	 * If you wish to avoid the trace then use `AssetManager.fontExists` instead.
 	 */
-	static public function checkFontKey(key:String) {
+	public function checkFontKey(key:String) {
 		if (fontExists(key)) {
 			trace('Font key already in use: ' + key);
 			return false;
@@ -95,7 +101,7 @@ class AssetManager {
 	 * Checks the given json key and trace's if the key is already in use, then returns false.
 	 * If you wish to avoid the trace then use `AssetManager.jsonExists` instead.
 	 */
-	static public function checkJsonKey(key:String) {
+	public function checkJsonKey(key:String) {
 		if (jsonExists(key)) {
 			trace('Json key already in use: ' + key);
 			return false;
@@ -113,7 +119,7 @@ class AssetManager {
 	 * errors the next time they try to render. Make sure that removing the texture is the final
 	 * step when clearing down to avoid this.
 	 */
-	static public function removeTexture(key:String) {
+	public function removeTexture(key:String) {
 		var texture:Texture = null;
 
 		if (textureExists(key)) {
@@ -139,7 +145,7 @@ class AssetManager {
 	 * errors the next time they try to render. Make sure that removing the font is the final
 	 * step when clearing down to avoid this.
 	 */
-	static public function removeFont(key:String) {
+	public function removeFont(key:String) {
 		if (!fontExists(key)) {
 			trace('No Font found matching key: ' + key);
 			return;
@@ -153,14 +159,14 @@ class AssetManager {
 	/**
 	 * Removes a key from the Texture Manager but does not destroy the Texture that was using the key.
 	 */
-	static public function removeTextureKey(key:String) {
+	public function removeTextureKey(key:String) {
 		textures.remove(key);
 	}
 
 	/**
 	 * Adds a new Texture to the Asset Manager created from the given Image element.
 	 */
-	static public function addImage(key:String, source:Image) {
+	public function addImage(key:String, source:Image) {
 		if (!checkTextureKey(key))
 			return null;
 
@@ -176,7 +182,7 @@ class AssetManager {
 	/**
 	 * Adds a new Font to the Asset Manager.
 	 */
-	static public function addFont(key:String, source:Font) {
+	public function addFont(key:String, source:Font) {
 		if (!checkFontKey(key))
 			return null;
 
@@ -188,7 +194,7 @@ class AssetManager {
 	/**
 	 * Adds a new Json to the Asset Manager.
 	 */
-	static public function addJson(key:String, source:Blob) {
+	public function addJson(key:String, source:Blob) {
 		if (!checkJsonKey(key))
 			return null;
 
@@ -203,7 +209,7 @@ class AssetManager {
 	 * In Phaser terminology a Sprite Sheet is a texture containing different frames, but each frame is the exact
 	 * same size and cannot be trimmed or rotated.
 	 */
-	static public function addSpriteSheet(key:String, source:Image, config:FrameConfig) {
+	public function addSpriteSheet(key:String, source:Image, config:FrameConfig) {
 		if (!checkTextureKey(key))
 			return null;
 
@@ -222,7 +228,7 @@ class AssetManager {
 	/**
 	 * Creates a new Texture using the given source and dimensions.
 	 */
-	static public function createTexture(key:String, source:Image) {
+	public function createTexture(key:String, source:Image) {
 		if (!checkTextureKey(key))
 			return null;
 
@@ -236,21 +242,21 @@ class AssetManager {
 	/**
 	 * Checks the given key to see if a Texture using it exists within this Asset Manager.
 	 */
-	static public function textureExists(key:String) {
+	public function textureExists(key:String) {
 		return textures.exists(key);
 	}
 
 	/**
 	 * Checks the given key to see if a Font using it exists within this Asset Manager.
 	 */
-	static public function fontExists(key:String) {
+	public function fontExists(key:String) {
 		return fonts.exists(key);
 	}
 
 	/**
 	 * Checks the given key to see if a Json using it exists within this Asset Manager.
 	 */
-	static public function jsonExists(key:String) {
+	public function jsonExists(key:String) {
 		return json.exists(key);
 	}
 
@@ -261,7 +267,7 @@ class AssetManager {
 	 *
 	 * If the key is an instance of a Font, it will return the key directly.
 	 */
-	static public function getFont(?key:String = '__DEFAULT') {
+	public function getFont(?key:String = '__DEFAULT') {
 		if (fonts.exists(key))
 			return fonts.get(key);
 
@@ -275,7 +281,7 @@ class AssetManager {
 	 *
 	 * If the key is an instance of a Font, it will return the key directly.
 	 */
-	static public function getJson(?key:String = '') {
+	public function getJson(?key:String = '') {
 		return json.get(key);
 	}
 
@@ -288,7 +294,7 @@ class AssetManager {
 	 *
 	 * Finally. if the key is given, but not found and not a Texture instance, it will return the `__MISSING` Texture.
 	 */
-	static public function getTexture(?key:String = '__DEFAULT') {
+	public function getTexture(?key:String = '__DEFAULT') {
 		if (textures.exists(key))
 			return textures.get(key);
 
@@ -298,7 +304,7 @@ class AssetManager {
 	/**
 	 * Takes a Texture key and Frame name and returns a reference to that Frame, if found.
 	 */
-	static public function getFrame(key:String, frame:Any) {
+	public function getFrame(key:String, frame:Any) {
 		return textures.exists(key) ? textures.get(key).get(frame) : null;
 	}
 
@@ -306,7 +312,7 @@ class AssetManager {
 	 * Sets the given Game Objects `texture` and `frame` properties so that it uses
 	 * the Texture and Frame specified in the `key` and `frame` arguments to this method.
 	 */
-	static public function setTexture(go:GameObject, key:String, frame:String) {
+  public function setTexture(go:GameObject, key:String, frame:String) {
 		if (textures.exists(key)) {
 			go.texture = textures.get(key);
 			go.frame = go.texture.get(frame);
@@ -318,7 +324,7 @@ class AssetManager {
 	/**
 	 * Destroys the Texture Manager and all Textures stored within it.
 	 */
-	static public function destroy() {
+	public function destroy() {
 		for (texture in textures.iterator()) {
 			texture.destroy();
 		}
@@ -331,7 +337,5 @@ class AssetManager {
 		textures.clear();
 		fonts.clear();
 		json.clear();
-
-		game = null;
 	}
 }

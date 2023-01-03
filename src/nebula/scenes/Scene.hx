@@ -11,76 +11,66 @@ typedef SceneConfig = {
 }
 
 class Scene {
-	/**
+	/*
 	 * The key used to identify this scene
 	 */
 	public var key:String;
 
-	/**
+	/*
 	 * The config passed to the scene
 	 */
 	public var config:SceneConfig;
 
-	/**
-	 * A reference to the Nebula.Game instance
-	 */
-	public var game:Game;
-
-	/**
+	/*
 	 * The scenes current status
 	 */
 	public var status:Int = SceneConsts.PENDING;
 
-	/**
+	/*
 	 * Is this scene active?
 	 */
 	public var active:Bool = false;
 
-	/**
+	/*
 	 * Is this scene visible?
 	 */
 	public var visible:Bool = true;
 
-	/**
+	/*
 	 * Is this scene booted?
 	 */
 	public var isBooted:Bool = false;
 
-	/**
+	/*
 	 * Should we run the update function?
 	 * 
 	 * Keeps us from running update before create is done.
 	 */
 	public var runUpdate:Bool = false;
 
-	/**
+	/*
 	 * Scene level EventEmitter.
 	 */
 	public var events:EventEmitter = new EventEmitter();
 
-	/**
+	/*
 	 * This Manages all cameras for this scene.
 	 */
 	public var cameras:CameraManager;
 
-	/**
-	 * A reference to the game level Scene Manager.
-	 */
-	public var manager:SceneManager;
-
-	/**
+	/*
 	 * The Update List is responsible for managing children that need their `preUpdate` methods called,
-	 * in order to process so internal components, such as Sprites with Animations.
+	 * in order to process internal components, such as Sprites with Animations.
 	 */
 	public var updateList:UpdateList;
 
-	/**
+	/*
 	 * Displaylist for rendering gameobjects
 	 */
 	public var displayList:Null<DisplayList>;
 
 
-	/**
+	/*
 	 * this scenes loader, populated by the user if they need to laod anything.
 	 */
   public var load:Loader;
@@ -90,53 +80,54 @@ class Scene {
 
 		key = config.key;
 
+    // update the status to initializing
 		status = SceneConsts.INIT;
 
+    // create our display list
 		displayList = new DisplayList(this);
 
+    // create our update list
 		updateList = new UpdateList(this);
 
+    // create our camera manager
 		cameras = new CameraManager(this);
 
     // if we need the loader we add it to the scene.
     if (config.loader) load = new Loader(this);
 	}
 
-	/**
+	 /*
 	 * a internal boot method to setup some internal variables for the scene.
    * This is called by the SceneManager there should be no reason to call this manually.
 	 */
-	public function boot(_game:Game, _manager:SceneManager) {
-		manager = _manager;
-		game = _game;
-
+	public function boot(_manager:SceneManager) {
 		events.emit('BOOT', this);
 
 		isBooted = true;
 	}
 
-	/**
+	/*
 	 * Should be overriden by your own Scenes.
 	 */
 	public function init(?data:Any) {}
 
-	/**
+	/*
 	 * Should be overriden by your own Scenes.
 	 */
 	public function preload() {}
 
-	/**
+	/*
 	 * Should be overridden by your own Scenes.
 	 */
 	public function create() {}
 
-	/**
+	/*
 	 * Should be overridden by your own Scenes.
 	 * This method is called once per game step while the scene is running.
 	 */
 	public function update(time:Float, delta:Float) {}
 
-	/**
+	/*
 	 * A single game step. Called automatically by the Scene Manager as a result of the timeloop
 	 * call to the main Game instance.
 	 */
@@ -157,7 +148,7 @@ class Scene {
 		events.emit('POST_UPDATE', time, delta);
 	}
 
-	/**
+	/*
 	 * Called automatically by the Scene Manager.
 	 * Instructs the Scene to render itself via its Camera Manager to the renderer given.
 	 */
@@ -172,7 +163,7 @@ class Scene {
 		events.emit('RENDER', renderer);
 	}
 
-	/**
+	/*
 	 * Force a sort of the display list on the next render.
 	 */
 	public function queueDepthSort() {
@@ -180,7 +171,7 @@ class Scene {
 		displayList.queueDepthSort();
 	}
 
-	/**
+	/*
 	 * Immediately sorts the display list if the flag is set.
 	 */
 	public function depthSort() {
@@ -188,7 +179,7 @@ class Scene {
 		displayList.depthSort();
 	}
 
-	/**
+	/*
 	 * Pause this Scene.
 	 * A paused Scene still renders, it just doesn't run ANY of its update handlers or systems.
 	 */
@@ -209,7 +200,7 @@ class Scene {
 		return this;
 	}
 
-	/**
+	/*
 	 * Resume this Scene from a paused state.
 	 */
 	public function resume(data) {
@@ -224,28 +215,28 @@ class Scene {
 		return this;
 	}
 
-	/**
+	/*
 	 * Is this Scene running?
 	 */
 	public function isActive() {
 		return (status == SceneConsts.RUNNING);
 	}
 
-	/**
+	/*
 	 * Is this Scene paused?
 	 */
 	public function isPaused() {
 		return (status == SceneConsts.PAUSED);
 	}
 
-	/**
+	/*
 	 * Is this Scene visible and rendering?
 	 */
 	public function isVisible() {
 		return visible;
 	}
 
-	/**
+	/*
 	 * Sets the visible state of this Scene.
 	 * An invisible Scene will not render, but will still process updates.
 	 */
@@ -255,7 +246,7 @@ class Scene {
 		return this;
 	}
 
-	/**
+	/*
 	 * Set the active state of this Scene.
 	 * An active Scene will run it's core update loop.
 	 */
@@ -267,7 +258,7 @@ class Scene {
 		}
 	}
 
-	/**
+	/*
 	 * Start this Scene running and rendering.
 	 * Called automatically by the SceneManager.
 	 */
@@ -288,7 +279,7 @@ class Scene {
 		events.emit('READY', this, data);
 	}
 
-	/**
+	/*
 	 * Shutdown this Scene and send a shutdown event to all of its systems.
 	 * A Scene that has been shutdown will not run its update loop or render, but it does
 	 * not destroy any of its plugins or references. It is put into hibernation for later use.
@@ -309,7 +300,7 @@ class Scene {
 		events.emit('SHUTDOWN', this, data);
 	}
 
-	/**
+	/*
 	 * Destroy this Scene and send a destroy event all of its systems.
 	 * A destroyed Scene cannot be restarted.
 	 * You should not call this directly, instead use `SceneManager.remove`.
@@ -324,8 +315,6 @@ class Scene {
 
 		events.removeAllListeners();
 
-		manager = null;
-		game = null;
 		cameras = null;
 		displayList = null;
 		events = null;

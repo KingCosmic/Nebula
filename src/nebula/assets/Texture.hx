@@ -224,6 +224,6 @@ class Texture {
 		source = null;
 		frames.clear();
 
-		AssetManager.removeTextureKey(key);
+		AssetManager.get().removeTextureKey(key);
 	}
 }

@@ -490,7 +490,7 @@ class GameObject extends EventEmitter {
 	 * Textures are referenced by their string-based keys, as stored in the Texture Manager.
 	 */
 	public function setTexture(key:String, frame:String):GameObject {
-		texture = AssetManager.getTexture(key);
+		texture = AssetManager.get().getTexture(key);
 		return setFrame(frame);
 	}
 

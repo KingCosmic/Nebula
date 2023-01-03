@@ -2,61 +2,61 @@ package nebula.scenes;
 
 import nebula.Game;
 
-typedef Pending = {
+typedef PendingScene = {
   key:String,
   scene:Class<Scene>,
   autoStart:Bool,
   data:Any
 }
 
-typedef Operation = {
-  op:String,
+typedef SceneOperation = {
+  op:String, // TODO: make this a enum type.
   keyA:String,
   ?keyB:String
 }
 
-/**
+/*
  * This is our Scene Manager it handles updating and rendering all of our scenes.
  */
 class SceneManager {
-  /**
-   * The Nebula.Game instance this SceneManager belongs to.
+  /*
+   * The SceneManager instance.
    */
-  public var game:Game;
+  static public var instance:SceneManager;
 
-  /**
+  /*
    * A map that helps us quickly access scenes based on their key.
    */
   public var keys:Map<String, Scene> = new Map();
 
-  /**
+  /*
    * The array in which all of the scenes are kept.
    */
   public var scenes:Array<Scene> = [];
 
-  /**
-   * scenes are stored here so they can be started at a laterr date.
+  /*
+   * scenes are stored here so they can be started at a later date.
    */
-  public var pending:Array<Pending> = [];
+  public var pending:Array<PendingScene> = [];
 
-  /**
+  /*
    * An operations queue, because we don't manipulate the scenes array during processing.
    */
-  public var operations:Array<Operation> = [];
+  public var operations:Array<SceneOperation> = [];
 
-  /**
+  /*
    * Is the Scene Manager actively processing the scenes list?
    */
   public var isProcessing:Bool = false;
 
-  /**
+  /*
    * Has the Scene Manager properly started?
    */
   public var isBooted:Bool = false;
 
-  public function new(_game:Game, sceneConfigs:Array<Class<Scene>>) {
-    game = _game;
-    
+  public function new() {
+    var sceneConfigs = Config.get().scenes;
+
     // setup our pending list.
     for (i in 0...sceneConfigs.length) {
 			// The i === 0 part just autostarts the first Scene given (unless it says otherwise in its config)
@@ -68,20 +68,33 @@ class SceneManager {
       });
     }
 
-    game.events.once('READY', boot);
+    Game.get().events.once('READY', boot);
   }
 
-  /**
+  static public function get():SceneManager {
+    if (instance == null) {
+      instance = new SceneManager();
+    }
+
+    return instance;
+  }
+
+  /*
    * Internal first-time Scene boot handler
    */
   public function boot() {
+    trace('booting scene manager');
     // if we've already booted just return
     if (isBooted) return;
+
+    trace('booting scenes');
 
     // loop through our stored scenes.
     for (i in 0...pending.length) {
       // iniate our scene class.
       var newScene = createScene(pending[i].scene);
+
+      trace('creating scene');
 
       // store our scene based on it's scene.
       keys.set(newScene.key, newScene);
@@ -100,24 +113,24 @@ class SceneManager {
     start(scenes[0].key);
   }
 
-  /**
+  /*
    * This method initates our scene class and returns it's instance.
    */
   public function createScene(newScene:Class<Scene>):Scene {
     // create the instance
-    var instance:Scene = Type.createInstance(newScene, []);
+    var sceneInstance:Scene = Type.createInstance(newScene, []);
 
     // internally boot this scene.
-    instance.boot(game, this);
+    sceneInstance.boot(this);
 
     // run our scenes init method
-    instance.init({});
+    sceneInstance.init({});
 
     // return the instance
-    return instance;
+    return sceneInstance;
   }
 
-  /**
+  /*
    * starts the given scene, restarting it if it's already running.
    */
   public function start(key:String, ?data:Any) {
@@ -152,14 +165,14 @@ class SceneManager {
     return this;
   }
 
-	/**
+	/*
 	 * Retrieves a Scene via it's key.
 	 */
 	public function getScene(key:String) {
 		return keys.get(key);
 	}
 
-	/**
+	/*
 	 * Boot the given Scene.
 	 */
 	public function bootScene(scene:Scene) {
@@ -210,7 +223,7 @@ class SceneManager {
 		}
 	}
 
-	/**
+	/*
    * Calls the given Scene's create method and updates its status.
    */
 	public function create(scene:Scene) {
@@ -233,7 +246,7 @@ class SceneManager {
 		scene.events.emit('CREATE', scene);
 	}
 
-	/**
+	/*
 	 * Runs all scenes update methods.
 	 */
 	public function update(time:Float, delta:Float) {
@@ -249,7 +262,7 @@ class SceneManager {
 		}
 	}
 
-	/**
+	/*
 	 * loops through our scenes and calls their render methods.
 	 */
 	public function render(renderer) {

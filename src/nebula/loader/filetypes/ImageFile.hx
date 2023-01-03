@@ -33,13 +33,14 @@ class ImageFile extends File<Image> {
 	 *
 	 * You can call this method from within your Scene's `preload`, along with any other files you wish to load:
 	 *
-	 * ```javascript
+	 * ```haxe
 	 * function preload () {
 	 *   ImageFile.loadFile('logo', 'images/phaserLogo.png');
 	 * }
 	 * ```
 	 */
 	static public function loadFile(scene:Scene, key:String, url:String) {
+    trace("ImageFile.loadFile: " + key + " " + url);
 		scene.load.addFile([cast new ImageFile(scene.load, key, url)]);
 	}
 
@@ -51,7 +52,7 @@ class ImageFile extends File<Image> {
 	 * Adds this file to its target cache upon successful loading and processing.
 	 */
 	override public function addToCache() {
-		var texture = AssetManager.addImage(key, data);
+		var texture = AssetManager.get().addImage(key, data);
 
 		pendingDestroy(texture);
 	}

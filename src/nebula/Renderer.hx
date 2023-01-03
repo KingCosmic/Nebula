@@ -9,8 +9,6 @@ import nebula.scenes.Scene;
 import kha.math.Vector2;
 import kha.Framebuffer;
 import kha.Display;
-import kha.System;
-import kha.Scaler;
 import kha.Color;
 import kha.Image;
 
@@ -20,8 +18,8 @@ typedef RendererConfig = {
 }
 
 // TODO: swap this to use transformation matrix's
-// instead of simple maths and see if that helps
-// with the scaling issues, introduced from backbuffer.
+// TODO: instead of simple maths and see if that helps
+// TODO: with the scaling issues, introduced from backbuffer.
 
 /**
  * The game class prepares a backbuffer to which states draw. The
@@ -29,8 +27,8 @@ typedef RendererConfig = {
  * and height). It also handles states and state changes.
  */
 class Renderer {
-	// The Nebula Game isntance that owns this renderer.
-	public var game:Game;
+
+  private static var instance:Renderer;
 
 	/*
 	 * Our backbuffer our game is rendered to.
@@ -64,23 +62,21 @@ class Renderer {
 	 */
 	public var antialias:Bool = true;
 
-	public function new(_game:Game, _config:RendererConfig) {
-		game = _game;
-
-		// TODO: swap rendering to the backbuffer.
-    // backbuffer should only be used for pixel art games I believe, take a look at this
-		// video for our 2d pixelart renderer https://www.youtube.com/watch?v=jguyR4yJb1M
-
-		// our backbuffer we render to.
+  public function new() {
+    // our backbuffer we render to.
 		backbuffer = Image.createRenderTarget(Display.primary.width, Display.primary.height);
-
-		init();
-	}
+  }
 
 	/**
 	 * Prepares the game canvas for rendering.
 	 */
-	public function init() {}
+	static public function get() {
+    if (instance == null) {
+      instance = new Renderer();
+    }
+
+    return instance;
+  }
 
 	/**
 	 * Resets the transformation matrix of the current context to the identity matrix, thus resetting any transformation.
@@ -185,25 +181,37 @@ class Renderer {
 			flipY = -1;
 		}
 
-		// grab our childs center.
+		// grab our camera position compared to this object.
 		var cameraPos = new Vector2(child.scrollFactorX * camera.scrollX, child.scrollFactorY * camera.scrollY);
 
-		// rotate our graphics.
+		// rotate our graphics by the object rotation centered on our objects position.
 		g.rotate(child.rotation, x - cameraPos.x, y - cameraPos.y);
 
 		// set our alpha.
 		g.pushOpacity(alpha);
 
-		g.drawScaledSubImage(frame.texture.source, frame.cutX, frame.cutY, frame.cutWidth, frame.cutHeight, x - cameraPos.x, y - cameraPos.y,
-			frame.cutWidth * child.scaleX, frame.cutHeight * child.scaleY);
+		g.drawScaledSubImage(
+      // the texture we're drawing.
+      frame.texture.source,
+      // where our frame starts on this texture.
+      frame.cutX, frame.cutY,
+      // the size our our frame.
+      frame.cutWidth, frame.cutHeight,
+      // position to draw this frame.
+      x - cameraPos.x, y - cameraPos.y,
+      // the size to draw this frame at.
+			frame.cutWidth * child.scaleX, frame.cutHeight * child.scaleY
+    );
 
+    // rotate backwards to reset rotation for our next draw.
 		g.rotate(-child.rotation, x - cameraPos.x, y - cameraPos.y);
+
+    // also reset the opacity for our next draw.
 		g.popOpacity();
 	}
 
 	public function destroy() {
 		backbuffer = null;
 		framebuffer = null;
-		game = null;
 	}
 }

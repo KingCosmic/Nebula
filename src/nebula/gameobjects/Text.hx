@@ -33,7 +33,11 @@ class Text extends GameObject {
 
 		style = (style != null) ? style : { fontName: null, fontSize: 16, color: Color.White };
 
-		font = AssetManager.getFont(style.fontName);
+    style.color = (style.color != null) ? style.color : Color.White;
+    style.fontSize = (style.fontSize != null) ? style.fontSize : 16;
+    style.fontName = (style.fontName != null) ? style.fontName : '___DEFAULT';
+
+		font = AssetManager.get().getFont(style.fontName);
 		fontSize = style.fontSize;
 		color = style.color;
 

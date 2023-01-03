@@ -1,22 +1,21 @@
 package nebula;
 
-import kha.Framebuffer;
 import kha.Scheduler;
-import kha.System; 
 
 // TODO: Simplify the hell out of this, then consider what needs to be moved to the renderer such as (frame count, fps counter)
 
 class TimeStep {
-  // A reference to the game instance
-  public var game:Game;
-
-  // A flag that is set once the TimeStep has started running and toggled when it stops.
+  /*
+   * A flag that is set once the TimeStep has started running and toggled when it stops.
+   */
   public var started:Bool = false;
 
-  // ID that stores our Scheduler task id, (so we can stop it)
+  /*
+   * ID that stores our Scheduler task id, (so we can stop it)
+   */
   public var updateID:Int;
 
-  /**
+  /*
    * A flag that is set once the TimeStep has started running and toggled when it stops.
    * The difference between this value and `started` is that `running` is toggled when
    * the TimeStep is sent to sleep, where-as `started` remains `true`, only changing if
@@ -24,7 +23,7 @@ class TimeStep {
    */
   public var running:Bool = false;
 
-  /**
+  /*
    * The target fps rate for the Time Step to run at.
    *
    * Setting this value will not actually change the speed at which the browser runs, that is beyond
@@ -33,67 +32,77 @@ class TimeStep {
    */
   public var targetFps:Int;
 
-  /**
+  /*
    * The targetFps value in ms.
    * Defaults to 16.66ms between frames (i.e. normal)
    */
 	private var targetFpsMs:Float;
 
-  /**
+  /*
    * An exponential moving average of the frames per second.
    */
   public var actualFps:Float;
 
-  /**
+  /*
    * The time at which the next fps rate update will take place.
    * When an fps update happens, the `framesThisSecond` value is reset.
    */
   public var nextFpsUpdate:Float = 0;
 
-  // The number of frames processed this second.
+  /*
+   * The number of frames processed this second.
+   */
   public var framesThisSecond:Int = 0;
 
-  // A callback to be inivoked each time the Time Step steps.
+  /*
+   * A callback to be inivoked each time the Time Step steps.
+   */
   public var callback:Float->Float->Void;
 
-  // The time, calculated at the start of the current step, as smoothed by the delta value.
+  /*
+   * The time, calculated at the start of the current step, as smoothed by the delta value.
+   */
   public var time:Float = 0;
 
-  // The time at which the game started running. This value is adjusted if the game is then paused and resumed.
+  /*
+   * The time at which the game started running. This value is adjusted if the game is then paused and resumed.
+   */
   public var startTime:Float = 0;
 
-  // The time, as returned by `performance.now` of the previous step.
+  /*
+   * The time, as returned by `performance.now` of the previous step.
+   */
   public var lastTime:Float = 0;
 
-  /**
+  /*
    * The current frame the game is on. This counter is incremented once every game step, regardless of how much
    * time has passed and is unaffected by delta smoothing
    */
   public var frame:Int = 0;
 
-  /**
+  /*
    * Is the browser currently considered in focus by the Page Visibility API?
    * This value is set in the `blur` method, which is called automatically by the Game instance.
    */
   public var inFocus:Bool = true;
 
-  // The timestamp at which the game became paused, as determined by the Page Visibility API.
+  /*
+   * The timestamp at which the game became paused, as determined by the Page Visibility API.
+   */
   private var pauseTime:Float = 0;
 
-  /** 
+  /*
    * The delta time, in ms, since the last game step.
    */
   public var delta:Float = 0;
 
-  /**
+  /*
    * The time, as returned by `performance.now` at the very start of the current step.
    * This can differ from the `time` value in that it isn't calculated based on the delta value.
    */
   public var now:Float = 0;
   
-  public function new(game:Game, ?_targetFps:Int = 60) {
-    this.game = game;
-
+  public function new(?_targetFps:Int = 60) {
     this.targetFps = _targetFps;
 
     this.targetFpsMs = 1 / this.targetFps;
@@ -168,9 +177,8 @@ class TimeStep {
 		var before = currentTime - lastTime;
 
 
-    // TODO: unsure if this is needed.
+    // only here for testing with electron really.
     if (before < 0) {
-      trace('fuck chrome');
       // Because, Chrome.
       before = 0;
     }
@@ -225,7 +233,7 @@ class TimeStep {
    * Wakes-up the TimeStep, restarting the TimeTask and toggling the `running` flag to true.
    * The `seamless` argument controls if the wake-up should adjust the start time or not.
    */
-  public function wake(seamless: Bool) {
+  public function wake(seamless:Bool) {
     if (running) return;
 
     if (seamless) {
@@ -269,7 +277,5 @@ class TimeStep {
     stop();
 
     callback = (f1:Float, f2:Float) -> {};
-
-    game = null;
   }
 }

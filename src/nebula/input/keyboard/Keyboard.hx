@@ -1,7 +1,6 @@
 package nebula.input.keyboard;
 
 import kha.input.KeyCode;
-import kha.Scheduler;
 import nebula.scenes.Scene;
 
 /**
@@ -22,31 +21,21 @@ import nebula.scenes.Scene;
  * You can also create Key objects, which you can then poll in your game loop:
  *
  * ```js
- * var spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+ * var spaceBar = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
  * ```
  *
  * If you have multiple parallel Scenes, each trying to get keyboard input, be sure to disable capture on them to stop them from
  * stealing input from another Scene in the list. You can do this with `this.input.keyboard.enabled = false` within the
- * Scene to stop all input, or `this.input.keyboard.preventDefault = false` to stop a Scene halting input on another Scene.
+ * Scene to stop all input, or `keyboard.preventDefault = false` to stop a Scene halting input on another Scene.
  *
  * _Note_: Many keyboards are unable to process certain combinations of keys due to hardware limitations known as ghosting.
  * See http://www.html5gamedevs.com/topic/4876-impossible-to-use-more-than-2-keyboard-input-buttons-at-the-same-time/ for more details.
  */
 class Keyboard extends EventEmitter {
 	/**
-	 * A reference to the core game, so we can listen for visibility events.
-	 */
-	public var game:Game;
-
-	/**
 	 * A reference to the Scene that this Input Plugin is responsible for.
 	 */
 	public var scene:Scene;
-
-	/**
-	 * A reference to the global Keyboard Manager.
-	 */
-	static public var manager:KeyboardManager;
 
 	/**
 	 * A boolean that controls if this Keyboard Plugin is enabled or not.
@@ -78,14 +67,6 @@ class Keyboard extends EventEmitter {
 		super();
 
 		scene = _scene;
-    game = scene.game;
-
-    /*
-     * check if we need to create a manager class
-     * since the manager is static we can create it
-     * the first time we need it and it'll be here always :D
-     */
-    if (manager == null) manager = new KeyboardManager(game);
 
     start();
 	}
@@ -221,6 +202,8 @@ class Keyboard extends EventEmitter {
 	 * Internal update handler called by the Input Plugin, which is in turn invoked by the Game step.
 	 */
 	public function update() {
+    final manager = KeyboardManager.get();
+
 		if (!isActive() || manager.queue.length == 0)
 			return;
 

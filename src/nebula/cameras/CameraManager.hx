@@ -90,11 +90,13 @@ class CameraManager {
 
 		main = cameras[0];
 
+    var game = Game.get();
+
 		// Create a default camera
-		defaultCam = new Camera(0, 0, scene.game.window.width, scene.game.window.height);
+		defaultCam = new Camera(0, 0, game.window.width, game.window.height);
 		defaultCam.setScene(scene);
 
-		scene.game.events.on('RESIZE', onResize);
+		game.events.on('RESIZE', onResize);
 		scene.events.once('DESTROY', destroy);
 	}
 
@@ -132,10 +134,12 @@ class CameraManager {
 	 * See the Camera class documentation for more details.
 	 */
 	public function add(?x:Int = 0, ?y:Int = 0, ?width:Float, ?height:Float, ?makeMain = false) {
+    var game = Game.get();
+  
 		if (width == null)
-			width = scene.game.window.width;
+			width = game.window.width;
 		if (height == null)
-			height = scene.game.window.height;
+			height = game.window.height;
 
 		var camera = new Camera(x, y, width, height);
 

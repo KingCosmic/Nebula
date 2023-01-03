@@ -19,11 +19,6 @@ class File<FT> {
 	public var loader:Loader;
 
 	/**
-	 * A reference to the Asset Manager, that is going to store this file if it loads.
-	 */
-	public var cache:AssetManager;
-
-	/**
 	 * The file type string (image, json, etc) for sorting within the Loader.
 	 */
 	public var type:String = '';
@@ -151,7 +146,7 @@ class File<FT> {
 	 * loaded or will conflict.
 	 */
 	public function hasCacheConflict() {
-		return (cache != null && AssetManager.textureExists(key));
+		return (AssetManager.get().textureExists(key));
 	}
 
 	/**

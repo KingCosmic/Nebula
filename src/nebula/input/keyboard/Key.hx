@@ -208,7 +208,7 @@ class Key extends EventEmitter {
 		if (!isDown)
 			return 0;
 
-		return (plugin.game.timestep.time - timeDown);
+		return (Game.get().timestep.time - timeDown);
 	}
 
 	/**
