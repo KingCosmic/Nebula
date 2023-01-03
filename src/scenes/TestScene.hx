@@ -1,5 +1,7 @@
 package scenes;
 
+import nape.shape.Polygon;
+import nebula.physics.nape.NapePhysics;
 import nebula.assets.AssetManager;
 import nebula.loader.filetypes.JsonFile;
 import nebula.gameobjects.Text;
@@ -13,6 +15,8 @@ import nebula.scenes.Scene;
 
 class TestScene extends Scene {
   private var keyboard:Keyboard;
+
+  private var physics:NapePhysics;
 
   private var helm:Image;
 
@@ -43,11 +47,18 @@ class TestScene extends Scene {
     // WIP
     keyboard = new Keyboard(this);
 
+    physics = new NapePhysics(this);
+
     helm = new Image(this, 400, 300, 'helmet');
 
 		var text = new Text(this, 10, 10, 'TEST', { fontSize: 40 });
 
     helm.setScale(4);
+
+    physics.addGameobject(helm, {
+      type: 'dynamic',
+      shape: new Polygon(Polygon.box(helm.width, helm.height))
+    });
 
     // cameras.main.startFollow(helm);
 
