@@ -332,10 +332,6 @@ class Loader extends EventEmitter {
         trace('loading ' + file.key + '');
 				inflight.set(file);
 
-        for (i in 0...list.size) {
-          
-        }
-
 				list.delete(file);
 
 				file.load();

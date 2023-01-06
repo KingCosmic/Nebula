@@ -155,7 +155,7 @@ class Renderer {
 		var alpha = camera.alpha * child.alpha;
 
 		// Nothing to see, so abort early
-		if (alpha == 0)
+		if (alpha <= 0)
 			return;
 
 		var x = child.x - (child.originX * child.displayWidth);

@@ -49,11 +49,26 @@ class Parser {
 
 		var startFrame:Int = config.startFrame != null ? config.startFrame : 0;
 		var endFrame = config.endFrame != null ? config.endFrame : -1;
+    
 		var margin = config.margin != null ? config.margin : 0;
 		var spacing = config.spacing != null ? config.spacing : 0;
 
-		var row = Math.floor((width - margin + spacing) / (frameWidth + spacing));
-		var column = Math.floor((height - margin + spacing) / (frameHeight + spacing));
+    trace('margin: ' + margin);
+    trace('spacing: ' + spacing);
+
+    trace ('width: ' + width);
+    trace ('frameWidth: ' + frameWidth);
+    trace(width / frameWidth);
+    trace(Math.floor((width / frameWidth)));
+
+    var rows = Math.floor((width / frameWidth));
+    var columns = Math.floor((height / frameHeight));
+
+    trace('rows: ' + rows);
+    trace('columns: ' + columns);
+
+		var row = Math.floor((width - (margin + spacing)) / (frameWidth + spacing));
+		var column = Math.floor((height - (margin + spacing)) / (frameHeight + spacing));
     var total = row * column;
 
 		if (total == 0) {
@@ -77,6 +92,8 @@ class Parser {
 		var fy = margin;
 		var ax = 0;
 		var ay = 0;
+
+    trace('total: ' + total);
 
 		for (i in 0...total) {
 			ax = 0;

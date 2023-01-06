@@ -114,11 +114,14 @@ class Camera extends BaseCamera {
 	 * Internal preRender method.
 	 */
 	override public function preRender() {
-		var halfWidth = width * 0.5;
-		var halfHeight = height * 0.5;
+    final w = width / zoom;
+    final h = height / zoom;
 
-		var xOrigin = width * originX;
-		var yOrigin = height * originY;
+		var halfWidth = w * 0.5;
+		var halfHeight = h * 0.5;
+
+		var xOrigin = w * originX;
+		var yOrigin = h * originY;
 
 		var sx = scrollX;
 		var sy = scrollY;
@@ -154,8 +157,8 @@ class Camera extends BaseCamera {
 		midPoint.x = midX;
 		midPoint.y = midY;
 
-		var displayWidth = width / zoom;
-		var displayHeight = height / zoom;
+		var displayWidth = w / zoom;
+		var displayHeight = h / zoom;
 
 		worldView.setTo(midX - (displayWidth / 2), midY - (displayHeight / 2), displayWidth, displayHeight);
 

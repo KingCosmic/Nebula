@@ -3,6 +3,9 @@ package nebula.loader.filetypes;
 import nebula.assets.AssetManager;
 import nebula.scenes.Scene;
 
+import kha.Assets;
+import kha.Image;
+
 /**
  * A single Sprite Sheet Image File suitable for loading by the Loader.
  *
@@ -10,11 +13,19 @@ import nebula.scenes.Scene;
  * 
  * For documentation about what all the arguments and configuration options mean please see Phaser.Loader.LoaderPlugin#spritesheet.
  */
-class SpriteSheetFile extends ImageFile {
+class SpriteSheetFile extends File<Image> {
 	public function new(loader:Loader, key:String, url:String, frameConfig:{}) {
-		super(loader, key, url, frameConfig);
+    if (frameConfig == null)
+			frameConfig = {};
 
-		type = 'spritesheet';
+		var fileConfig = {
+			type: 'spritesheet',
+			key: key,
+			url: url,
+			config: frameConfig
+		}
+
+		super(loader, fileConfig);
 	}
 
 	/**
@@ -32,8 +43,12 @@ class SpriteSheetFile extends ImageFile {
 		scene.load.addFile([cast new SpriteSheetFile(scene.load, key, url, frameConfig)]);
 	}
 
+  override public function startLoad() {
+		Assets.loadImage(src, onLoad, onError);
+	}
+
 	override public function addToCache() {
-		var texture = AssetManager.get().addSpriteSheet(key, data, config.config);
+		var texture = AssetManager.get().addSpriteSheet(key, data, config);
 
 		pendingDestroy(texture);
 	}

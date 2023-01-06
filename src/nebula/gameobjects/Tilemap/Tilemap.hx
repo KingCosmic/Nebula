@@ -30,12 +30,15 @@ typedef OgmoData = {
 class Tilemap extends GameObject {
 
   public var version:String;
-  public var layers:Array<Layer>;
-  public var tilesets:Array<String>;
-  public var objects:Array<String>;
+  public var layers:Array<Layer> = [];
+  public var tilesets:Array<String> = [];
+  public var objects:Array<String> = [];
 
-  public function new(_s:Scene, mapData:OgmoData) {
+  public function new(_s:Scene, _x:Int, _y:Int, mapData:OgmoData) {
     super(_s, 'tilemap');
+    
+    x = _x;
+    y = _y;
 
     width = mapData.width;
     height = mapData.height;
@@ -47,6 +50,7 @@ class Tilemap extends GameObject {
   
     for (layer in mapData.layers) {
       tilesets.push(layer.tileset);
+      layers.push(new Layer(this, layer));
     }
   }
 

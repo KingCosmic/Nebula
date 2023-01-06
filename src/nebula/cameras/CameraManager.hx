@@ -247,11 +247,18 @@ class CameraManager {
 		for (camera in cameras) {
 			// is this camera visible and has alpha
 			if (camera.visible && camera.alpha > 0) {
+
+        final g = renderer.framebuffer.g2;
+
+        g.scale(camera.zoom, camera.zoom);
+
 				// pre render the camera
 				camera.preRender();
 
 				// and now render
 				renderer.render(scene, children, camera);
+
+        g.scale(1 / camera.zoom, 1 / camera.zoom);
 			}
 		}
 	}
