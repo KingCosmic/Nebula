@@ -6,3 +6,4 @@
 3. [ ] Implement mouse input.
 4. [ ] sprite animations.
 5. [ ] sounds.
+6. [ ] animated tiles.
