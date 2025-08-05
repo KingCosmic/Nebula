@@ -1,6 +1,4 @@
-let project = new Project('Nebula');
-
-project.addLibrary('nape-haxe4');
+let project = new Project('nebula');
 
 project.addAssets('assets/**');
 project.addShaders('shaders/**');

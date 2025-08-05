@@ -3,7 +3,7 @@
     {
       "name": "Kha: HTML5",
       "request": "launch",
-      "type": "pwa-chrome",
+      "type": "chrome",
       "cwd": "${workspaceFolder}/build/debug-html5",
       "runtimeExecutable": "${command:kha.findKhaElectron}",
       "runtimeArgs": [

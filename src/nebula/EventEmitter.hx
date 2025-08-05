@@ -1,146 +1,151 @@
 package nebula;
 
-typedef Event = {
-	fn:Any->Any->Any->Any->Any->Void,
-	context:Any,
-	once:Bool
+typedef EventMap = Map<String, Dynamic>;
+typedef EventKey<T:EventMap> = String;
+typedef Handler<EventType> = EventType -> Void;
+
+/**
+ * Interface that represents a handle to a subscription that can be closed
+ */
+typedef Subscription = {
+  /**
+   * Removes the associated event handler, synonymous with events.off(...);
+   */
+  function close(): Void;
 }
 
+enum EitherOr<A, B> {
+  First(a: A);
+  Second(b: B);
+}
+
+typedef EventNameOrString = EitherOr<EventKey<EventMap>, String>;
+
+/**
+ * Excalibur's typed event emitter, this allows events to be sent with any string to Type mapping
+ */
 class EventEmitter {
-  private var _events:Map<String, Array<Event>> = new Map();
+  private var _paused = false;
+  private var _empty = true;
+  private var _listeners: Map<String, Array<Handler<Dynamic>>> = new Map();
+  private var _listenersOnce: Map<String, Array<Handler<Dynamic>>> = new Map();
+  private var _pipes: Array<EventEmitter> = [];
 
-  private var _eventsCount:Int = 0;
+  /**
+   * Removes all listeners and pipes
+   */
+  function clear() {
+    this._listeners = new Map();
+    this._listenersOnce = new Map();
+    this._pipes = [];
+    this._empty = true;
+  }
 
-  public function new() {}
+  function on(eventName: EventKey<EventMap>, handler: Handler<EventKey<EventMap>>): Subscription {
+    this._empty = false;
+    
+    var listeners = this._listeners.get(eventName) ?? [];
+    listeners.push(handler);
 
-	// Return an array listing the events for which the emitter has registered listeners.
-  public function eventNames(): Array<String> {
-    var names: Array<String> = [];
+    this._listeners.set(eventName, listeners);
+    return {
+      close: () -> this.off(eventName, handler)
+    };
+  }
 
-    if (_eventsCount == 0) return names;
+  function once(eventName: EventKey<EventMap>, handler: Handler<EventKey<EventMap>>): Subscription {
+    this._empty = false;
 
-    for (name in _events.keys()) {
-      if (_events.exists(name)) {
-        names.push(name);
+    var listeners = this._listeners.get(eventName) ?? [];
+    listeners.push(handler);
+
+    this._listeners.set(eventName, listeners);
+    return {
+      close: () -> this.off(eventName, handler)
+    };
+  }
+
+
+  function off(eventName: EventKey<EventMap>, ?handler: Handler<EventKey<EventMap>>): Void {
+    if (handler != null) {
+      final newListeners = this._listeners.get(eventName)?.filter((h) -> h != handler);
+      this._listeners.set(eventName, newListeners);
+
+      final newOnceListeners = this._listenersOnce[eventName]?.filter((h) -> h != handler);
+      this._listenersOnce[eventName] = newOnceListeners;
+    } else {
+      this._listeners.remove(eventName);
+    }
+  }
+
+  function emit(eventName: EventKey<EventMap>, ?event: EventKey<EventMap>): Void {
+    if (this._empty) {
+      return;
+    }
+    if (this._paused) {
+      return;
+    }
+    final listeners = this._listeners.get(eventName);
+    if (listeners != null) {
+      for (listener in listeners) {
+        listener(event);
       }
     }
-
-    return names;
-  }
-
-  // Return the listeners registered for a given event.
-	public function listeners(event:String): Array<Any->Any->Any->Any->Any->Void> {
-		var handlers: Array<Event> = _events.get(event);
-		var items: Array<Any->Any->Any->Any->Any->Void> = [];
-
-    if (handlers == null) return items;
-
-    for (handler in handlers) {
-      items.push(handler.fn);
-    }
-
-    return items;
-  }
-
-  // Return the number of listeners listening to a given event.
-  public function listenerCount(event: String): Int {
-    var listeners: Array<Event> = _events.get(event);
-
-    if (listeners == null) return 0;
-
-    return listeners.length;
-  }
-
-  // Calls each of the listeners registered for a given event.
-  public function emit(event: String, ?a1, ?a2, ?a3, ?a4, ?a5): Bool {
-    var listeners: Array<Event> = _events.get(event);
-
-    if (listeners == null) return false;
-
-    for (listener in listeners) {
-      if (listener.once) this.removeListener(event, listener.fn, null, true);
-
-      listener.fn(a1, a2, a3, a4, a5);
-    }
-
-    return true;
-  }
-
-  private function addListener(event: String, fn: Any, context: Any, once: Bool) {
-    var listeners: Array<Event> = _events.get(event); 
-    
-    if (context == null) context = this;
-    
-    var listener: Event = {
-      fn: fn,
-      context: context,
-      once: once
-    }
-
-    if (listeners == null) {
-      _events.set(event, [listener]);
-      _eventsCount = _eventsCount + 1;
-    } else {
-      listeners.push(listener);
-      _events.set(event, listeners);
-    }
-
-    return this;
-  }
-
-  public function clearEvent(event: String) {
-    if (--_eventsCount == 0) {
-      _events = new Map();
-    } else {
-      _events.remove(event);
-    }
-  }
-
-  // Add a listener for a given event.
-  public function on(event: String, fn: Any, ?context: Any): EventEmitter {
-		return this.addListener(event, fn, context, false);
-  }
-
-	// Add a one-time listener for a given event.
-	public function once(event: String, fn: Any, ?context: Any): EventEmitter {
-		return this.addListener(event, fn, context, true);
-  }
-
-  public function removeListener(event: String, ?fn: Any, ?context: Any, ?once: Bool): EventEmitter {
-    var listeners: Array<Event> = _events.get(event);
-    var events: Array<Event> = [];
-
-    if (listeners == null) return this;
-    if (fn == null) {
-      clearEvent(event);
-      return this;
-    }
-
-    for (listener in listeners) {
-      if (listener.fn != fn || (once && !listener.once) || (context != null && listener.context != context)) {
-        events.push(listener);
+    final onces = this._listenersOnce.get(eventName);
+    this._listenersOnce.set(eventName, []);
+    if (onces != null) {
+      for (listener in onces) {
+        listener(event);
       }
     }
-
-    // Reset the array, or remove it completely if we have no more listeners.
-    if (events.length > 0) {
-      _events.set(event, events);
-    } else {
-      clearEvent(event);
+    for (pipe in this._pipes) {
+      pipe.emit(eventName, event);
     }
-
-    return this;
   }
 
-  // Remove all listeners, or those of the specified event.
-  public function removeAllListeners(?event: String): EventEmitter {
-    if (event == null) {
-      clearEvent(event);
-    } else {
-      _events = new Map();
-      _eventsCount = 0;
+  /**
+   * Replay events from this emitter to another
+   * @param emitter
+   */
+  function pipe(emitter: EventEmitter): Subscription {
+    if (this == emitter) {
+      // throw Error('Cannot pipe to self');
     }
+    this._empty = false;
+    this._pipes.push(emitter);
 
-    return this;
+    return {
+      close: () -> {
+        final i = this._pipes.indexOf(emitter);
+        if (i > -1) {
+          this._pipes.splice(i, 1);
+        }
+      }
+    };
+  }
+
+  /**
+   * Remove any piped emitters
+   * @param emitter
+   */
+  function unpipe(emitter: EventEmitter): Void {
+    final i = this._pipes.indexOf(emitter);
+    if (i > -1) {
+      this._pipes.splice(i, 1);
+    }
+  }
+
+  /**
+   * Paused event emitters do not emit events
+   */
+  function pause(): Void {
+    this._paused = true;
+  }
+
+  /**
+   * Unpaused event emitter do emit events
+   */
+  function unpause(): Void {
+    this._paused = false;
   }
 }
