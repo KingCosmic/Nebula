@@ -1,131 +1,131 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
-import nebula.Graphics.Graphic;
-import nebula.Graphics.Animation;
+import nebula.graphics.Graphic;
+import nebula.graphics.Animation;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
-import nebula.Graphics.Context.Material;
+import nebula.graphics.context.Material;
 
-import nebula.Util.Log;
+import nebula.util.Log;
 
-import nebula.Math.WatchVector;
-import nebula.EntityComponentSystem;
+import nebula.math.WatchVector;
 
-import nebula.Graphics.GraphicsGroup;
+import nebula.graphics.GraphicsGroup;
 
 import nebula.Color;
 
-import nebula.Graphics.Raster;
-import nebula.Graphics.Text;
+import nebula.graphics.Raster;
+import nebula.graphics.Text;
 
 /**
  * Type guard for checking if a Graphic HasTick (used for graphics that change over time like animations)
  * @param graphic
  */
-function hasGraphicsTick(graphic: Graphic): graphic is Graphic & HasTick {
-  return !!(graphic as unknown as HasTick).tick;
+function hasGraphicsTick(graphic: Graphic): Graphic & HasTick {
+  return !!graphic.tick;
 }
 interface GraphicsShowOptions {
-  offset?: Vector;
-  anchor?: Vector;
+  var offset: Null<Vector>;
+  var anchor: Null<Vector>;
 }
 
 interface GraphicsComponentOptions {
-  onPostDraw?: (ex: ExcaliburGraphicsContext, elapsed: Float) => Void;
-  onPreDraw?: (ex: ExcaliburGraphicsContext, elapsed: Float) => Void;
-  onPreTransformDraw?: (ex: ExcaliburGraphicsContext, elapsed: Float) => Void;
-  onPostTransformDraw?: (ex: ExcaliburGraphicsContext, elapsed: Float) => Void;
+  var onPostDraw: Null<(ex: ExcaliburGraphicsContext, elapsed: Float) -> Void>;
+  var onPreDraw: Null<(ex: ExcaliburGraphicsContext, elapsed: Float) -> Void>;
+  var onPreTransformDraw: Null<(ex: ExcaliburGraphicsContext, elapsed: Float) -> Void>;
+  var onPostTransformDraw: Null<(ex: ExcaliburGraphicsContext, elapsed: Float) -> Void>;
 
   /**
    * Name of current graphic to use
    */
-  current?: String;
+  var current: Null<String>;
 
   /**
    * Optionally set the color of the graphics component
    */
-  color?: Color;
+  var color: Null<Color>;
 
   /**
    * Optionally set a material to use on the graphic
    */
-  material?: Material;
+  var material: Null<Material>;
 
   /**
    * Optionally copy instances of graphics by calling .clone(), you may set this to false to avoid sharing graphics when added to the
    * component for performance reasons. By default graphics are not copied and are shared when added to the component.
    */
-  copyGraphics?: Bool;
+  var copyGraphics: Null<Bool>;
 
   /**
    * Optional visible flag, if the graphics component is not visible it will not be displayed
    */
-  visible?: Bool;
+  var visible: Null<Bool>;
 
   /**
    * Optional opacity
    */
-  opacity?: Float;
+  var opacity: Null<Float>;
 
   /**
    * List of graphics and optionally the options per graphic
    */
-  graphics?: { [graphicName: String]: Graphic | { graphic: Graphic; options?: GraphicsShowOptions | undefined } };
+  var graphics: Null<Map<String, { graphic: Graphic, options: Null<GraphicsShowOptions> }>>;
 
   /**
    * Optional offset in absolute pixels to shift all graphics in this component from each graphic's anchor (default is top left corner)
    */
-  offset?: Vector;
+  var offset: Null<Vector>;
 
   /**
    * Optional anchor
    */
-  anchor?: Vector;
+  var anchor: Null<Vector>;
 }
 
 /**
  * Component to manage drawings, using with the position component
  */
 class GraphicsComponent extends Component {
-  private _logger = Logger.getInstance();
+  private var _logger = Logger.getInstance();
 
-  private _current: String = 'default';
-  private _graphics: Record<String, Graphic> = {};
-  private _options: Record<String, GraphicsShowOptions | undefined> = {};
+  private var _current: String = 'default';
+  private var _graphics: Record<String, Graphic> = {};
+  private var _options: Record<String, Null<GraphicsShowOptions>> = {};
 
-  public material: Material | null = null;
+  public var material: Null<Material> = null;
 
   /**
    * Draws after the entity transform has been applied, but before graphics component graphics have been drawn
    */
-  public onPreDraw?: (ctx: ExcaliburGraphicsContext, elapsed: Float) => Void;
+  public var onPreDraw: Null<(ctx: ExcaliburGraphicsContext, elapsed: Float) -> Void>;
 
   /**
    * Draws after the entity transform has been applied, and after graphics component graphics has been drawn
    */
-  public onPostDraw?: (ctx: ExcaliburGraphicsContext, elapsed: Float) => Void;
+  public var onPostDraw: Null<(ctx: ExcaliburGraphicsContext, elapsed: Float) -> Void>;
 
   /**
    * Draws before the entity transform has been applied before any any graphics component drawing
    */
-  public onPreTransformDraw?: (ctx: ExcaliburGraphicsContext, elapsed: Float) => Void;
+  public var onPreTransformDraw: Null<(ctx: ExcaliburGraphicsContext, elapsed: Float) -> Void>;
 
   /**
    * Draws after the entity transform has been applied, and after all graphics component drawing
    */
-  public onPostTransformDraw?: (ctx: ExcaliburGraphicsContext, elapsed: Float) => Void;
-  private _color?: Color;
+  public var onPostTransformDraw: Null<(ctx: ExcaliburGraphicsContext, elapsed: Float) -> Void>;
+  private var _color: Null<Color>;
 
   /**
    * Sets or gets wether any drawing should be visible in this component
    * @deprecated use isVisible
    */
-  public get visible(): Bool {
+  public var visible(get, set): Bool;
+  function get_visible(): Bool {
     return this.isVisible;
   }
 
@@ -133,62 +133,65 @@ class GraphicsComponent extends Component {
    * Sets or gets wether any drawing should be visible in this component
    * @deprecated use isVisible
    */
-  public set visible(val: Bool) {
+  function set_visible(val: Bool) {
     this.isVisible = val;
   }
 
   /**
    * Sets or gets wether any drawing should be visible in this component
    */
-  public isVisible: Bool = true;
+  public var isVisible: Bool = true;
 
   /**
    * Optionally force the graphic onscreen, default false. Not recommend to use for perf reasons, only if you known what you're doing.
    */
-  public forceOnScreen: Bool = false;
+  public var forceOnScreen: Bool = false;
 
   /**
    * Sets or gets wither all drawings should have an opacity applied
    */
-  public opacity: Float = 1;
+  public var opacity: Float = 1;
 
-  private _offset: Vector = new WatchVector(Vector.Zero, () => this.recalculateBounds());
+  private var _offset: Vector = new WatchVector(Vector.Zero, () -> this.recalculateBounds());
 
   /**
    * Offset to apply to graphics by default
    */
-  public get offset(): Vector {
+  public var offset(get, set): Vector;
+  function get_offset(): Vector {
     return this._offset;
   }
-  public set offset(value: Vector) {
-    this._offset = new WatchVector(value, () => this.recalculateBounds());
+  function set_offset(value: Vector) {
+    this._offset = new WatchVector(value, () -> this.recalculateBounds());
     this.recalculateBounds();
   }
 
-  private _anchor: Vector = new WatchVector(Vector.Half, () => this.recalculateBounds());
+  private var _anchor: Vector = new WatchVector(Vector.Half, () -> this.recalculateBounds());
 
   /**
    * Anchor to apply to graphics by default
    */
-  public get anchor(): Vector {
+  public var anchor(get, set): Vector;
+  function get_anchor(): Vector {
     return this._anchor;
   }
-  public set anchor(value: Vector) {
-    this._anchor = new WatchVector(value, () => this.recalculateBounds());
+  function set_anchor(value: Vector) {
+    this._anchor = new WatchVector(value, () -> this.recalculateBounds());
     this.recalculateBounds();
   }
 
   /**
    * Sets the color of the actor's current graphic
    */
-  public get color(): Color | undefined {
+  public var color(get, set): Null<Color>;
+  function get_color(): Null<Color> {
     return this._color;
   }
-  public set color(v: Color | undefined) {
+  function set_color(v: Null<Color>) {
     if (v) {
       this._color = v.clone();
       final currentGraphic = this.current;
-      if (currentGraphic instanceof Raster || currentGraphic instanceof Text) {
+      if (Std.isOfType(currentGraphic, Raster) || Std.isOfType(currentGraphic, Text)) {
         currentGraphic.color = this._color;
       }
     }
@@ -197,45 +200,39 @@ class GraphicsComponent extends Component {
   /**
    * Flip all graphics horizontally along the y-axis
    */
-  public flipHorizontal: Bool = false;
+  public var flipHorizontal: Bool = false;
 
   /**
    * Flip all graphics vertically along the x-axis
    */
-  public flipVertical: Bool = false;
+  public var flipVertical: Bool = false;
 
   /**
    * If set to true graphics added to the component will be copied. This can effect performance, but is useful if you don't want
    * changes to a graphic to effect all the places it is used.
    */
-  public copyGraphics: Bool = false;
+  public var copyGraphics: Bool = false;
 
-  public function new(options?: GraphicsComponentOptions) {
+  public function new(?options: GraphicsComponentOptions) {
     super();
     // Defaults
-    options = {
-      visible: this.isVisible,
-      graphics: {},
-      ...options
-    };
+    options = Object.spreadWith({ visible: this.isVisible, graphics: {} }, options);
 
-    final {
-      current,
-      anchor,
-      color,
-      opacity,
-      visible,
-      graphics,
-      offset,
-      copyGraphics,
-      onPreDraw,
-      onPostDraw,
-      onPreTransformDraw,
-      onPostTransformDraw
-    } = options;
+    final current = options.current,
+          anchor = options.anchor,
+          color = options.color,
+          opacity = options.opacity,
+          visible = options.visible,
+          graphics = options.graphics,
+          offset = options.offset,
+          copyGraphics = options.copyGraphics,
+          onPreDraw = options.onPreDraw,
+          onPostDraw = options.onPostDraw,
+          onPreTransformDraw = options.onPreTransformDraw,
+          onPostTransformDraw = options.onPostTransformDraw;
 
-    for (final [key, graphicOrOptions] of Object.entries(graphics as GraphicsComponentOptions)) {
-      if (graphicOrOptions instanceof Graphic) {
+    for (key => graphicOrOptions in Object.entries(graphics)) {
+      if (Std.isOfType(graphicOrOptions, Graphic)) {
         this._graphics[key] = graphicOrOptions;
       } else {
         this._graphics[key] = graphicOrOptions.graphic;
@@ -259,45 +256,49 @@ class GraphicsComponent extends Component {
     }
   }
 
-  public getGraphic(name: String): Graphic | undefined {
+  public function getGraphic(name: String): Null<Graphic> {
     return this._graphics[name];
   }
-  public getOptions(name: String): GraphicsShowOptions | undefined {
+  public function getOptions(name: String): Null<GraphicsShowOptions> {
     return this._options[name];
   }
 
   /**
    * Get registered graphics names
    */
-  public getNames(): String[] {
+  public function getNames(): Array<String> {
     return Object.keys(this._graphics);
   }
 
   /**
    * Returns the currently displayed graphic
    */
-  public get current(): Graphic | undefined {
+  public var current(get, never): Null<Graphic>;
+  function get_current(): Null<Graphic> {
     return this._graphics[this._current];
   }
 
   /**
    * Returns the currently displayed graphic offsets
    */
-  public get currentOptions(): GraphicsShowOptions | undefined {
+  public var currentOptions(get, never): Null<GraphicsShowOptions>;
+  function get_currentOptions() {
     return this._options[this._current];
   }
 
   /**
    * Returns all graphics associated with this component
    */
-  public get graphics(): { [graphicName: String]: Graphic } {
+  public var graphics(get, never): Map<String, Graphic>;
+  function get_graphics(): Map<String, Graphic> {
     return this._graphics;
   }
 
   /**
    * Returns all graphics options associated with this component
    */
-  public get options(): { [graphicName: String]: GraphicsShowOptions | undefined } {
+  public var options(get, never): Map<String, Null<GraphicsShowOptions>>;
+  function get_options() {
     return this._options;
   }
 
@@ -305,41 +306,27 @@ class GraphicsComponent extends Component {
    * Adds a named graphic to this component, if the name is "default" or not specified, it will be shown by default without needing to call
    * @param graphic
    */
-  public add(graphic: Graphic, options?: GraphicsShowOptions): Graphic;
-  public add(name: String, graphic: Graphic, options?: GraphicsShowOptions): Graphic;
-  public add(nameOrGraphic: String | Graphic, graphicOrOptions?: Graphic | GraphicsShowOptions, options?: GraphicsShowOptions): Graphic {
-    var name = 'default';
-    var graphicToSet: Null<Graphic> = null;
-    var optionsToSet: GraphicsShowOptions | undefined = undefined;
-    if (typeof nameOrGraphic === 'string' && graphicOrOptions instanceof Graphic) {
-      name = nameOrGraphic;
-      graphicToSet = graphicOrOptions;
-      optionsToSet = options;
-    }
-    if (nameOrGraphic instanceof Graphic && !(graphicOrOptions instanceof Graphic)) {
-      graphicToSet = nameOrGraphic;
-      optionsToSet = graphicOrOptions;
-    }
-
-    if (!graphicToSet) {
+  public function add(name: String, graphic: Graphic, ?options: GraphicsShowOptions): Graphic {
+    if (!graphic) {
       throw new Error('Need to provide a graphic or valid graphic string');
     }
-    this._graphics[name] = this.copyGraphics ? graphicToSet.clone() : graphicToSet;
-    this._options[name] = this.copyGraphics ? { ...optionsToSet } : optionsToSet;
-    if (name === 'default') {
+
+    this._graphics[name] = this.copyGraphics ? graphic.clone() : graphic;
+    this._options[name] = this.copyGraphics ? options : options;
+    if (name == 'default') {
       this.use('default');
     }
-    return graphicToSet;
+    return graphic;
   }
 
   /**
    * Removes a registered graphic, if the removed graphic is the current it will switch to the default
    * @param name
    */
-  public remove(name: String) {
-    delete this._graphics[name];
-    delete this._options[name];
-    if (this._current === name) {
+  public function remove(name: String) {
+    this._graphics.delete(name);
+    this._options.delete(name);
+    if (this._current == name) {
       this._current = 'default';
       this.recalculateBounds();
     }
@@ -352,41 +339,42 @@ class GraphicsComponent extends Component {
    * @param nameOrGraphic
    * @param options
    */
-  public function use<T extends Graphic = Graphic>(nameOrGraphic: String | T, options?: GraphicsShowOptions): T {
-    if (nameOrGraphic instanceof Graphic) {
-      var graphic = nameOrGraphic as Graphic;
-      if (this.copyGraphics) {
-        graphic = nameOrGraphic.clone();
-      }
-      this._current = 'default';
-      this._graphics[this._current] = graphic;
-      this._options[this._current] = options;
-    } else {
-      this._current = nameOrGraphic;
-      this._options[this._current] = options;
-      if (!(this._current in this._graphics)) {
-        this._logger.warn(
-          'Graphic ${this._current} is not registered with the graphics component owned by ${this.owner?.name}. Nothing will be drawn.'
-        );
-      }
+  public function use(name: String, ?options: GraphicsShowOptions): Graphic {
+    this._current = nameOrGraphic;
+    this._options[this._current] = options;
+    if (!(this._current in this._graphics)) {
+      this._logger.warn(
+        'Graphic ${this._current} is not registered with the graphics component owned by ${this.owner?.name}. Nothing will be drawn.'
+      );
     }
     this.recalculateBounds();
-    return this.current as T;
+    return this.current;
   }
 
   /**
    * Hide currently shown graphic
    */
-  public hide(): Void {
+  public function hide(): Void {
     this._current = 'ex.none';
   }
 
-  private _localBounds?: BoundingBox;
-  public set localBounds(bounds: BoundingBox) {
+  private var _localBounds: Null<BoundingBox>;
+
+  /**
+   * Get local bounds of graphics component
+   */
+  public var localBounds(get, set): Null<BoundingBox>;
+  function get_localBounds() {
+    if (!this._localBounds || this._localBounds.hasZeroDimensions()) {
+      this.recalculateBounds();
+    }
+    return this._localBounds; // recalc guarantees type
+  }
+  function set_localBounds(bounds: Null<BoundingBox>) {
     this._localBounds = bounds;
   }
 
-  public recalculateBounds() {
+  public function recalculateBounds() {
     var bb = new BoundingBox();
     final graphic = this._graphics[this._current];
     final options = this._options[this._current];
@@ -407,7 +395,7 @@ class GraphicsComponent extends Component {
     final bounds = graphic.localBounds;
     final offsetX = -bounds.width * anchor.x + offset.x;
     final offsetY = -bounds.height * anchor.y + offset.y;
-    if (graphic instanceof GraphicsGroup && !graphic.useAnchor) {
+    if (Std.isOfType(graphic, GraphicsGroup) && !graphic.useAnchor) {
       bb = graphic?.localBounds.combine(bb);
     } else {
       bb = graphic?.localBounds.translate(vec(offsetX, offsetY)).combine(bb);
@@ -416,19 +404,10 @@ class GraphicsComponent extends Component {
   }
 
   /**
-   * Get local bounds of graphics component
-   */
-  public get localBounds(): BoundingBox {
-    if (!this._localBounds || this._localBounds.hasZeroDimensions()) {
-      this.recalculateBounds();
-    }
-    return this._localBounds as BoundingBox; // recalc guarantees type
-  }
-
-  /**
    * Get world bounds of graphics component
    */
-  public get bounds(): BoundingBox {
+  public var bounds(get, never): BoundingBox;
+  function get_bounds(): BoundingBox {
     var bounds = this.localBounds;
     if (this.owner) {
       final tx = this.owner.get(TransformComponent);
@@ -444,17 +423,17 @@ class GraphicsComponent extends Component {
    * @param elapsed
    * @internal
    */
-  public update(elapsed: Float, idempotencyToken: Int = 0) {
+  public function update(elapsed: Int, idempotencyToken: Int = 0) {
     final graphic = this.current;
     if (graphic && hasGraphicsTick(graphic)) {
       graphic.tick(elapsed, idempotencyToken);
     }
   }
 
-  public clone(): GraphicsComponent {
+  public function clone(): GraphicsComponent {
     final graphics = new GraphicsComponent();
-    graphics._graphics = { ...this._graphics };
-    graphics._options = { ...this._options };
+    graphics._graphics = this._graphics;
+    graphics._options = this._options;
     graphics.offset = this.offset.clone();
     if (this.color) {
       graphics.color = this.color.clone();

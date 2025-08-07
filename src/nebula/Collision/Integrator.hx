@@ -1,22 +1,20 @@
-package nebula.Collision;
+package nebula.collision;
 
-import nebula.Math.Vector;
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.EntityComponentSystem.Components.MotionComponent;
-
-import nebula.Math;
+import nebula.math.Vector;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.entitycomponentsystem.components.MotionComponent;
 
 class EulerIntegrator {
   // Scratch vectors to avoid allocation
-  private static _POS = new Vector(0, 0);
-  private static _SCALE = new Vector(1, 1);
+  private static var _POS = new Vector(0, 0);
+  private static var _SCALE = new Vector(1, 1);
 
-  private static _ACC = new Vector(0, 0);
-  private static _VEL = new Vector(0, 0);
-  private static _VEL_ACC = new Vector(0, 0);
-  private static _SCALE_FACTOR = new Vector(0, 0);
+  private static var _ACC = new Vector(0, 0);
+  private static var _VEL = new Vector(0, 0);
+  private static var _VEL_ACC = new Vector(0, 0);
+  private static var _SCALE_FACTOR = new Vector(0, 0);
 
-  static integrate(transform: TransformComponent, motion: MotionComponent, totalAcc: Vector, elapsed: Float) {
+  static function integrate(transform: TransformComponent, motion: MotionComponent, totalAcc: Vector, elapsed: Float) {
     final seconds = elapsed / 1000;
     // This code looks a little wild, but it's to avoid creating any new Vector instances
     // integration is done in a tight loop so this is key to avoid GC'ing

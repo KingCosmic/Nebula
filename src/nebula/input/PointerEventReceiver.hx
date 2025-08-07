@@ -1,35 +1,34 @@
-import type { Engine } from '../Engine';
-import { ScrollPreventionMode } from '../Engine';
-import { GlobalCoordinates } from '../Math/global-coordinates';
-import type { Vector } from '../Math/vector';
-import { vec } from '../Math/vector';
-import { PointerEvent } from './PointerEvent';
-import { WheelEvent } from './WheelEvent';
-import { PointerAbstraction } from './PointerAbstraction';
+package nebula.input;
 
-import { WheelDeltaMode } from './WheelDeltaMode';
-import { PointerSystem } from './PointerSystem';
-import { NativePointerButton } from './NativePointerButton';
-import { PointerButton } from './PointerButton';
-import { fail } from '../Util/Util';
-import { PointerType } from './PointerType';
-import { isCrossOriginIframe, isIframe } from '../Util/IFrame';
-import type { EventKey, Handler, Subscription } from '../EventEmitter';
-import { EventEmitter } from '../EventEmitter';
+import nebula.Engine;
+import nebula.math.GlobalCoordinates;
+import nebula.math.Vector;
 
-export type NativePointerEvent = globalThis.PointerEvent;
-export type NativeMouseEvent = globalThis.MouseEvent;
-export type NativeTouchEvent = globalThis.TouchEvent;
-export type NativeWheelEvent = globalThis.WheelEvent;
+import nebula.input.PointerEvent;
+import nebula.input.WheelEvent;
+import nebula.input.PointerAbstraction;
+import nebula.input.WheelDeltaMode;
+import nebula.input.PointerSystem;
+import nebula.input.NativePointerButton;
+import nebula.input.PointerButton;
+import nebula.util.Util;
+import nebula.input.PointerType;
+import nebula.util.IFrame;
+import nebula.EventEmitter;
 
-export type PointerEvents = {
-  move: PointerEvent;
-  down: PointerEvent;
-  up: PointerEvent;
-  wheel: WheelEvent;
+typedef NativePointerEvent = globalThis.PointerEvent;
+typedef NativeMouseEvent = globalThis.MouseEvent;
+typedef NativeTouchEvent = globalThis.TouchEvent;
+typedef NativeWheelEvent = globalThis.WheelEvent;
+
+typedef TPointerEvents = {
+  var move: PointerEvent;
+  var down: PointerEvent;
+  var up: PointerEvent;
+  var wheel: WheelEvent;
 };
 
-export const PointerEvents = {
+final PointerEvents = {
   Move: 'move',
   Down: 'down',
   Up: 'up',
@@ -39,51 +38,51 @@ export const PointerEvents = {
 /**
  * Is this event a native touch event?
  */
-function isTouchEvent(value: any): value is NativeTouchEvent {
+function isTouchEvent(value: Any) {
   // Guard for Safari <= 13.1
-  return globalThis.TouchEvent && value instanceof globalThis.TouchEvent;
+  return true;
 }
 
 /**
  * Is this event a native pointer event
  */
-function isPointerEvent(value: any): value is NativePointerEvent {
+function isPointerEvent(value: Any) {
   // Guard for Safari <= 13.1
-  return globalThis.PointerEvent && value instanceof globalThis.PointerEvent;
+  return true;
 }
 
-export interface PointerInitOptions {
-  grabWindowFocus?: boolean;
+interface PointerInitOptions {
+  var grabWindowFocus: Null<Bool>;
 }
 
 /**
  * The PointerEventProcessor is responsible for collecting all the events from the canvas and transforming them into GlobalCoordinates
  */
-export class PointerEventReceiver {
-  public events = new EventEmitter<PointerEvents>();
-  public primary: PointerAbstraction = new PointerAbstraction();
+class PointerEventReceiver {
+  public var events = new EventEmitter<PointerEvents>();
+  public var primary: PointerAbstraction = new PointerAbstraction();
 
-  private _activeNativePointerIdsToNormalized = new Map<number, number>();
-  public lastFramePointerCoords = new Map<number, GlobalCoordinates>();
-  public currentFramePointerCoords = new Map<number, GlobalCoordinates>();
+  private var _activeNativePointerIdsToNormalized = new Map<Int, Int>();
+  public var lastFramePointerCoords = new Map<Int, GlobalCoordinates>();
+  public var currentFramePointerCoords = new Map<Int, GlobalCoordinates>();
 
-  public currentFramePointerDown = new Map<number, boolean>();
-  public lastFramePointerDown = new Map<number, boolean>();
+  public var currentFramePointerDown = new Map<Int, Bool>();
+  public var lastFramePointerDown = new Map<Int, Bool>();
 
-  public currentFrameDown: PointerEvent[] = [];
-  public currentFrameUp: PointerEvent[] = [];
-  public currentFrameMove: PointerEvent[] = [];
-  public currentFrameCancel: PointerEvent[] = [];
-  public currentFrameWheel: WheelEvent[] = [];
+  public var currentFrameDown: Array<PointerEvent> = [];
+  public var currentFrameUp: Array<PointerEvent> = [];
+  public var currentFrameMove: Array<PointerEvent> = [];
+  public var currentFrameCancel: Array<PointerEvent> = [];
+  public var currentFrameWheel: Array<PointerEvent> = [];
 
-  private _enabled = true;
+  private var _enabled = true;
 
-  constructor(
-    public readonly target: GlobalEventHandlers & EventTarget,
-    public engine: Engine
+  public function new(
+    target: GlobalEventHandlers & EventTarget,
+    engine: Engine
   ) {}
 
-  public toggleEnabled(enabled: boolean) {
+  public function toggleEnabled(enabled: Bool) {
     this._enabled = enabled;
   }
 
@@ -93,22 +92,22 @@ export class PointerEventReceiver {
    * @param target
    * @param engine
    */
-  public recreate(target: GlobalEventHandlers & EventTarget, engine: Engine) {
-    const eventReceiver = new PointerEventReceiver(target, engine);
+  public function recreate(target: GlobalEventHandlers & EventTarget, engine: Engine) {
+    final eventReceiver = new PointerEventReceiver(target, engine);
     eventReceiver.primary = this.primary;
     eventReceiver._pointers = this._pointers;
     return eventReceiver;
   }
 
-  private _pointers: PointerAbstraction[] = [this.primary];
+  private var _pointers: Array<PointerAbstraction> = [this.primary];
   /**
    * Locates a specific pointer by id, creates it if it doesn't exist
    * @param index
    */
-  public at(index: number): PointerAbstraction {
+  public function at(index: Int): PointerAbstraction {
     if (index >= this._pointers.length) {
       // Ensure there is a pointer to retrieve
-      for (let i = this._pointers.length - 1, max = index; i < max; i++) {
+      for (i in this._pointers.length - 1...index) {
         this._pointers.push(new PointerAbstraction());
       }
     }
@@ -118,7 +117,7 @@ export class PointerEventReceiver {
   /**
    * The number of pointers currently being tracked by excalibur
    */
-  public count(): number {
+  public function count(): Int {
     return this._pointers.length;
   }
 
@@ -126,7 +125,7 @@ export class PointerEventReceiver {
    * Is the specified pointer id down this frame
    * @param pointerId
    */
-  public isDown(pointerId: number) {
+  public function isDown(pointerId: Int) {
     if (!this._enabled) {
       return false;
     }
@@ -137,7 +136,7 @@ export class PointerEventReceiver {
    * Was the specified pointer id down last frame
    * @param pointerId
    */
-  public wasDown(pointerId: number) {
+  public function wasDown(pointerId: Int) {
     if (!this._enabled) {
       return false;
     }
@@ -147,7 +146,7 @@ export class PointerEventReceiver {
   /**
    * Whether the Pointer is currently dragging.
    */
-  public isDragging(pointerId: number): boolean {
+  public function isDragging(pointerId: Int): Bool {
     if (!this._enabled) {
       return false;
     }
@@ -157,7 +156,7 @@ export class PointerEventReceiver {
   /**
    * Whether the Pointer just started dragging.
    */
-  public isDragStart(pointerId: number): boolean {
+  public function isDragStart(pointerId: Int): Bool {
     if (!this._enabled) {
       return false;
     }
@@ -167,35 +166,26 @@ export class PointerEventReceiver {
   /**
    * Whether the Pointer just ended dragging.
    */
-  public isDragEnd(pointerId: number): boolean {
+  public function isDragEnd(pointerId: Int): Bool {
     if (!this._enabled) {
       return false;
     }
     return !this.isDown(pointerId) && this.wasDown(pointerId);
   }
 
-  public emit<TEventName extends EventKey<PointerEvents>>(eventName: TEventName, event: PointerEvents[TEventName]): void;
-  public emit(eventName: string, event?: any): void;
-  public emit<TEventName extends EventKey<PointerEvents> | string>(eventName: TEventName, event?: any): void {
+  public function emit(eventName: String, ?event: Any): Void {
     this.events.emit(eventName, event);
   }
 
-  public on<TEventName extends EventKey<PointerEvents>>(eventName: TEventName, handler: Handler<PointerEvents[TEventName]>): Subscription;
-  public on(eventName: string, handler: Handler<unknown>): Subscription;
-  public on<TEventName extends EventKey<PointerEvents> | string>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function on(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.on(eventName, handler);
   }
 
-  public once<TEventName extends EventKey<PointerEvents>>(eventName: TEventName, handler: Handler<PointerEvents[TEventName]>): Subscription;
-  public once(eventName: string, handler: Handler<unknown>): Subscription;
-  public once<TEventName extends EventKey<PointerEvents> | string>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function once(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.once(eventName, handler);
   }
 
-  public off<TEventName extends EventKey<PointerEvents>>(eventName: TEventName, handler: Handler<PointerEvents[TEventName]>): void;
-  public off(eventName: string, handler: Handler<unknown>): void;
-  public off(eventName: string): void;
-  public off<TEventName extends EventKey<PointerEvents> | string>(eventName: TEventName, handler?: Handler<any>): void {
+  public function off(eventName: String, ?handler: Handler<Any>): Void {
     this.events.off(eventName, handler);
   }
 
@@ -207,48 +197,48 @@ export class PointerEventReceiver {
    * This does not emit events to entities, see PointerSystem
    * @internal
    */
-  public update() {
+  public function update() {
     this.lastFramePointerDown = new Map(this.currentFramePointerDown);
     this.lastFramePointerCoords = new Map(this.currentFramePointerCoords);
 
-    for (const event of this.currentFrameDown) {
+    for (event in this.currentFrameDown) {
       if (!event.active) {
         continue;
       }
       this.emit('down', event);
-      const pointer = this.at(event.pointerId);
+      final pointer = this.at(event.pointerId);
       pointer.emit('down', event);
       this.primary.emit('pointerdown', event);
     }
 
-    for (const event of this.currentFrameUp) {
+    for (event in this.currentFrameUp) {
       if (!event.active) {
         continue;
       }
       this.emit('up', event);
-      const pointer = this.at(event.pointerId);
+      final pointer = this.at(event.pointerId);
       pointer.emit('up', event);
     }
 
-    for (const event of this.currentFrameMove) {
+    for (event in this.currentFrameMove) {
       if (!event.active) {
         continue;
       }
       this.emit('move', event);
-      const pointer = this.at(event.pointerId);
+      final pointer = this.at(event.pointerId);
       pointer.emit('move', event);
     }
 
-    for (const event of this.currentFrameCancel) {
+    for (event in this.currentFrameCancel) {
       if (!event.active) {
         continue;
       }
       this.emit('cancel', event);
-      const pointer = this.at(event.pointerId);
+      final pointer = this.at(event.pointerId);
       pointer.emit('cancel', event);
     }
 
-    for (const event of this.currentFrameWheel) {
+    for (event in this.currentFrameWheel) {
       if (!event.active) {
         continue;
       }
@@ -259,7 +249,7 @@ export class PointerEventReceiver {
     }
 
     if (this.engine.currentScene.camera.hasChanged()) {
-      for (const pointer of this._pointers) {
+      for (pointer in this._pointers) {
         pointer._updateWorldPosition(this.engine);
       }
     }
@@ -268,12 +258,11 @@ export class PointerEventReceiver {
   /**
    * Clears the current frame event and pointer data
    */
-  public clear() {
-    for (const event of this.currentFrameUp) {
+  public function clear() {
+    for (event in this.currentFrameUp) {
       this.currentFramePointerCoords.delete(event.pointerId);
-      const ids = this._activeNativePointerIdsToNormalized.entries();
-      for (const [native, normalized] of ids) {
-        if (normalized === event.pointerId) {
+      for (native => normalized in this._activeNativePointerIdsToNormalized) {
+        if (normalized == event.pointerId) {
           this._activeNativePointerIdsToNormalized.delete(native);
         }
       }
@@ -285,20 +274,20 @@ export class PointerEventReceiver {
     this.currentFrameWheel.length = 0;
   }
 
-  private _boundHandle = this._handle.bind(this);
-  private _boundWheel = this._handleWheel.bind(this);
+  private var _boundHandle = this._handle.bind(this);
+  private var _boundWheel = this._handleWheel.bind(this);
   /**
    * Initializes the pointer event receiver so that it can start listening to native
    * browser events.
    */
-  public init(options?: PointerInitOptions) {
+  public function init(?options: PointerInitOptions) {
     if (this.engine.isDisposed()) {
       return;
     }
     // Disabling the touch action avoids browser/platform gestures from firing on the canvas
     // It is important on mobile to have touch action 'none'
     // https://stackoverflow.com/questions/48124372/pointermove-event-not-working-with-touch-why-not
-    if (this.target === this.engine.canvas) {
+    if (this.target == this.engine.canvas) {
       this.engine.canvas.style.touchAction = 'none';
     } else {
       document.body.style.touchAction = 'none';
@@ -323,16 +312,16 @@ export class PointerEventReceiver {
     }
 
     // MDN MouseWheelEvent
-    const wheelOptions = {
+    final wheelOptions = {
       passive: !(
-        this.engine.pageScrollPreventionMode === ScrollPreventionMode.All ||
-        this.engine.pageScrollPreventionMode === ScrollPreventionMode.Canvas
+        this.engine.pageScrollPreventionMode == ScrollPreventionMode.All ||
+        this.engine.pageScrollPreventionMode == ScrollPreventionMode.Canvas
       )
     };
     if ('onwheel' in document.createElement('div')) {
       // Modern Browsers
       this.target.addEventListener('wheel', this._boundWheel, wheelOptions);
-    } else if (document.onmousewheel !== undefined) {
+    } else if (document.onmousewheel != null) {
       // Webkit and IE
       this.target.addEventListener('mousewheel', this._boundWheel, wheelOptions);
     } else {
@@ -340,10 +329,10 @@ export class PointerEventReceiver {
       this.target.addEventListener('MozMousePixelScroll', this._boundWheel, wheelOptions);
     }
 
-    const grabWindowFocus = options?.grabWindowFocus ?? true;
+    final grabWindowFocus = options?.grabWindowFocus ?? true;
     // Handle cross origin iframe
     if (grabWindowFocus && (isCrossOriginIframe() || isIframe())) {
-      const grabFocus = () => {
+      final grabFocus = () -> {
         window.focus();
       };
       // Preferred pointer events
@@ -359,7 +348,7 @@ export class PointerEventReceiver {
     }
   }
 
-  public detach() {
+  public function detach() {
     // Preferred pointer events
     if (window.PointerEvent) {
       this.target.removeEventListener('pointerdown', this._boundHandle);
@@ -382,7 +371,7 @@ export class PointerEventReceiver {
     if ('onwheel' in document.createElement('div')) {
       // Modern Browsers
       this.target.removeEventListener('wheel', this._boundWheel);
-    } else if (document.onmousewheel !== undefined) {
+    } else if (document.onmousewheel != undefined) {
       // Webkit and IE
       this.target.addEventListener('mousewheel', this._boundWheel);
     } else {
@@ -395,15 +384,15 @@ export class PointerEventReceiver {
    * Take native pointer id and map it to index in active pointers
    * @param nativePointerId
    */
-  private _normalizePointerId(nativePointerId: number) {
+  private function _normalizePointerId(nativePointerId: Int) {
     // Add to the the native pointer set id
     this._activeNativePointerIdsToNormalized.set(nativePointerId, -1);
 
     // Native pointer ids in ascending order
-    const currentPointerIds = Array.from(this._activeNativePointerIdsToNormalized.keys()).sort((a, b) => a - b);
+    final currentPointerIds = Array.from(this._activeNativePointerIdsToNormalized.keys()).sort((a, b) -> a - b);
 
     // The index into sorted ids will be the new id, will always have an id
-    const id = currentPointerIds.findIndex((p) => p === nativePointerId);
+    final id = currentPointerIds.findIndex((p) -> p == nativePointerId);
 
     // Save the mapping so we can reverse it later
     this._activeNativePointerIdsToNormalized.set(nativePointerId, id);
@@ -415,41 +404,41 @@ export class PointerEventReceiver {
   /**
    * Responsible for handling and parsing pointer events
    */
-  private _handle(ev: NativeTouchEvent | NativePointerEvent | NativeMouseEvent) {
+  private function _handle(ev: Any) {
     if (!this._enabled) {
       return;
     }
     ev.preventDefault();
-    const eventCoords = new Map<number, GlobalCoordinates>();
-    let button: PointerButton;
-    let pointerType: PointerType;
+    final eventCoords = new Map<Int, GlobalCoordinates>();
+    var button: PointerButton;
+    var pointerType: PointerType;
     if (isTouchEvent(ev)) {
       button = PointerButton.Unknown;
       pointerType = PointerType.Touch;
       // https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent
-      for (let i = 0; i < ev.changedTouches.length; i++) {
-        const touch = ev.changedTouches[i];
-        const coordinates = GlobalCoordinates.fromPagePosition(touch.pageX, touch.pageY, this.engine);
-        const nativePointerId = i + 1;
-        const pointerId = this._normalizePointerId(nativePointerId);
+      for (i in 0...ev.changedTouches.length) {
+        final touch = ev.changedTouches[i];
+        final coordinates = GlobalCoordinates.fromPagePosition(touch.pageX, touch.pageY, this.engine);
+        final nativePointerId = i + 1;
+        final pointerId = this._normalizePointerId(nativePointerId);
         this.currentFramePointerCoords.set(pointerId, coordinates);
         eventCoords.set(pointerId, coordinates);
       }
     } else {
       button = this._nativeButtonToPointerButton(ev.button);
       pointerType = PointerType.Mouse;
-      const coordinates = GlobalCoordinates.fromPagePosition(ev.pageX, ev.pageY, this.engine);
-      let nativePointerId = 1;
+      final coordinates = GlobalCoordinates.fromPagePosition(ev.pageX, ev.pageY, this.engine);
+      var nativePointerId = 1;
       if (isPointerEvent(ev)) {
         nativePointerId = ev.pointerId;
         pointerType = this._stringToPointerType(ev.pointerType);
       }
-      const pointerId = this._normalizePointerId(nativePointerId);
+      final pointerId = this._normalizePointerId(nativePointerId);
       this.currentFramePointerCoords.set(pointerId, coordinates);
       eventCoords.set(pointerId, coordinates);
     }
 
-    for (const [pointerId, coord] of eventCoords.entries()) {
+    for (pointerId => coord in eventCoords) {
       switch (ev.type) {
         case 'mousedown':
         case 'pointerdown':
@@ -476,19 +465,19 @@ export class PointerEventReceiver {
     }
   }
 
-  private _handleWheel(ev: NativeWheelEvent) {
+  private function _handleWheel(ev: NativeWheelEvent) {
     if (!this._enabled) {
       return;
     }
     // Should we prevent page scroll because of this event
     if (
-      this.engine.pageScrollPreventionMode === ScrollPreventionMode.All ||
-      (this.engine.pageScrollPreventionMode === ScrollPreventionMode.Canvas && ev.target === this.engine.canvas)
+      this.engine.pageScrollPreventionMode == ScrollPreventionMode.All ||
+      (this.engine.pageScrollPreventionMode == ScrollPreventionMode.Canvas && ev.target == this.engine.canvas)
     ) {
       ev.preventDefault();
     }
-    const screen = this.engine.screen.pageToScreenCoordinates(vec(ev.pageX, ev.pageY));
-    const world = this.engine.screen.screenToWorldCoordinates(screen);
+    final screen = this.engine.screen.pageToScreenCoordinates(vec(ev.pageX, ev.pageY));
+    final world = this.engine.screen.screenToWorldCoordinates(screen);
 
     /**
      * A constant used to normalize wheel events across different browsers
@@ -496,23 +485,23 @@ export class PointerEventReceiver {
      * This normalization factor is pulled from
      * https://developer.mozilla.org/en-US/docs/Web/Events/wheel#Listening_to_this_event_across_browser
      */
-    const ScrollWheelNormalizationFactor = -1 / 40;
+    final ScrollWheelNormalizationFactor = -1 / 40;
 
-    const deltaX = ev.deltaX || ev.wheelDeltaX * ScrollWheelNormalizationFactor || 0;
-    const deltaY =
+    final deltaX = ev.deltaX || ev.wheelDeltaX * ScrollWheelNormalizationFactor || 0;
+    final deltaY =
       ev.deltaY || ev.wheelDeltaY * ScrollWheelNormalizationFactor || ev.wheelDelta * ScrollWheelNormalizationFactor || ev.detail || 0;
-    const deltaZ = ev.deltaZ || 0;
-    let deltaMode = WheelDeltaMode.Pixel;
+    final deltaZ = ev.deltaZ || 0;
+    var deltaMode = WheelDeltaMode.Pixel;
 
     if (ev.deltaMode) {
-      if (ev.deltaMode === 1) {
+      if (ev.deltaMode == 1) {
         deltaMode = WheelDeltaMode.Line;
-      } else if (ev.deltaMode === 2) {
+      } else if (ev.deltaMode == 2) {
         deltaMode = WheelDeltaMode.Page;
       }
     }
 
-    const we = new WheelEvent(world.x, world.y, ev.pageX, ev.pageY, screen.x, screen.y, 0, deltaX, deltaY, deltaZ, deltaMode, ev);
+    final we = new WheelEvent(world.x, world.y, ev.pageX, ev.pageY, screen.x, screen.y, 0, deltaX, deltaY, deltaZ, deltaMode, ev);
     this.currentFrameWheel.push(we);
   }
 
@@ -523,8 +512,8 @@ export class PointerEventReceiver {
    * @param type
    * @param pos
    */
-  public triggerEvent(type: 'down' | 'up' | 'move' | 'cancel', pos: Vector) {
-    const page = this.engine.screen.worldToPageCoordinates(pos);
+  public function triggerEvent(type: String, pos: Vector) {
+    final page = this.engine.screen.worldToPageCoordinates(pos);
     // Send an event to the event receiver
     if (window.PointerEvent) {
       this._handle(
@@ -545,12 +534,12 @@ export class PointerEventReceiver {
     }
 
     // Force update pointer system
-    const pointerSystem = this.engine.currentScene.world.get(PointerSystem);
+    final pointerSystem = this.engine.currentScene.world.get(PointerSystem);
     pointerSystem.preupdate(this.engine.currentScene, 1);
     pointerSystem.update(1);
   }
 
-  private _nativeButtonToPointerButton(s: NativePointerButton): PointerButton {
+  private function _nativeButtonToPointerButton(s: NativePointerButton): PointerButton {
     switch (s) {
       case NativePointerButton.NoButton:
         return PointerButton.NoButton;
@@ -567,7 +556,7 @@ export class PointerEventReceiver {
     }
   }
 
-  private _stringToPointerType(s: string) {
+  private function _stringToPointerType(s: String) {
     switch (s) {
       case 'touch':
         return PointerType.Touch;

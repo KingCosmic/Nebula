@@ -1,11 +1,11 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.ImageSource;
-import nebula.Graphics.Sprite;
-import nebula.Graphics.Graphic;
-import nebula.Graphics.TiledSprite;
+import nebula.graphics.ImageSource;
+import nebula.graphics.Sprite;
+import nebula.graphics.Graphic;
+import nebula.graphics.TiledSprite;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
 /**
  * Specify sprite sheet spacing options, useful if your sprites are not tightly packed
@@ -16,13 +16,13 @@ interface SpriteSheetSpacingDimensions {
    * The starting point to offset and start slicing the sprite sheet from the top left of the image.
    * Default is (0, 0)
    */
-  originOffset?: { x?: Int; y?: Int } | Vector;
+  var originOffset: Null<Vector>;
 
   /**
    * The margin between sprites.
    * Default is (0, 0)
    */
-  margin?: { x?: Int; y?: Int } | Vector;
+  var margin: Null<Vector>;
 }
 
 /**
@@ -32,58 +32,58 @@ interface SpriteSheetGridOptions {
   /**
    * Source image to use for each sprite
    */
-  image: ImageSource;
+  var image: ImageSource;
   /**
    * Grid definition for the sprite sheet
    */
-  grid: {
+  var grid: {
     /**
      * Number of rows in the sprite sheet
      */
-    rows: Int;
+    rows: Int,
     /**
      * Number of columns in the sprite sheet
      */
-    columns: Int;
+    columns: Int,
     /**
      * Width of each individual sprite
      */
-    spriteWidth: Int;
+    spriteWidth: Int,
     /**
      * Height of each individual sprite
      */
-    spriteHeight: Int;
+    spriteHeight: Int,
   };
   /**
    * Optionally specify any spacing information between sprites
    */
-  spacing?: SpriteSheetSpacingDimensions;
+  var spacing: Null<SpriteSheetSpacingDimensions>;
 }
 
 interface SpriteSheetSparseOptions {
   /**
    * Source image to use for each sprite
    */
-  image: ImageSource;
+  var image: ImageSource;
   /**
    * List of source view rectangles to create a sprite sheet from
    */
-  sourceViews: SourceView[];
+  var sourceViews: Array<SourceView>;
 }
 
 interface SpriteSheetOptions {
   /**
    * Source sprites for the sprite sheet
    */
-  sprites: Sprite[];
+  var sprites: Array<Sprite>;
   /**
    * Optionally specify the number of rows in a sprite sheet (default 1 row)
    */
-  rows?: Int;
+  var rows: Null<Int>;
   /**
    * Optionally specify the number of columns in a sprite sheet (default sprites.length)
    */
-  columns?: Int;
+  var columns: Null<Int>;
 }
 
 interface GetSpriteOptions extends GraphicOptions {}
@@ -92,9 +92,9 @@ interface GetSpriteOptions extends GraphicOptions {}
  * Represents a collection of sprites from a source image with some organization in a grid
  */
 class SpriteSheet {
-  public readonly sprites: Sprite[] = [];
-  public readonly rows: Int;
-  public readonly columns: Int;
+  public var sprites: Array<Sprite> = [];
+  public var rows: Int;
+  public var columns: Int;
 
   /**
    * Build a new sprite sheet from a list of sprites
@@ -103,7 +103,10 @@ class SpriteSheet {
    * @param options
    */
   public function new(options: SpriteSheetOptions) {
-    final { sprites, rows, columns } = options;
+    final sprites = options.sprites,
+          rows = options.rows,
+          columns = options.columns;
+
     this.sprites = sprites;
     this.rows = rows ?? 1;
     this.columns = columns ?? this.sprites.length;
@@ -115,7 +118,7 @@ class SpriteSheet {
    * @param x
    * @param y
    */
-  public getSprite(x: Int, y: Int, options?: GetSpriteOptions): Sprite {
+  public function getSprite(x: Int, y: Int, ?options: GetSpriteOptions): Sprite {
     if (x >= this.columns || x < 0) {
       throw Error('No sprite exists in the SpriteSheet at (${x}, ${y}), x: ${x} should be between 0 and ${this.columns - 1} columns');
     }
@@ -164,7 +167,7 @@ class SpriteSheet {
    * @param y
    * @param options
    */
-  public getTiledSprite(x: Int, y: Int, options?: Partial<Omit<TiledSpriteOptions & GraphicOptions, 'image'>>): TiledSprite {
+  public function getTiledSprite(x: Int, y: Int, ?options: Partial<Omit<TiledSpriteOptions & GraphicOptions, 'image'>>): TiledSprite {
     if (x >= this.columns || x < 0) {
       throw Error('No sprite exists in the SpriteSheet at (${x}, ${y}), x: ${x} should be between 0 and ${this.columns - 1} columns');
     }
@@ -183,14 +186,14 @@ class SpriteSheet {
    * Create a sprite sheet from a sparse set of {@apilink SourceView} rectangles
    * @param options
    */
-  public static fromImageSourceWithSourceViews(options: SpriteSheetSparseOptions): SpriteSheet {
-    final sprites: Sprite[] = options.sourceViews.map((sourceView) => {
+  public static function fromImageSourceWithSourceViews(options: SpriteSheetSparseOptions): SpriteSheet {
+    final sprites: Array<Sprite> = options.sourceViews.map((sourceView) -> {
       return new Sprite({
         image: options.image,
-        sourceView
+        sourceView: sourceView
       });
     });
-    return new SpriteSheet({ sprites });
+    return new SpriteSheet({ sprites: sprites });
   }
 
   /**
@@ -223,37 +226,45 @@ class SpriteSheet {
    * ```
    * @param options
    */
-  public static fromImageSource(options: SpriteSheetGridOptions): SpriteSheet {
-    final sprites: Sprite[] = [];
+  public static function fromImageSource(options: SpriteSheetGridOptions): SpriteSheet {
+    final sprites: Array<Sprite> = [];
     options.spacing = options.spacing ?? {};
-    final {
-      image,
-      grid: { rows, columns: cols, spriteWidth, spriteHeight },
-      spacing: { originOffset, margin }
-    } = options;
-    var newmargin: { x: Int; y: Int } | undefined;
-    var neworiginOffset: { x: Int; y: Int } | undefined;
 
-    if (originOffset instanceof Vector) {
+    final image = options.image,
+          grid = options.grid,
+          spacing = options.spacing;
+    
+    final rows = grid.rows,
+          cols = grid.columns,
+          spriteWidth = grid.spriteWidth,
+          spriteHeight = grid.spriteHeight;
+    
+    final originOffset = spacing.originOffset,
+          margin = spacing.maring;
+
+    var newmargin: Null<{ x: Int, y: Int }>;
+    var neworiginOffset: Null<{ x: Int, y: Int }>;
+
+    if (Std.isOfType(originOffset, Vector)) {
       neworiginOffset = { x: originOffset.x, y: originOffset.y };
     } else {
       if (originOffset) {
-        neworiginOffset = { x: originOffset.x as number, y: originOffset.y as number };
+        neworiginOffset = { x: originOffset.x, y: originOffset.y };
       }
     }
 
-    if (margin instanceof Vector) {
+    if (Std.isOfType(margin, Vector)) {
       newmargin = { x: margin.x, y: margin.y };
     } else {
       if (margin) {
-        newmargin = { x: margin.x as Int, y: margin.y as Int };
+        newmargin = { x: margin.x, y: margin.y };
       }
     }
 
-    final offsetDefaults = { x: 0, y: 0, ...neworiginOffset };
-    final marginDefaults = { x: 0, y: 0, ...newmargin };
-    for (var x = 0; x < cols; x++) {
-      for (var y = 0; y < rows; y++) {
+    final offsetDefaults = Object.spreadWith({ x: 0, y: 0 }, neworiginOffset);
+    final marginDefaults = Object.spreadWith({ x: 0, y: 0 }, newmargin);
+    for (x in 0...cols) {
+      for (y in 0...rows) {
         sprites[x + y * cols] = new Sprite({
           image: image,
           sourceView: {
@@ -273,7 +284,7 @@ class SpriteSheet {
     });
   }
 
-  public clone(): SpriteSheet {
+  public function clone(): SpriteSheet {
     return new SpriteSheet({
       sprites: this.sprites.map((sprite) => sprite.clone()),
       rows: this.rows,

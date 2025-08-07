@@ -1,13 +1,12 @@
 package nebula;
 
-import nebula.Math.Vector;
-import nebula.Util.Log;
+import nebula.math.Vector;
+import nebula.util.Log;
 import nebula.Camera;
-import nebula.Collision;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Util.Util;
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
-import nebula.Graphics.Context.ExcaliburGraphicsContext2DCanvas;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.util.Util;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContext2DCanvas;
 import nebula.EventEmitter;
 
 /**
@@ -116,7 +115,7 @@ class Resolution {
   }
 
   public static var GameBoy(get, never): Resolution;
-  static function GameBoy(): Resolution {
+  static function get_GameBoy(): Resolution {
     return { width: 160, height: 144 };
   }
 
@@ -274,11 +273,11 @@ class Screen {
    * Listen to screen events {@apilink ScreenEvents}
    */
   public var events = new EventEmitter<ScreenEvents>();
-  private var _canvas: HTMLCanvasElement;
+  private var _canvas: Any;
   private var _antialiasing: Bool = true;
   private var _canvasImageRendering: CanvasImageRendering = 'auto';
   private var _contentResolution: Resolution;
-  private var _browser: BrowserEvents;
+  private var _browser: Any;
   private var _camera: Camera;
   private var _resolution: Resolution;
   private var _resolutionStack: Array<Resolution> = [];
@@ -287,10 +286,10 @@ class Screen {
   private var _pixelRatioOverride: Null<Float> = null;
   private var _displayMode: DisplayMode;
   private var _isFullscreen = false;
-  private var _mediaQueryList: MediaQueryList;
+  private var _mediaQueryList: Any;
   private var _isDisposed = false;
   private var _logger = Logger.getInstance();
-  private var _resizeObserver: ResizeObserver;
+  private var _resizeObserver: Any;
 
   public function new(options: ScreenOptions) {
     this.viewport = options.viewport;
@@ -456,8 +455,8 @@ class Screen {
     return this._displayMode;
   }
 
-  public var canvas(get, never): HTMLCanvasElement;
-  function get_canvas(): HTMLCanvasElement {
+  public var canvas(get, never): Any;
+  function get_canvas(): Any {
     return this._canvas;
   }
   

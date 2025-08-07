@@ -1,39 +1,22 @@
-package nebula.EntityComponentSystem;
+package nebula.entitycomponentsystem;
 
-import nebula.EntityComponentSystem.Entity;
-import nebula.Util.Observable;
+import nebula.entitycomponentsystem.Entity;
+import nebula.util.Observable;
 
-import nebula.EntityComponentSystem.Component;
+import nebula.entitycomponentsystem.Component;
 
-type ComponentInstance<T> = T extends ComponentCtor<infer R> ? R : never;
-
-/**
- * Turns `Entity<A | B>` into `Entity<A> | Entity<B>`
- */
-type DistributeEntity<T> = T extends infer U extends Component ? Entity<U> : never;
-
-interface QueryParams<
-  TKnownComponentCtors extends ComponentCtor<Component> = never,
-  TAnyComponentCtors extends ComponentCtor<Component> = never
-> {
-  components?: {
-    all?: TKnownComponentCtors[];
-    any?: TAnyComponentCtors[];
-    not?: ComponentCtor<Component>[];
-  };
-  tags?: {
-    all?: string[];
-    any?: string[];
-    not?: string[];
-  };
+interface QueryParams {
+  var components: Null<{
+    var all: Null<Array<Any>>;
+    var any: Null<Array<Any>>;
+    var not: Null<Array<Any>>;
+  }>;
+  var tags: Null<{
+    var all: Null<Array<String>>;
+    var any: Null<Array<String>>;
+    var not: Null<Array<String>>;
+  }>;
 }
-
-type QueryEntity<
-  TAllComponentCtors extends ComponentCtor<Component> = never,
-  TAnyComponentCtors extends ComponentCtor<Component> = never
-> = [TAnyComponentCtors] extends [never] // (trick to exclude `never` explicitly)
-  ? Entity<ComponentInstance<TAllComponentCtors>>
-  : Entity<ComponentInstance<TAllComponentCtors>> | DistributeEntity<ComponentInstance<TAnyComponentCtors>>;
 
 /**
  * Represents query for entities that match a list of types that is cached and observable
@@ -43,41 +26,34 @@ type QueryEntity<
  * const queryAB = new ex.Query<ComponentTypeA | ComponentTypeB>(['A', 'B']);
  * ```
  */
-class Query<
-  TAllComponentCtors extends ComponentCtor<Component> = never,
-  TAnyComponentCtors extends ComponentCtor<Component> = never
-> {
-  public readonly id: String;
+class Query {
+  public var id: String;
 
-  public entities: QueryEntity<TAllComponentCtors, TAnyComponentCtors>[] = [];
+  public var entities: Array<QueryEntity> = [];
 
   /**
    * This fires right after the component is added
    */
-  public entityAdded$ = new Observable<QueryEntity<TAllComponentCtors, TAnyComponentCtors>>();
+  public var entityAdded = new Observable<QueryEntity>();
   /**
    * This fires right before the component is actually removed from the entity, it will still be available for cleanup purposes
    */
-  public entityRemoved$ = new Observable<QueryEntity<TAllComponentCtors, TAnyComponentCtors>>();
+  public var entityRemoved = new Observable<QueryEntity>();
 
-  public readonly filter = {
+  public var filter = {
     components: {
-      all: new Set<TAllComponentCtors>(),
-      any: new Set<TAnyComponentCtors>(),
-      not: new Set<ComponentCtor<Component>>()
+      all: new Map<TAllComponentCtors, Bool>(),
+      any: new Map<TAnyComponentCtors, Bool>(),
+      not: new Map<ComponentCtor<Component>, Bool>()
     },
     tags: {
-      all: new Set<String>(),
-      any: new Set<String>(),
-      not: new Set<String>()
+      all: new Map<String, Bool>(),
+      any: new Map<String, Bool>(),
+      not: new Map<String, Bool>()
     }
   };
 
-  public function new(params: TAllComponentCtors[] | QueryParams<TAllComponentCtors, TAnyComponentCtors>) {
-    if (Array.isArray(params)) {
-      params = { components: { all: params } } as QueryParams<TAllComponentCtors, TAnyComponentCtors>;
-    }
-
+  public function new(params: QueryParams) {
     this.filter.components.all = new Set(params.components?.all ?? []);
     this.filter.components.any = new Set(params.components?.any ?? []);
     this.filter.components.not = new Set(params.components?.not ?? []);
@@ -88,43 +64,40 @@ class Query<
     this.id = Query.createId(params);
   }
 
-  static createId(params: Function[] | QueryParams<any, any>) {
+  static function createId(params: QueryParams) {
     // TODO what happens if a user defines the same type name as a built in type
     // ! TODO this could be dangerous depending on the bundler's settings for names
     // Maybe some kind of hash function is better here?
-    if (Array.isArray(params)) {
-      params = { components: { all: params } } as QueryParams<any, any>;
-    }
 
-    final anyComponents = params.components?.any ? `any_${Query.hashComponents(new Set(params.components?.any))}` : '';
-    final allComponents = params.components?.all ? `all_${Query.hashComponents(new Set(params.components?.all))}` : '';
-    final notComponents = params.components?.not ? `not_${Query.hashComponents(new Set(params.components?.not))}` : '';
+    final anyComponents = params.components?.any ? 'any_${Query.hashComponents(new Set(params.components?.any))}' : '';
+    final allComponents = params.components?.all ? 'all_${Query.hashComponents(new Set(params.components?.all))}' : '';
+    final notComponents = params.components?.not ? 'not_${Query.hashComponents(new Set(params.components?.not))}' : '';
 
-    final anyTags = params.tags?.any ? `any_${Query.hashTags(new Set(params.tags?.any))}` : '';
-    final allTags = params.tags?.all ? `all_${Query.hashTags(new Set(params.tags?.all))}` : '';
-    final notTags = params.tags?.not ? `not_${Query.hashTags(new Set(params.tags?.not))}` : '';
+    final anyTags = params.tags?.any ? 'any_${Query.hashTags(new Set(params.tags?.any))}' : '';
+    final allTags = params.tags?.all ? 'all_${Query.hashTags(new Set(params.tags?.all))}' : '';
+    final notTags = params.tags?.not ? 'not_${Query.hashTags(new Set(params.tags?.not))}' : '';
 
     return [anyComponents, allComponents, notComponents, anyTags, allTags, notTags].filter(Bool).join('-');
   }
 
-  static hashTags(set: Set<String>) {
+  static function hashTags(set: Map<String, Bool>) {
     return Array.from(set)
-      .map((t) => `t_${t}`)
+      .map((t) -> 't_${t}')
       .sort()
       .join('-');
   }
 
-  static hashComponents(set: Set<ComponentCtor<Component>>) {
+  static function hashComponents(set: Map<Component, Bool>) {
     return Array.from(set)
-      .map((c) => `c_${c.name}`)
+      .map((c) -> 'c_${c.name}')
       .sort()
       .join('-');
   }
 
-  matches(entity: Entity): Bool {
+  function matches(entity: Entity): Bool {
     // Components
     // check if entity has all components
-    for (final component of this.filter.components.all) {
+    for (component in this.filter.components.all) {
       if (!entity.has(component)) {
         return false;
       }
@@ -133,7 +106,7 @@ class Query<
     // check if entity has any components
     if (this.filter.components.any.size > 0) {
       var found = false;
-      for (final component of this.filter.components.any) {
+      for (component in this.filter.components.any) {
         if (entity.has(component)) {
           found = true;
           break;
@@ -146,7 +119,7 @@ class Query<
     }
 
     // check if entity has none of the components
-    for (final component of this.filter.components.not) {
+    for (component in this.filter.components.not) {
       if (entity.has(component)) {
         return false;
       }
@@ -154,7 +127,7 @@ class Query<
 
     // Tags
     // check if entity has all tags
-    for (final tag of this.filter.tags.all) {
+    for (tag in this.filter.tags.all) {
       if (!entity.hasTag(tag)) {
         return false;
       }
@@ -163,7 +136,7 @@ class Query<
     // check if entity has any tags
     if (this.filter.tags.any.size > 0) {
       var found = false;
-      for (final tag of this.filter.tags.any) {
+      for (tag in this.filter.tags.any) {
         if (entity.hasTag(tag)) {
           found = true;
           break;
@@ -176,7 +149,7 @@ class Query<
     }
 
     // check if entity has none of the tags
-    for (final tag of this.filter.tags.not) {
+    for (tag in this.filter.tags.not) {
       if (entity.hasTag(tag)) {
         return false;
       }
@@ -189,20 +162,20 @@ class Query<
    * Potentially adds an entity to a query index, returns true if added, false if not
    * @param entity
    */
-  checkAndAdd(entity: Entity) {
+  function checkAndAdd(entity: Entity) {
     if (this.matches(entity) && !this.entities.includes(entity)) {
       this.entities.push(entity);
-      this.entityAdded$.notifyAll(entity);
+      this.entityAdded.notifyAll(entity);
       return true;
     }
     return false;
   }
 
-  removeEntity(entity: Entity) {
+  function removeEntity(entity: Entity) {
     final index = this.entities.indexOf(entity);
     if (index > -1) {
       this.entities.splice(index, 1);
-      this.entityRemoved$.notifyAll(entity);
+      this.entityRemoved.notifyAll(entity);
     }
   }
 
@@ -210,10 +183,10 @@ class Query<
    * Returns a list of entities that match the query
    * @param sort Optional sorting function to sort entities returned from the query
    */
-  public getEntities(sort?: (a: Entity, b: Entity) => number): QueryEntity<TAllComponentCtors, TAnyComponentCtors>[] {
+  public function getEntities(?sort: (a: Entity, b: Entity) -> Int): Array<QueryEntity> {
     if (sort) {
       this.entities.sort(sort);
     }
-    return this.entities as QueryEntity<TAllComponentCtors, TAnyComponentCtors>[];
+    return this.entities;
   }
 }

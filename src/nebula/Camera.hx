@@ -2,20 +2,20 @@ package nebula;
 
 import nebula.Engine;
 import nebula.Screen;
-import nebula.Util.EasingFunctions;
-import nebula.Math.Vector;
+import nebula.util.EasingFunctions;
+import nebula.math.Vector;
 import nebula.Actor;
-import nebula.Util.Util;
-import nebula.Interfaces.LifecycleEvents;
+import nebula.util.Util;
+import nebula.interfaces.LifecycleEvents;
 import nebula.Events;
-import nebula.Collision.BoundingBox;
-import nebula.Util.Log;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Math.AffineMatrix;
+import nebula.collision.BoundingBox;
+import nebula.util.Log;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.math.AffineMatrix;
 import nebula.EventEmitter;
-import nebula.Graphics;
-import nebula.Math.Util;
-import nebula.Math.WatchVector;
+import nebula.graphics.Graphic;
+import nebula.math.Util;
+import nebula.math.WatchVector;
 
 /**
  * Interface that describes a custom camera strategy for tracking targets
@@ -244,7 +244,7 @@ class LimitCameraBoundsStrategy implements CameraStrategy<BoundingBox> {
 typedef TCameraEvents = {
   preupdate: PreUpdateEvent<Camera>,
   postupdate: PostUpdateEvent<Camera>,
-  initialize: InitializeEvent<Camera>,
+  initialize: InitializeEvent,
 };
 
 var CameraEvents = {

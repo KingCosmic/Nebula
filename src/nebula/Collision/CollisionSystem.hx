@@ -1,68 +1,69 @@
-package nebula.Collision;
+package nebula.collision;
 
-import nebula.EntityComponentSystem;
 
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.EntityComponentSystem.System;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.entitycomponentsystem.System;
 
 import nebula.Events;
 
-import nebula.Collision.SolverStrategy;
-import nebula.Collision.Solver.ArcadeSolver;
-import nebula.Collision.Solver.RealisticSolver;
-import nebula.Collision.Solver.Solver;
+import nebula.collision.SolverStrategy;
+import nebula.collision.solver.ArcadeSolver;
+import nebula.collision.solver.RealisticSolver;
+import nebula.collision.solver.Solver;
 
-import nebula.Collision.Colliders.Collider;
-import nebula.Collision.Colliders.CompositeCollider;
-import nebula.Collision.Detection.CollisionContact;
+import nebula.collision.colliders.Collider;
+import nebula.collision.colliders.CompositeCollider;
+import nebula.collision.detection.CollisionContact;
 
-import nebula.Collision.ColliderComponent;
+import nebula.collision.ColliderComponent;
 
 import nebula.Engine;
 import nebula.Scene;
 
-import nebula.Collision.Side;
+import nebula.collision.Side;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Collision.PhysicsWorld;
-import nebula.Collision.Detection.CollisionProcessor;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.collision.PhysicsWorld;
+import nebula.collision.detection.CollisionProcessor;
 
-import nebula.Collision.Colliders.SeparatingAxis;
-import nebula.Collision.MotionSystem;
-import nebula.Collision.Detection.Pair;
+import nebula.collision.colliders.SeparatingAxis;
+import nebula.collision.MotionSystem;
+import nebula.collision.detection.Pair;
 
 class CollisionSystem extends System {
-  static priority = SystemPriority.Higher;
+  static var priority = SystemPriority.Higher;
 
-  public systemType = SystemType.Update;
-  public query: Query<ComponentCtor<TransformComponent> | ComponentCtor<ColliderComponent>>;
+  public var systemType = SystemType.Update;
+  public var query: Query;
 
-  private _engine: Engine;
-  private _configDirty = false;
-  private _realisticSolver: RealisticSolver;
-  private _arcadeSolver: ArcadeSolver;
-  private _lastFrameContacts = new Map<String, CollisionContact>();
-  private _currentFrameContacts = new Map<String, CollisionContact>();
-  private _motionSystem: MotionSystem;
-  private get _processor(): CollisionProcessor {
+  private var _engine: Engine;
+  private var _configDirty = false;
+  private var _realisticSolver: RealisticSolver;
+  private var _arcadeSolver: ArcadeSolver;
+  private var _lastFrameContacts = new Map<String, CollisionContact>();
+  private var _currentFrameContacts = new Map<String, CollisionContact>();
+  private var _motionSystem: MotionSystem;
+
+  public var _processor(get, never): CollisionProcessor;
+  function get__processor(): CollisionProcessor {
     return this._physics.collisionProcessor;
   }
 
-  private _trackCollider: (c: Collider) => void;
-  private _untrackCollider: (c: Collider) => void;
+  private var _trackCollider: (c: Collider) -> Void;
+  private var _untrackCollider: (c: Collider) -> Void;
 
   public function new(
     world: World,
-    private _physics: PhysicsWorld
+    _physics: PhysicsWorld
   ) {
     super();
     this._arcadeSolver = new ArcadeSolver(_physics.config.arcade);
     this._realisticSolver = new RealisticSolver(_physics.config.realistic);
-    this._physics.$configUpdate.subscribe(() => (this._configDirty = true));
+    this._physics.$configUpdate.subscribe(() -> (this._configDirty = true));
     this._trackCollider = (c: Collider) => this._processor.track(c);
     this._untrackCollider = (c: Collider) => this._processor.untrack(c);
     this.query = world.query([TransformComponent, ColliderComponent]);
-    this.query.entityAdded$.subscribe((e) => {
+    this.query.entityAdded.subscribe((e) => {
       final colliderComponent = e.get(ColliderComponent);
       colliderComponent.$colliderAdded.subscribe(this._trackCollider);
       colliderComponent.$colliderRemoved.subscribe(this._untrackCollider);
@@ -71,29 +72,29 @@ class CollisionSystem extends System {
         this._processor.track(collider);
       }
     });
-    this.query.entityRemoved$.subscribe((e) => {
+    this.query.entityRemoved.subscribe((e) => {
       final colliderComponent = e.get(ColliderComponent);
       final collider = colliderComponent.get();
       if (colliderComponent && collider) {
         this._processor.untrack(collider);
       }
     });
-    this._motionSystem = world.get(MotionSystem) as MotionSystem;
+    this._motionSystem = world.get(MotionSystem);
   }
 
-  initialize(world: World, scene: Scene) {
+  function initialize(world: World, scene: Scene) {
     this._engine = scene.engine;
   }
 
-  update(elapsed: Float): void {
+ function update(elapsed: Int): Void {
     if (!this._physics.config.enabled) {
       return;
     }
 
     // TODO do we need to do this every frame?
     // Collect up all the colliders and update them
-    var colliders: Collider[] = [];
-    for (var entityIndex = 0; entityIndex < this.query.entities.length; entityIndex++) {
+    var colliders: Array<Collider> = [];
+    for (entityIndex in 0...this.query.entities.length) {
       final entity = this.query.entities[entityIndex];
       final colliderComp = entity.get(ColliderComponent);
       final collider = colliderComp?.get();
@@ -101,7 +102,7 @@ class CollisionSystem extends System {
         colliderComp.update();
 
         // Flatten composite colliders
-        if (collider instanceof CompositeCollider) {
+        if (Std.isOfType(collider, CompositeCollider)) {
           final compositeColliders = collider.getColliders();
           if (!collider.compositeStrategy) {
             collider.compositeStrategy = this._physics.config.colliders.compositeStrategy;
@@ -124,13 +125,13 @@ class CollisionSystem extends System {
     this._currentFrameContacts.clear();
 
     // Given possible pairs find actual contacts
-    var contacts: CollisionContact[] = [];
+    var contacts: Array<CollisionContact> = [];
 
     final solver: CollisionSolver = this.getSolver();
 
     // Solve, this resolves the position/velocity so entities aren't overlapping
     final substep = this._physics.config.substep;
-    for (let step = 0; step < substep; step++) {
+    for (step in 0...substep) {
       if (step > 0) {
         // first step is run by the MotionSystem when configured, so skip
         this._motionSystem.update(elapsed);
@@ -145,7 +146,7 @@ class CollisionSystem extends System {
         contacts = solver.solve(contacts);
 
         // Record contacts for start/end
-        for (final contact of contacts) {
+        for (contact in contacts) {
           if (contact.isCanceled()) {
             continue;
           }
@@ -171,7 +172,7 @@ class CollisionSystem extends System {
     this._lastFrameContacts = new Map(this._currentFrameContacts);
 
     // Process deferred collider removals
-    for (final entity of this.query.entities) {
+    for (entity in this.query.entities) {
       final collider = entity.get(ColliderComponent);
       if (collider) {
         collider.processColliderRemoval();
@@ -179,26 +180,26 @@ class CollisionSystem extends System {
     }
   }
 
-  postupdate(): void {
+  function postupdate(): Void {
     SeparatingAxis.SeparationPool.done();
   }
 
-  getSolver(): CollisionSolver {
+  function getSolver(): CollisionSolver {
     if (this._configDirty) {
       this._configDirty = false;
       this._arcadeSolver = new ArcadeSolver(this._physics.config.arcade);
       this._realisticSolver = new RealisticSolver(this._physics.config.realistic);
     }
-    return this._physics.config.solver === SolverStrategy.Realistic ? this._realisticSolver : this._arcadeSolver;
+    return this._physics.config.solver == SolverStrategy.Realistic ? this._realisticSolver : this._arcadeSolver;
   }
 
-  debug(ex: ExcaliburGraphicsContext) {
+  function debug(ex: ExcaliburGraphicsContext) {
     this._processor.debug(ex, 0);
   }
 
-  public runContactStartEnd() {
+  public function runContactStartEnd() {
     // If composite colliders are 'together' collisions may have a duplicate id because we want to treat those as a singular start/end
-    for (final [id, c] of this._currentFrameContacts) {
+    for (id => c in this._currentFrameContacts) {
       // find all new contacts
       if (!this._lastFrameContacts.has(id)) {
         final colliderA = c.colliderA;
@@ -206,23 +207,23 @@ class CollisionSystem extends System {
         final side = Side.fromDirection(c.mtv);
         final opposite = Side.getOpposite(side);
         colliderA.events.emit('collisionstart', new CollisionStartEvent(colliderA, colliderB, side, c));
-        colliderA.events.emit('contactstart', new ContactStartEvent(colliderA, colliderB, side, c) as any);
+        colliderA.events.emit('contactstart', new ContactStartEvent(colliderA, colliderB, side, c));
         colliderB.events.emit('collisionstart', new CollisionStartEvent(colliderB, colliderA, opposite, c));
-        colliderB.events.emit('contactstart', new ContactStartEvent(colliderB, colliderA, opposite, c) as any);
+        colliderB.events.emit('contactstart', new ContactStartEvent(colliderB, colliderA, opposite, c));
       }
     }
 
     // find all contacts that have ceased
-    for (final [id, c] of this._lastFrameContacts) {
+    for (id => c in this._lastFrameContacts) {
       if (!this._currentFrameContacts.has(id)) {
         final colliderA = c.colliderA;
         final colliderB = c.colliderB;
         final side = Side.fromDirection(c.mtv);
         final opposite = Side.getOpposite(side);
         colliderA.events.emit('collisionend', new CollisionEndEvent(colliderA, colliderB, side, c));
-        colliderA.events.emit('contactend', new ContactEndEvent(colliderA, colliderB, side, c) as any);
+        colliderA.events.emit('contactend', new ContactEndEvent(colliderA, colliderB, side, c));
         colliderB.events.emit('collisionend', new CollisionEndEvent(colliderB, colliderA, opposite, c));
-        colliderB.events.emit('contactend', new ContactEndEvent(colliderB, colliderA, opposite, c) as any);
+        colliderB.events.emit('contactend', new ContactEndEvent(colliderB, colliderA, opposite, c));
       }
     }
   }

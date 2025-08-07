@@ -1,4 +1,4 @@
-package nebula.Util;
+package nebula.util;
 
 interface FpsSamplerOptions {
   /**

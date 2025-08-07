@@ -1,31 +1,30 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.EntityComponentSystem;
-import nebula.Actions.Action;
+import nebula.actions.Action;
 
 /**
  * Action that can run multiple {@apilink Action}s or {@apilink ActionSequence}s at the same time
  */
 class ParallelActions implements Action {
-  id = nextActionId();
-  private _actions: Action[];
+  var id = nextActionId();
+  private var _actions: Array<Action>;
 
-  constructor(parallelActions: Action[]) {
+  public function new(parallelActions: Array<Action>) {
     this._actions = parallelActions;
   }
 
-  update(elapsed: Float) {
-    for (let i = 0; i < this._actions.length; i++) {
-      this._actions[i].update(elapsed);
+  function update(elapsed: Int) {
+    for (action in this._actions) {
+      action.update(elapsed);
     }
   }
-  isComplete(entity: Entity): Bool {
-    return this._actions.every((a) => a.isComplete(entity));
+  function isComplete(entity: Entity): Bool {
+    return this._actions.every((a) -> a.isComplete(entity));
   }
-  reset() {
-    this._actions.forEach((a) => a.reset());
+  function reset() {
+    this._actions.forEach((a) -> a.reset());
   }
-  stop() {
-    this._actions.forEach((a) => a.stop());
+  function stop() {
+    this._actions.forEach((a) -> a.stop());
   }
 }

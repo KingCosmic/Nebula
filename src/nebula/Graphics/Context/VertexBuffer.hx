@@ -1,27 +1,27 @@
-package nebula.Graphics.Context;
+package nebula.graphics.context;
 
 interface VertexBufferOptions {
   /**
    * WebGL2RenderingContext this layout will be attached to, these cannot be reused across contexts.
    */
-  gl: WebGL2RenderingContext;
+  var gl: WebGL2RenderingContext;
   /**
    * Size in number of floats, so [4.2, 4.0, 2.1] is size = 3
    *
    * Ignored if data is passed directly
    */
-  size?: Int;
+  var size: Null<Int>;
   /**
    * If the vertices never change switching 'static' can be more efficient on the gpu
    *
    * Default is 'dynamic'
    */
-  type?: 'static' | 'dynamic';
+  var type: Null<String>;
 
   /**
    * Optionally pass pre-seeded data, size parameter is ignored
    */
-  data?: Float32Array;
+  var data: Null<Float32Array>;
 }
 
 /**
@@ -30,26 +30,30 @@ interface VertexBufferOptions {
  * Under the hood uses Float32Array
  */
 class VertexBuffer {
-  private _gl: WebGL2RenderingContext;
+  private var _gl: WebGL2RenderingContext;
 
   /**
    * Access to the webgl buffer handle
    */
-  public readonly buffer: WebGLBuffer;
+  public var buffer: WebGLBuffer;
   /**
    * Access to the raw data of the vertex buffer
    */
-  public readonly bufferData: Float32Array;
+  public var bufferData: Float32Array;
 
   /**
    * If the vertices never change switching 'static' can be more efficient on the gpu
    *
    * Default is 'dynamic'
    */
-  public type: 'static' | 'dynamic' = 'dynamic';
+  public var type: String = 'dynamic';
 
   public function new(options: VertexBufferOptions) {
-    final { gl, size, type, data } = options;
+    final gl = options.gl,
+          size = options.size,
+          type = options.type,
+          data = options.data;
+
     this._gl = gl;
     this.buffer = this._gl.createBuffer()!;
     if (!data && !size) {
@@ -64,18 +68,18 @@ class VertexBuffer {
     this.type = type ?? this.type;
     // Allocate buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, this.bufferData, this.type === 'static' ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, this.bufferData, this.type == 'static' ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
   }
 
   /**
    * Bind this vertex buffer
    */
-  bind() {
+  function bind() {
     final gl = this._gl;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
   }
 
-  unbind() {
+  function unbind() {
     final gl = this._gl;
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
@@ -83,20 +87,20 @@ class VertexBuffer {
   /**
    * Upload vertex buffer geometry to the GPU
    */
-  upload(count?: Int) {
+  function upload(?count: Int) {
     final gl = this._gl;
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     if (count) {
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.bufferData, 0, count);
     } else {
       // TODO always use bufferSubData? need to perf test it
-      gl.bufferData(gl.ARRAY_BUFFER, this.bufferData, this.type === 'static' ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, this.bufferData, this.type == 'static' ? gl.STATIC_DRAW : gl.DYNAMIC_DRAW);
     }
   }
 
-  dispose() {
+  function dispose() {
     final gl = this._gl;
     gl.deleteBuffer(this.buffer);
-    this._gl = null as any;
+    this._gl = null;
   }
 }

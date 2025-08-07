@@ -1,21 +1,21 @@
-package nebula.Graphics.Context;
+package nebula.graphics.context;
 
 import nebula.Color;
-import nebula.Util.RentalPool;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Graphics.Context.Material;
+import nebula.util.RentalPool;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.graphics.context.Material;
 
 class ContextState implements ExcaliburGraphicsContextState {
-  opacity: Float = 1;
-  z: Int = 0;
-  tint: Null<Color> = Color.White;
-  material: Null<Material> = null;
+  var opacity: Float = 1;
+  var z: Int = 0;
+  var tint: Null<Color> = Color.White;
+  var material: Null<Material> = null;
 }
 
 class StateStack {
-  private _pool = new RentalPool<ContextState>(
-    () => new ContextState(),
-    (s) => {
+  private var _pool = new RentalPool<ContextState>(
+    () -> new ContextState(),
+    (s) -> {
       s.opacity = 1;
       s.z = 0;
       s.tint = Color.White;
@@ -24,10 +24,10 @@ class StateStack {
     },
     100
   );
-  public current: ExcaliburGraphicsContextState = this._pool.rent(true);
-  private _states: ExcaliburGraphicsContextState[] = [];
+  public var current: ExcaliburGraphicsContextState = this._pool.rent(true);
+  private var _states: Array<ExcaliburGraphicsContextState> = [];
 
-  private _cloneState(dest: ContextState) {
+  private function _cloneState(dest: ContextState) {
     dest.opacity = this.current.opacity;
     dest.z = this.current.z;
     dest.tint = this.current.tint?.clone();
@@ -35,13 +35,13 @@ class StateStack {
     return dest;
   }
 
-  public save(): Void {
+  public function save(): Void {
     this._states.push(this.current);
     this.current = this._cloneState(this._pool.rent());
   }
 
-  public restore(): Void {
-    this._pool.return(this.current);
+  public function restore(): Void {
+    this._pool.restore(this.current);
     this.current = this._states.pop()!;
   }
 }

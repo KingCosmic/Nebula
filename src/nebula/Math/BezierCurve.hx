@@ -1,13 +1,13 @@
-package nebula.Math;
+package nebula.math;
 
-import nebula.Math.Lerp;
-import nebula.Math.Vector;
+import nebula.math.Lerp;
+import nebula.math.Vector;
 
 interface BezierCurveOptions {
   /**
    * [start, control1, control2, end]
    */
-  controlPoints: [start: Vector, control1: Vector, control2: Vector, end: Vector];
+  var controlPoints: Array<Vector>;
   /**
    * Quality when sampling uniform points on the curve. Samples = 4 * quality;
    *
@@ -15,7 +15,7 @@ interface BezierCurveOptions {
    *
    * Default 4
    */
-  quality?: Int;
+  var quality: Null<Int>;
 }
 
 /**
@@ -23,10 +23,10 @@ interface BezierCurveOptions {
  */
 class BezierCurve {
   // Thanks Freya! https://www.youtube.com/watch?v=aVwxzDHniEw
-  private _distLookup: number[] = [];
-  private _controlPoints: [Vector, Vector, Vector, Vector];
-  private _arcLength: Int;
-  readonly quality: Int = 4;
+  private var _distLookup: Array<Int> = [];
+  private var _controlPoints: Array<Vector>;
+  private var _arcLength: Int;
+  var quality: Int = 4;
   public function new(options: BezierCurveOptions) {
     if (options.controlPoints.length !== 4) {
       throw new Error('Only cubic bezier curves are supported');
@@ -37,25 +37,26 @@ class BezierCurve {
     this._calculateLookup();
   }
 
-  public get arcLength(): Int {
+  public var arcLength(get, never): Int;
+  function get_arcLength(): Int {
     return this._arcLength;
   }
 
-  public get controlPoints(): readonly [start: Vector, control1: Vector, control2: Vector, end: Vector] {
+  public var controlPoints(get, set): Array<Vector>;
+  function get_controlPoints() {
     return this._controlPoints;
   }
-
-  public set controlPoints(points: [start: Vector, control1: Vector, control2: Vector, end: Vector]) {
+  function set_controlPoints(points: Array<Vector>) {
     this._controlPoints = [...points];
     this._calculateLookup();
   }
 
-  setControlPoint(index: 0 | 1 | 2 | 3, point: Vector) {
+  function setControlPoint(index: Int, point: Vector) {
     this._controlPoints[index] = point;
     this._calculateLookup();
   }
 
-  private _calculateLookup() {
+  private function _calculateLookup() {
     var totalLength = 0;
     this._distLookup.length = 0;
     var prev = this.controlPoints[0];
@@ -71,7 +72,7 @@ class BezierCurve {
     this._arcLength = totalLength;
   }
 
-  private _getTimeGivenDistance(distance: Float): Int {
+  private function _getTimeGivenDistance(distance: Float): Int {
     final n = this._distLookup.length;
     final arcLength = this.arcLength;
 
@@ -89,7 +90,7 @@ class BezierCurve {
    * Get the point on the Bezier curve at a certain time
    * @param time Between 0-1
    */
-  getPoint(time: number): Vector {
+  function getPoint(time: Float): Vector {
     final points = [...this.controlPoints];
 
     for (var r = 1; r < points.length; r++) {
@@ -105,7 +106,7 @@ class BezierCurve {
    * Get the tangent of the Bezier curve at a certain time
    * @param time Between 0-1
    */
-  getTangent(time: Float): Vector {
+  function getTangent(time: Float): Vector {
     final timeSquared = time * time;
     final p0 = this.controlPoints[0];
     final p1 = this.controlPoints[1];
@@ -124,7 +125,7 @@ class BezierCurve {
    * Get the tangent of the Bezier curve where the distance is uniformly distributed over time
    * @param time
    */
-  getUniformTangent(time: Float): Vector {
+  function getUniformTangent(time: Float): Vector {
     final desiredDistance = time * this.arcLength;
     final uniformTime = this._getTimeGivenDistance(desiredDistance);
     return this.getTangent(uniformTime);
@@ -134,7 +135,7 @@ class BezierCurve {
    * Get the normal of the Bezier curve at a certain time
    * @param time Between 0-1
    */
-  getNormal(time: Float): Vector {
+  function getNormal(time: Float): Vector {
     return this.getTangent(time).normal();
   }
 
@@ -142,7 +143,7 @@ class BezierCurve {
    * Get the normal of the Bezier curve where the distance is uniformly distributed over time
    * @param time
    */
-  getUniformNormal(time: Float): Vector {
+  function getUniformNormal(time: Float): Vector {
     return this.getUniformTangent(time).normal();
   }
 
@@ -150,13 +151,13 @@ class BezierCurve {
    * Points are spaced uniformly across the length of the curve over time
    * @param time
    */
-  getUniformPoint(time: Float): Vector {
+  function getUniformPoint(time: Float): Vector {
     final desiredDistance = time * this.arcLength;
     final uniformTime = this._getTimeGivenDistance(desiredDistance);
     return this.getPoint(uniformTime);
   }
 
-  clone(): BezierCurve {
+  function clone(): BezierCurve {
     return new BezierCurve({
       controlPoints: [...this.controlPoints],
       quality: this.quality

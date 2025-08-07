@@ -1,20 +1,20 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
 import nebula.Color;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Graphics.FontCommon;
-import nebula.Graphics.Graphic;
+import nebula.graphics.FontCommon;
+import nebula.graphics.Graphic;
 
-import nebula.Graphics.Raster;
-import nebula.Graphics.Filtering;
-import nebula.Graphics.FontTextInstance;
-import nebula.Graphics.FontCache;
+import nebula.graphics.Raster;
+import nebula.graphics.Filtering;
+import nebula.graphics.FontTextInstance;
+import nebula.graphics.FontCache;
 
 /**
  * Represents a system or web font in Excalibur
@@ -29,7 +29,7 @@ class Font extends Graphic implements FontRenderer {
    *
    * If you have a pixel style font that may be a reason to switch this to {@apilink ImageFiltering.Pixel}
    */
-  public filtering: ImageFiltering = ImageFiltering.Blended;
+  public var filtering: ImageFiltering = ImageFiltering.Blended;
   public function new(options: FontOptions & GraphicOptions & RasterOptions = {}) {
     super(options); // <- Graphics properties
 
@@ -61,25 +61,29 @@ class Font extends Graphic implements FontRenderer {
     }
   }
 
-  public clone() {
-    return new Font({
-      ...this.cloneGraphicOptions(),
-      size: this.size,
-      unit: this.unit,
-      family: this.family,
-      style: this.style,
-      bold: this.bold,
-      textAlign: this.textAlign,
-      baseAlign: this.baseAlign,
-      direction: this.direction,
-      shadow: this.shadow
-        ? {
-            blur: this.shadow.blur,
-            offset: this.shadow.offset,
-            color: this.shadow.color
-          }
-        : undefined
-    });
+  public function clone() {
+    final options = Object.spreadWith(
+      this.cloneGraphicOptions(),
+      {
+        size: this.size,
+        unit: this.unit,
+        family: this.family,
+        style: this.style,
+        bold: this.bold,
+        textAlign: this.textAlign,
+        baseAlign: this.baseAlign,
+        direction: this.direction,
+        shadow: this.shadow
+          ? {
+              blur: this.shadow.blur,
+              offset: this.shadow.offset,
+              color: this.shadow.color
+            }
+          : null
+      }
+    );
+
+    return new Font(options);
   }
 
   /**
@@ -90,45 +94,47 @@ class Font extends Graphic implements FontRenderer {
    *
    * (Default 2)
    */
-  public quality = 2;
+  public var quality = 2;
 
   // Raster properties for fonts
-  public padding = 2;
-  public smoothing = false;
-  public lineWidth = 1;
-  public lineDash: Int[] = [];
-  public color: Color = Color.Black;
-  public strokeColor?: Color;
+  public var padding = 2;
+  public var smoothing = false;
+  public var lineWidth = 1;
+  public var lineDash: Array<Int> = [];
+  public var color: Color = Color.Black;
+  public var strokeColor: Null<Color>;
 
-  public family: String = 'sans-serif';
-  public style: FontStyle = FontStyle.Normal;
-  public bold: Bool = false;
-  public unit: FontUnit = FontUnit.Px;
-  public textAlign: TextAlign = TextAlign.Left;
-  public baseAlign: BaseAlign = BaseAlign.Top;
-  public direction: Direction = Direction.LeftToRight;
+  public var family: String = 'sans-serif';
+  public var style: FontStyle = FontStyle.Normal;
+  public var bold: Bool = false;
+  public var unit: FontUnit = FontUnit.Px;
+  public var textAlign: TextAlign = TextAlign.Left;
+  public var baseAlign: BaseAlign = BaseAlign.Top;
+  public var direction: Direction = Direction.LeftToRight;
   /**
    * Font line height in pixels, default line height if unset
    */
-  public lineHeight: Int | undefined = undefined;
-  public size: Int = 10;
-  public shadow?: { blur?: Int; offset?: Vector; color?: Color };
+  public var lineHeight: Null<Int> = null;
+  public var size: Int = 10;
+  public var shadow: Null<{ blur: Null<Int>, offset: Null<Vector>, color: Null<Color> }>;
 
-  public get fontString() {
+  public var fontString(get, never): String;
+  function get_fontString() {
     return '${this.style} ${this.bold ? 'bold' : ''} ${this.size}${this.unit} ${this.family}';
   }
 
-  private _textBounds: BoundingBox = new BoundingBox();
+  private var _textBounds: BoundingBox = new BoundingBox();
 
-  public get localBounds(): BoundingBox {
+  public var localBounds(get, never): BoundingBox;
+  function get_localBounds(): BoundingBox {
     return this._textBounds;
   }
 
-  private _drawImage(_ex: ExcaliburGraphicsContext, _x: Int, _y: Int) {
+  private function _drawImage(_ex: ExcaliburGraphicsContext, _x: Int, _y: Int) {
     // TODO weird vestigial drawimage
   }
 
-  private _rotate(ex: ExcaliburGraphicsContext) {
+  private function _rotate(ex: ExcaliburGraphicsContext) {
     // TODO this needs to change depending on the bounding box...
     final origin = this.origin ?? this._textBounds.center;
     ex.translate(origin.x, origin.y);
@@ -136,7 +142,7 @@ class Font extends Graphic implements FontRenderer {
     ex.translate(-origin.x, -origin.y);
   }
 
-  private _flip(ex: ExcaliburGraphicsContext) {
+  private function _flip(ex: ExcaliburGraphicsContext) {
     if (this.flipHorizontal) {
       ex.translate(this._textBounds.width / this.scale.x, 0);
       ex.scale(-1, 1);
@@ -148,9 +154,9 @@ class Font extends Graphic implements FontRenderer {
     }
   }
 
-  private _textMeasurement = new FontTextInstance(this, '', Color.Black);
+  private var _textMeasurement = new FontTextInstance(this, '', Color.Black);
 
-  public measureTextWithoutCache(text: String, maxWidth?: Int) {
+  public function measureTextWithoutCache(text: String, ?maxWidth: Int) {
     return this._textMeasurement.measureText(text, maxWidth);
   }
 
@@ -161,15 +167,15 @@ class Font extends Graphic implements FontRenderer {
    * @param text
    * @returns BoundingBox
    */
-  public measureText(text: String, maxWidth?: Int): BoundingBox {
+  public function measureText(text: String, ?maxWidth: Int): BoundingBox {
     return FontCache.measureText(text, this, maxWidth);
   }
 
-  private _postDraw(ex: ExcaliburGraphicsContext): Void {
+  private function _postDraw(ex: ExcaliburGraphicsContext): Void {
     ex.restore();
   }
 
-  public render(ex: ExcaliburGraphicsContext, text: String, colorOverride: Color, x: Int, y: Int, maxWidth?: Int) {
+  public function render(ex: ExcaliburGraphicsContext, text: String, colorOverride: Color, x: Int, y: Int, ?maxWidth: Int) {
     final textInstance = FontCache.getTextInstance(text, this, colorOverride);
 
     // Apply affine transformations

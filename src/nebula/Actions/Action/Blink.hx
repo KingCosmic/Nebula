@@ -1,27 +1,27 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.Graphics.GraphicsComponent;
-import nebula.EntityComponentSystem.Entity;
-import nebula.Actions.Action;
+import nebula.graphics.GraphicsComponent;
+import nebula.entitycomponentsystem.Entity;
+import nebula.actions.Action;
 
 class Blink implements Action {
-  id = nextActionId();
-  private _graphics: GraphicsComponent;
-  private _timeVisible: Float = 0;
-  private _timeNotVisible: Float = 0;
-  private _elapsedTime: Float = 0;
-  private _totalTime: Float = 0;
-  private _duration: Float;
-  private _stopped: Bool = false;
-  private _started: Bool = false;
-  constructor(entity: Entity, timeVisible: Float, timeNotVisible: Float, numBlinks: Int = 1) {
+  var id = nextActionId();
+  private var _graphics: GraphicsComponent;
+  private var _timeVisible: Int = 0;
+  private var _timeNotVisible: Int = 0;
+  private var _elapsedTime: Int = 0;
+  private var _totalTime: Int = 0;
+  private var _duration: Int;
+  private var _stopped: Bool = false;
+  private var _started: Bool = false;
+  public function new(entity: Entity, timeVisible: Int, timeNotVisible: Int, numBlinks: Int = 1) {
     this._graphics = entity.get(GraphicsComponent);
     this._timeVisible = timeVisible;
     this._timeNotVisible = timeNotVisible;
     this._duration = (timeVisible + timeNotVisible) * numBlinks;
   }
 
-  public update(elapsed: Float): void {
+  public function update(elapsed: Int): Void {
     if (!this._started) {
       this._started = true;
       this._elapsedTime = 0;
@@ -48,18 +48,18 @@ class Blink implements Action {
     }
   }
 
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     return this._stopped || this._totalTime >= this._duration;
   }
 
-  public stop(): void {
+  public function stop(): Void {
     if (this._graphics) {
       this._graphics.isVisible = true;
     }
     this._stopped = true;
   }
 
-  public reset() {
+  public function reset() {
     this._started = false;
     this._stopped = false;
     this._elapsedTime = 0;

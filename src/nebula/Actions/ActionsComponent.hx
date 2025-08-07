@@ -1,36 +1,32 @@
-package nebula.Actions;
+package nebula.actions;
 
-import nebula.Actions.ActionContext;
-import nebula.EntityComponentSystem.Component;
-import nebula.EntityComponentSystem.Entity;
+import nebula.actions.ActionContext;
+import nebula.entitycomponentsystem.Component;
+import nebula.entitycomponentsystem.Entity;
 import nebula.Actor;
-import nebula.EntityComponentSystem.Components.MotionComponent;
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.Math;
-import nebula.Util.EasingFunctions;
-import nebula.Actions.ActionQueue
-import nebula.Actions.Action;
+import nebula.entitycomponentsystem.components.MotionComponent;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.util.EasingFunctions;
+import nebula.actions.ActionQueue;
+import nebula.actions.Action;
 import nebula.Color;
-import nebula.Actions.Action.CurveTo;
-import nebula.Actions.Action.CurveBy;
-import nebula.Actions.Action.MoveTo;
-import nebula.Actions;
-
-interface ActionContextMethods extends Pick<ActionContext, keyof ActionContext> {}
+import nebula.actions.action.CurveTo;
+import nebula.actions.action.CurveBy;
+import nebula.actions.action.MoveTo;
 
 class ActionsComponent extends Component implements ActionContextMethods {
-  dependencies = [TransformComponent, MotionComponent];
-  private _ctx: ActionContext | null = null;
+  var dependencies = [TransformComponent, MotionComponent];
+  private var _ctx: Null<ActionContext> = null;
 
-  onAdd(entity: Entity) {
+  function onAdd(entity: Entity) {
     this._ctx = new ActionContext(entity);
   }
 
-  onRemove() {
+  function onRemove() {
     this._ctx = null;
   }
 
-  private _getCtx() {
+  private function _getCtx() {
     if (!this._ctx) {
       throw new Error('Actions component not attached to an entity, no context available');
     }
@@ -41,7 +37,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * Returns the internal action queue
    * @returns action queue
    */
-  public getQueue(): ActionQueue {
+  public function getQueue(): ActionQueue {
     if (!this._ctx) {
       throw new Error('Actions component not attached to an entity, no queue available');
     }
@@ -52,7 +48,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * Runs a specific action in the action queue
    * @param action
    */
-  public runAction(action: Action): ActionContext {
+  public function runAction(action: Action): ActionContext {
     if (!this._ctx) {
       throw new Error('Actions component not attached to an entity, cannot run action');
     }
@@ -63,15 +59,15 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * Updates the internal action context, performing action and moving through the internal queue
    * @param elapsed
    */
-  public update(elapsed: Float): void {
-    return this._ctx?.update(elapsed);
+  public function update(elapsed: Float): Void {
+    return this._ctx.update(elapsed);
   }
 
   /**
    * Clears all queued actions from the Actor
    */
-  public clearActions(): void {
-    this._ctx?.clearActions();
+  public function clearActions(): Void {
+    this._ctx.clearActions();
   }
 
   /**
@@ -79,7 +75,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * to be the actors current position
    * @param options
    */
-  public curveBy(options: CurveByOptions): ActionContext {
+  public function curveBy(options: CurveByOptions): ActionContext {
     return this._getCtx().curveBy.apply(this._ctx, [options]);
   }
 
@@ -88,20 +84,10 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * to be the actors current position
    * @param options
    */
-  public curveTo(options: CurveToOptions): ActionContext {
+  public function curveTo(options: CurveToOptions): ActionContext {
     return this._getCtx().curveTo.apply(this._ctx, [options]);
   }
 
-  /**
-   * This method will move an actor to the specified `x` and `y` position over the
-   * specified duration using a given {@apilink EasingFunctions} and return back the actor. This
-   * method is part of the actor 'Action' fluent API allowing action chaining.
-   * @param pos       The x,y vector location to move the actor to
-   * @param duration  The time it should take the actor to move to the new location in milliseconds
-   * @param easingFcn Use {@apilink EasingFunctions} or a custom function to use to calculate position, Default is {@apilink EasingFunctions.Linear}
-   * @deprecated use new moveTo({pos: Vector, duration: number, easing: EasingFunction})
-   */
-  public easeTo(pos: Vector, duration: Int, easingFcn?: EasingFunction): ActionContext;
   /**
    * This method will move an actor to the specified `x` and `y` position over the
    * specified duration using a given {@apilink EasingFunctions} and return back the actor. This
@@ -112,72 +98,25 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param easingFcn Use {@apilink EasingFunctions} or a custom function to use to calculate position, Default is {@apilink EasingFunctions.Linear}
    * @deprecated use new moveTo({pos: Vector, duration: number, easing: EasingFunction})
    */
-  public easeTo(x: Float, y: Float, duration: Int, easingFcn?: EasingFunction): ActionContext;
-  public easeTo(...args: any[]): ActionContext {
-    return this._getCtx().easeTo.apply(this._ctx, args as any);
+  public function easeTo(...args: Array<Any>): ActionContext {
+    return this._getCtx().easeTo.apply(this._ctx, args);
   }
 
-  /**
-   *
-   * @param offset
-   * @param duration
-   * @param easingFcn
-   * @deprecated use new moveBy({pos: Vector, duration: number, easing: EasingFunction})
-   */
-  public easeBy(offset: Vector, duration: Int, easingFcn?: EasingFunction): ActionContext;
-  /**
-   *
-   * @param offsetX
-   * @param offsetY
-   * @param duration
-   * @param easingFcn
-   * @deprecated use new moveBy({pos: Vector, duration: number, easing: EasingFunction})
-   */
-  public easeBy(offsetX: Float, offsetY: Float, duration: Int, easingFcn?: EasingFunction): ActionContext;
-  public easeBy(...args: any[]): ActionContext {
-    return this._getCtx().easeBy.apply(this._ctx, args as any);
+  public function easeBy(...args: Array<Any>): ActionContext {
+    return this._getCtx().easeBy.apply(this._ctx, args);
   }
 
-  /**
-   * Moves an actor to a specified {@link Vector} in a given duration in milliseconds.
-   * You may optionally specify an {@link EasingFunction}
-   * @param options
-   */
-  public moveTo(options: MoveToOptions): ActionContext;
   /**
    * This method will move an actor to the specified x and y position at the
    * speed specified (in pixels per second) and return back the actor. This
    * method is part of the actor 'Action' fluent API allowing action chaining.
-   * @param pos    The x,y vector location to move the actor to
+   * @param pos      The x location to move the actor to
    * @param speed  The speed in pixels per second to move
    */
-  public moveTo(pos: Vector, speed: Float): ActionContext;
-  /**
-   * This method will move an actor to the specified x and y position at the
-   * speed specified (in pixels per second) and return back the actor. This
-   * method is part of the actor 'Action' fluent API allowing action chaining.
-   * @param x      The x location to move the actor to
-   * @param y      The y location to move the actor to
-   * @param speed  The speed in pixels per second to move
-   */
-  public moveTo(x: Float, y: Float, speed: Float): ActionContext;
-  public moveTo(xOrPosOrOptions: Float | Vector | MoveToOptions, yOrSpeed?: number, speedOrUndefined?: number): ActionContext {
-    return this._getCtx().moveTo.apply(this._ctx, [xOrPosOrOptions, yOrSpeed, speedOrUndefined] as any);
+  public function moveTo(posOrOptions: Vector, ?speed: Int): ActionContext {
+    return this._getCtx().moveTo.apply(this._ctx, [posOrOptions, speed]);
   }
 
-  /**
-   * Moves an actor by a specified offset {@link Vector} in a given duration in milliseconds.
-   * You may optionally specify an {@link EasingFunction}
-   * @param options
-   */
-  public moveBy(options: MoveByOptions): ActionContext;
-  /**
-   * This method will move an actor by the specified x offset and y offset from its current position, at a certain speed.
-   * This method is part of the actor 'Action' fluent API allowing action chaining.
-   * @param offset The (x, y) offset to apply to this actor
-   * @param speed  The speed in pixels per second the actor should move
-   */
-  public moveBy(offset: Vector, speed: Float): ActionContext;
   /**
    * This method will move an actor by the specified x offset and y offset from its current position, at a certain speed.
    * This method is part of the actor 'Action' fluent API allowing action chaining.
@@ -185,21 +124,13 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param yOffset     The y location to move the actor to
    * @param speed  The speed in pixels per second the actor should move
    */
-  public moveBy(xOffset: Float, yOffset: Float, speed: Float): ActionContext;
-  public moveBy(
-    xOffsetOrVectorOptions: Float | Vector | MoveByOptions,
-    yOffsetOrSpeed?: Float,
-    speedOrUndefined?: Float
+  public function moveBy(
+    vector: Vector,
+    speed: Null<Float>
   ): ActionContext {
-    return this._getCtx().moveBy.apply(this._ctx, [xOffsetOrVectorOptions, yOffsetOrSpeed, speedOrUndefined] as any);
+    return this._getCtx().moveBy.apply(this._ctx, [vector, speed]);
   }
 
-  /**
-   * Rotates an actor to a specified angle over a duration in milliseconds,
-   * you make pick a rotation strategy {@link RotationType} to pick the direction
-   * @param options
-   */
-  public rotateTo(options: RotateToOptions): ActionContext;
   /**
    * This method will rotate an actor to the specified angle at the speed
    * specified (in radians per second) and return back the actor. This
@@ -208,17 +139,10 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param speed         The angular velocity of the rotation specified in radians per second
    * @param rotationType  The {@apilink RotationType} to use for this rotation
    */
-  public rotateTo(angle: Float, speed: Float, rotationType?: RotationType): ActionContext;
-  public rotateTo(angle: Float | RotateToOptions, speed?: Float, rotationType?: RotationType): ActionContext {
-    return this._getCtx().rotateTo.apply(this._ctx, [angle, speed, rotationType] as any);
+  public function rotateTo(angle: Float, ?speed: Float, ?rotationType: RotationType): ActionContext {
+    return this._getCtx().rotateTo.apply(this._ctx, [angle, speed, rotationType]);
   }
 
-  /**
-   * Rotates an actor by a specified offset angle over a duration in milliseconds,
-   * you make pick a rotation strategy {@link RotationType} to pick the direction
-   * @param options
-   */
-  public rotateBy(options: RotateByOptions): ActionContext;
   /**
    * This method will rotate an actor by the specified angle offset, from it's current rotation given a certain speed
    * in radians/sec and return back the actor. This method is part
@@ -227,25 +151,10 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param speed          The speed in radians/sec the actor should rotate at
    * @param rotationType  The {@apilink RotationType} to use for this rotation, default is shortest path
    */
-  public rotateBy(angleRadiansOffset: Float, speed: Float, rotationType?: RotationType): ActionContext;
-  public rotateBy(angleRadiansOffsetOrOptions: Float | RotateByOptions, speed?: Float, rotationType?: RotationType): ActionContext {
-    return this._getCtx().rotateBy.apply(this._ctx, [angleRadiansOffsetOrOptions, speed, rotationType] as any);
+  public function rotateBy(angleRadiansOffset: Float, ?speed: Float, ?rotationType: RotationType): ActionContext {
+    return this._getCtx().rotateBy.apply(this._ctx, [angleRadiansOffset, speed, rotationType]);
   }
 
-  /**
-   * Scales an actor to a specified scale {@link Vector} over a duration
-   * @param options
-   */
-  public scaleTo(options: ScaleToOptions): ActionContext;
-  /**
-   * This method will scale an actor to the specified size at the speed
-   * specified (in magnitude increase per second) and return back the
-   * actor. This method is part of the actor 'Action' fluent API allowing
-   * action chaining.
-   * @param size    The scale to adjust the actor to over time
-   * @param speed   The speed of scaling specified in magnitude increase per second
-   */
-  public scaleTo(size: Vector, speed: Vector): ActionContext;
   /**
    * This method will scale an actor to the specified size at the speed
    * specified (in magnitude increase per second) and return back the
@@ -256,29 +165,13 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param speedX  The speed of scaling specified in magnitude increase per second on X axis
    * @param speedY  The speed of scaling specified in magnitude increase per second on Y axis
    */
-  public scaleTo(sizeX: Float, sizeY: Float, speedX: Float, speedY: Float): ActionContext;
-  public scaleTo(
-    sizeXOrVectorOrOptions: Float | Vector | ScaleToOptions,
-    sizeYOrSpeed?: Float | Vector,
-    speedXOrUndefined?: Float,
-    speedYOrUndefined?: Float
+  public function scaleTo(
+    vector: Vector,
+    ?speed: Vector
   ): ActionContext {
-    return this._getCtx().scaleTo.apply(this._ctx, [sizeXOrVectorOrOptions, sizeYOrSpeed, speedXOrUndefined, speedYOrUndefined] as any);
+    return this._getCtx().scaleTo.apply(this._ctx, [vector, speed]);
   }
 
-  /**
-   * Scales an actor by a specified scale offset {@link Vector} over a duration in milliseconds
-   * @param options
-   */
-  public scaleBy(options: ScaleByOptions): ActionContext;
-  /**
-   * This method will scale an actor by an amount relative to the current scale at a certain speed in scale units/sec
-   * and return back the actor. This method is part of the
-   * actor 'Action' fluent API allowing action chaining.
-   * @param offset   The scaling factor to apply to the actor
-   * @param speed    The speed to scale at in scale units/sec
-   */
-  public scaleBy(offset: Vector, speed: Float): ActionContext;
   /**
    * This method will scale an actor by an amount relative to the current scale at a certain speed in scale units/sec
    * and return back the actor. This method is part of the
@@ -287,13 +180,11 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param sizeOffsetY   The scaling factor to apply on Y axis
    * @param speed    The speed to scale at in scale units/sec
    */
-  public scaleBy(sizeOffsetX: Float, sizeOffsetY: Float, speed: Float): ActionContext;
-  public scaleBy(
-    sizeOffsetXOrVectorOrOptions: Float | Vector | ScaleByOptions,
-    sizeOffsetYOrSpeed?: Float,
-    speed?: Float
+  public function scaleBy(
+    size: Vector,
+    ?speed: Vector
   ): ActionContext {
-    return this._getCtx().scaleBy.apply(this._ctx, [sizeOffsetXOrVectorOrOptions, sizeOffsetYOrSpeed, speed] as any);
+    return this._getCtx().scaleBy.apply(this._ctx, [size, speed]);
   }
 
   /**
@@ -305,7 +196,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param timeNotVisible  The amount of time to stay not visible per blink in milliseconds
    * @param numBlinks       The number of times to blink
    */
-  public blink(timeVisible: Float, timeNotVisible: Float, numBlinks?: Float): ActionContext {
+  public function blink(timeVisible: Int, timeNotVisible: Int, ?numBlinks: Int): ActionContext {
     return this._getCtx().blink(timeVisible, timeNotVisible, numBlinks);
   }
 
@@ -316,7 +207,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param opacity  The ending opacity
    * @param duration     The time it should take to fade the actor (in milliseconds)
    */
-  public fade(opacity: Float, duration: Float): ActionContext {
+  public function fade(opacity: Float, duration: Int): ActionContext {
     return this._getCtx().fade(opacity, duration);
   }
 
@@ -325,7 +216,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param color
    * @param duration The duration in milliseconds
    */
-  public flash(color: Color, duration: Int = 1000) {
+  public function flash(color: Color, duration: Int = 1000) {
     return this._getCtx().flash(color, duration);
   }
 
@@ -335,7 +226,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * 'Action' fluent API allowing action chaining.
    * @param duration  The amount of time to delay the next action in the queue from executing in milliseconds
    */
-  public delay(duration: Float): ActionContext {
+  public function delay(duration: Int): ActionContext {
     return this._getCtx().delay(duration);
   }
 
@@ -344,7 +235,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * scene once it has completed its previous  Any actions on the
    * action queue after this action will not be executed.
    */
-  public die(): ActionContext {
+  public function die(): ActionContext {
     return this._getCtx().die();
   }
 
@@ -353,7 +244,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * action queue. This is useful if you want to execute code in after a specific
    * action, i.e An actor arrives at a destination after traversing a path
    */
-  public callMethod(method: () => any): ActionContext {
+  public function callMethod(method: () -> Any): ActionContext {
     return this._getCtx().callMethod(method);
   }
 
@@ -374,7 +265,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param times  The number of times to repeat all the previous actions in the action queue. If nothing is specified the actions
    * will repeat forever
    */
-  public repeat(repeatBuilder: (repeatContext: ActionContext) => any, times?: Int): ActionContext {
+  public function repeat(repeatBuilder: (repeatContext: ActionContext) -> Any, ?times: Int): ActionContext {
     return this._getCtx().repeat(repeatBuilder, times);
   }
 
@@ -393,7 +284,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * ```
    * @param repeatBuilder The builder to specify the repeatable list of actions
    */
-  public repeatForever(repeatBuilder: (repeatContext: ActionContext) => any): ActionContext {
+  public function repeatForever(repeatBuilder: (repeatContext: ActionContext) -> Any): ActionContext {
     return this._getCtx().repeatForever(repeatBuilder);
   }
 
@@ -402,7 +293,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param entity           The entity to follow
    * @param followDistance  The distance to maintain when following, if not specified the actor will follow at the current distance.
    */
-  public follow(entity: Actor, followDistance?: Float): ActionContext {
+  public function follow(entity: Actor, ?followDistance: Float): ActionContext {
     return this._getCtx().follow(entity, followDistance);
   }
 
@@ -412,7 +303,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * @param entity  The entity to meet
    * @param speed  The speed in pixels per second to move, if not specified it will match the speed of the other actor
    */
-  public meet(entity: Actor, speed?: Float): ActionContext {
+  public function meet(entity: Actor, ?speed: Int): ActionContext {
     return this._getCtx().meet(entity, speed);
   }
 
@@ -420,7 +311,7 @@ class ActionsComponent extends Component implements ActionContextMethods {
    * Returns a promise that resolves when the current action queue up to now
    * is finished.
    */
-  public toPromise(): Promise<void> {
+  public function toPromise(): Promise<Void> {
     return this._getCtx().toPromise();
   }
 }

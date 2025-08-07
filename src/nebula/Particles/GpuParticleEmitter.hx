@@ -1,23 +1,22 @@
-package nebula.Particles;
+package nebula.particles;
 
 import nebula.Engine;
 import nebula.Actor;
 
-import nebula.Particles.EmitterType;
-import nebula.Particles.Particles;
-import nebula.Particles.GpuParticleRenderer;
-import nebula.Particles
-import nebula.Graphics.GraphicsComponent;
+import nebula.particles.EmitterType;
+import nebula.particles.Particles;
+import nebula.particles.GpuParticleRenderer;
+import nebula.graphics.GraphicsComponent;
 
-import nebula.Math.Radnom;
-import nebula.Math.Vector;
-import nebula.Math.Util
+import nebula.math.Random;
+import nebula.math.Vector;
+import nebula.math.Util;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
-import nebula.Graphics.Context.ParticleRenderer.ParticleRenderer;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.particlerenderer.ParticleRenderer;
 
 class GpuParticleEmitter extends Actor {
-  public particle: GpuParticleConfig = {
+  public var particle: GpuParticleConfig = {
     /**
      * Gets or sets the life of each particle in milliseconds
      */
@@ -31,37 +30,47 @@ class GpuParticleEmitter extends Actor {
     randomRotation: false
   };
 
-  public graphics = new GraphicsComponent();
-  public renderer: GpuParticleRenderer;
-  public isEmitting: Bool = false;
-  public emitRate: Int = 1;
-  public emitterType: EmitterType = EmitterType.Rectangle;
-  public radius: Int = 0;
-  public readonly maxParticles: Int = 2000;
-  random: Random;
+  public var graphics = new GraphicsComponent();
+  public var renderer: GpuParticleRenderer;
+  public var isEmitting: Bool = false;
+  public var emitRate: Int = 1;
+  public var emitterType: EmitterType = EmitterType.Rectangle;
+  public var radius: Int = 0;
+  public var maxParticles: Int = 2000;
+  var random: Random;
 
-  public get pos() {
+  public var pos(get, set): Vector;
+  function get_pos() {
     return this.transform.pos;
   }
-
-  public set pos(pos: Vector) {
+  function set_pos(pos: Vector) {
     this.transform.pos = pos;
   }
 
-  public get z() {
+  public var z(get, set): Int;
+  function get_z() {
     return this.transform.z;
   }
-
-  public set z(z: Int) {
+  function set_z(z: Int) {
     this.transform.z = z;
   }
 
-  public function new(config: ParticleEmitterArgs & { maxParticles?: Int; particle?: GpuParticleConfig }) {
-    super({ name: `GpuParticleEmitter`, width: config.width, height: config.height }); // somewhat goofy way of doing width/height
+  public function new(config: ParticleEmitterArgs & { maxParticles: Null<Int>, particle: Null<GpuParticleConfig> }) {
+    super({ name: 'GpuParticleEmitter', width: config.width, height: config.height }); // somewhat goofy way of doing width/height
     this.addComponent(this.graphics, true);
-    (this.graphics.onPostDraw as any) = this.draw.bind(this);
+    this.graphics.onPostDraw = this.draw.bind(this);
 
-    final { particle, maxParticles, x, y, z, pos, isEmitting, emitRate, emitterType, radius, random } = { ...config };
+    final particle = config.particle,
+          maxParticles = config.maxParticles,
+          x = config.x,
+          y = config.y,
+          z = config.z,
+          pos = config.pos,
+          isEmitting = config.isEmitting,
+          emitRate = config.emitRate,
+          emitterType = config.emitterType,
+          radius = config.radius,
+          random = config.random;
 
     this.maxParticles = clamp(maxParticles ?? this.maxParticles, 0, GpuParticleRenderer.GPU_MAX_PARTICLES);
 
@@ -77,21 +86,21 @@ class GpuParticleEmitter extends Actor {
 
     this.radius = radius ?? this.radius;
 
-    this.particle = { ...this.particle, ...particle };
+    this.particle = Object.spreadWith(this.particle, particle);
 
     this.random = random ?? new Random();
 
     this.renderer = new GpuParticleRenderer(this, this.random, this.particle);
   }
 
-  public _initialize(engine: Engine): Void {
+  public function _initialize(engine: Engine): Void {
     super._initialize(engine);
-    final context = engine.graphicsContext as ExcaliburGraphicsContextWebGL;
+    final context = engine.graphicsContext;
     this.renderer.initialize(context.__gl, context);
   }
 
-  private _particlesToEmit = 0;
-  public update(engine: Engine, elapsed: Int): Void {
+  private var _particlesToEmit = 0;
+  public function update(engine: Engine, elapsed: Int): Void {
     super.update(engine, elapsed);
 
     if (this.isEmitting) {
@@ -104,18 +113,18 @@ class GpuParticleEmitter extends Actor {
     this.renderer.update(elapsed);
   }
 
-  public emitParticles(particleCount: Int) {
+  public function emitParticles(particleCount: Int) {
     if (particleCount <= 0) {
       return;
     }
     this.renderer.emitParticles(particleCount | 0); // coerce to integer
   }
 
-  public clearParticles() {
+  public function clearParticles() {
     this.renderer.clearParticles();
   }
 
-  draw(ctx: ExcaliburGraphicsContextWebGL, elapsed: Int) {
-    ctx.draw<ParticleRenderer>('ex.particle', this.renderer, elapsed);
+  function draw(ctx: ExcaliburGraphicsContextWebGL, elapsed: Int) {
+    ctx.draw('ex.particle', this.renderer, elapsed);
   }
 }

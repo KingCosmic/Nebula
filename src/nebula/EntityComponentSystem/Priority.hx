@@ -1,3 +1,5 @@
+package nebula.entitycomponentsystem;
+
 /**
  * Higher priorities run earlier than others in the system update
  */

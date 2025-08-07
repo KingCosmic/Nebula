@@ -1,4 +1,4 @@
-package nebula.Interfaces;
+package nebula.interfaces;
 
 /**
  * An interface describing loadable resources in Excalibur. Built-in loadable
@@ -13,7 +13,7 @@ interface Loadable<T> {
   /**
    * Begins loading the resource and returns a promise to be resolved on completion
    */
-  function load(): Promise<T>;
+  function load(): Any;
 
   /**
    * Returns true if the loadable is loaded

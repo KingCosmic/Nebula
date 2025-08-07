@@ -1,28 +1,28 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.EntityComponentSystem.Entity;
-import nebula.Graphics.GraphicsComponent;
-import nebula.Util.Log;
-import nebula.Actions.Action;
+import nebula.entitycomponentsystem.Entity;
+import nebula.graphics.GraphicsComponent;
+import nebula.util.Log;
+import nebula.actions.Action;
 
 class Fade implements Action {
-  id = nextActionId();
-  private _graphics: GraphicsComponent;
+  var id = nextActionId();
+  private var _graphics: GraphicsComponent;
 
-  private _endOpacity: Float;
-  private _remainingTime: Float;
-  private _originalTime: Float;
-  private _multiplier: Float = 1;
-  private _started = false;
-  private _stopped = false;
+  private var _endOpacity: Float;
+  private var _remainingTime: Int;
+  private var _originalTime: Int;
+  private var _multiplier: Float = 1;
+  private var _started = false;
+  private var _stopped = false;
 
-  constructor(entity: Entity, endOpacity: Float, duration: Float) {
+  public function new(entity: Entity, endOpacity: Float, duration: Int) {
     this._graphics = entity.get(GraphicsComponent);
     this._endOpacity = endOpacity;
     this._remainingTime = this._originalTime = duration;
   }
 
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     if (!this._graphics) {
       return;
     }
@@ -52,15 +52,15 @@ class Fade implements Action {
     Logger.getInstance().debug('[Action fade] Actor opacity:', this._graphics.opacity);
   }
 
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     return this._stopped || this._remainingTime <= 0;
   }
 
-  public stop() {
+  public function stop() {
     this._stopped = true;
   }
 
-  public reset() {
+  public function reset() {
     this._started = false;
     this._stopped = false;
     this._remainingTime = this._originalTime;

@@ -1,4 +1,4 @@
-package nebula.Util;
+package nebula.util;
 
 class RentalPool<T> {
   private var _pool: Array<T> = [];
@@ -18,7 +18,7 @@ class RentalPool<T> {
   function grow(amount: Int): Void {
     if (amount > 0) {
       this._size += amount;
-      for (let i = 0; i < amount; i++) {
+      for (i in 0...amount) {
         this._pool.push(this.builder());
       }
     }
@@ -42,7 +42,7 @@ class RentalPool<T> {
    * Return an object to the pool
    * @param object
    */
-  function return(object: T): Void {
+  function restore(object: T): Void {
     this._pool.push(object);
   }
 }

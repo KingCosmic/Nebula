@@ -1,11 +1,11 @@
-package nebula.Math;
+package nebula.math;
 
-import nebula.Math.Util;
-import nebula.Math.Vector;
+import nebula.math.Util;
+import nebula.math.Vector;
 
-enum MatrixLocations {
-  X = 12,
-  Y = 13
+enum abstract MatrixLocations(Int) from Int to Int {
+  public static inline var X = 12;
+  public static inline var Y = 13;
 }
 
 /**
@@ -25,7 +25,7 @@ class Matrix {
    * | data[3] | data[7] | data[11] | data[15] |
    *
    */
-  public data: Float32Array = new Float32Array(16);
+  public var data: Float32Array = new Float32Array(16);
 
   /**
    * Creates an orthographic (flat non-perspective) projection
@@ -37,7 +37,7 @@ class Matrix {
    * @param near
    * @param far
    */
-  public static ortho(left: Int, right: Int, bottom: Int, top: Int, near: Int, far: Int): Matrix {
+  public static function ortho(left: Int, right: Int, bottom: Int, top: Int, near: Int, far: Int): Matrix {
     final mat = new Matrix();
     mat.data[0] = 2 / (right - left);
     mat.data[1] = 0;
@@ -64,7 +64,7 @@ class Matrix {
   /**
    * Creates a new Matrix with the same data as the current 4x4
    */
-  public clone(dest?: Matrix): Matrix {
+  public function clone(?dest: Matrix): Matrix {
     final mat = dest || new Matrix();
     mat.data[0] = this.data[0];
     mat.data[1] = this.data[1];
@@ -94,11 +94,11 @@ class Matrix {
    * This is useful when working with the browser Canvas context
    * @returns {DOMMatrix} DOMMatrix
    */
-  public toDOMMatrix(): DOMMatrix {
+  public function toDOMMatrix(): DOMMatrix {
     return new DOMMatrix([...this.data]);
   }
 
-  public static fromFloat32Array(data: Float32Array) {
+  public static function fromFloat32Array(data: Float32Array) {
     final matrix = new Matrix();
     matrix.data = data;
     return matrix;
@@ -107,7 +107,7 @@ class Matrix {
   /**
    * Creates a new identity matrix (a matrix that when applied does nothing)
    */
-  public static identity(): Matrix {
+  public static function identity(): Matrix {
     final mat = new Matrix();
     mat.data[0] = 1;
     mat.data[1] = 0;
@@ -135,7 +135,7 @@ class Matrix {
    * Resets the current matrix to the identity matrix, mutating it
    * @returns {Matrix} Current matrix as identity
    */
-  public reset(): Matrix {
+  public function reset(): Matrix {
     final mat = this;
     mat.data[0] = 1;
     mat.data[1] = 0;
@@ -164,7 +164,7 @@ class Matrix {
    * @param x
    * @param y
    */
-  public static translation(x: Int, y: Int): Matrix {
+  public static function translation(x: Int, y: Int): Matrix {
     final mat = Matrix.identity();
     mat.data[12] = x;
     mat.data[13] = y;
@@ -176,7 +176,7 @@ class Matrix {
    * @param sx
    * @param sy
    */
-  public static scale(sx: Float, sy: Float): Matrix {
+  public static function scale(sx: Float, sy: Float): Matrix {
     final mat = Matrix.identity();
     mat.data[0] = sx;
     mat.data[5] = sy;
@@ -189,7 +189,7 @@ class Matrix {
    * Creates a brand new rotation matrix with the specified angle in radians
    * @param angle
    */
-  public static rotation(angle: Float): Matrix {
+  public static function rotation(angle: Float): Matrix {
     final mat = Matrix.identity();
     mat.data[0] = Math.cos(angle);
     mat.data[4] = -Math.sin(angle);
@@ -203,93 +203,90 @@ class Matrix {
    * @param vector
    * @param dest
    */
-  multiply(vector: Vector, dest?: Vector): Vector;
+  function multiplyVector(vector: Vector, ?dest: Vector): Vector {
+    final result = dest || new Vector(0, 0);
+    // these shenanigans are to allow dest and vector to be the same instance
+    final resultX = vector.x * this.data[0] + vector.y * this.data[4] + this.data[12];
+    final resultY = vector.x * this.data[1] + vector.y * this.data[5] + this.data[13];
+
+    result.x = resultX;
+    result.y = resultY;
+    return result;
+  }
+
   /**
    * Multiply the current matrix by another matrix producing a new matrix
    * @param matrix
    * @param dest
    */
-  multiply(matrix: Matrix, dest?: Matrix): Matrix;
-  multiply(vectorOrMatrix: Vector | Matrix, dest?: Vector | Matrix): Vector | Matrix {
-    if (vectorOrMatrix instanceof Vector) {
-      final result = (dest as Vector) || new Vector(0, 0);
-      final vector = vectorOrMatrix;
-      // these shenanigans are to allow dest and vector to be the same instance
-      final resultX = vector.x * this.data[0] + vector.y * this.data[4] + this.data[12];
-      final resultY = vector.x * this.data[1] + vector.y * this.data[5] + this.data[13];
+  function multiplyMatrix(matrix: Matrix, ?dest: Matrix): Matrix {
+    final result = dest || new Matrix();
+    final other = matrix;
+    final a11 = this.data[0];
+    final a21 = this.data[1];
+    final a31 = this.data[2];
+    final a41 = this.data[3];
 
-      result.x = resultX;
-      result.y = resultY;
-      return result;
-    } else {
-      final result = (dest as Matrix) || new Matrix();
-      final other = vectorOrMatrix;
-      final a11 = this.data[0];
-      final a21 = this.data[1];
-      final a31 = this.data[2];
-      final a41 = this.data[3];
+    final a12 = this.data[4];
+    final a22 = this.data[5];
+    final a32 = this.data[6];
+    final a42 = this.data[7];
 
-      final a12 = this.data[4];
-      final a22 = this.data[5];
-      final a32 = this.data[6];
-      final a42 = this.data[7];
+    final a13 = this.data[8];
+    final a23 = this.data[9];
+    final a33 = this.data[10];
+    final a43 = this.data[11];
 
-      final a13 = this.data[8];
-      final a23 = this.data[9];
-      final a33 = this.data[10];
-      final a43 = this.data[11];
+    final a14 = this.data[12];
+    final a24 = this.data[13];
+    final a34 = this.data[14];
+    final a44 = this.data[15];
 
-      final a14 = this.data[12];
-      final a24 = this.data[13];
-      final a34 = this.data[14];
-      final a44 = this.data[15];
+    final b11 = other.data[0];
+    final b21 = other.data[1];
+    final b31 = other.data[2];
+    final b41 = other.data[3];
 
-      final b11 = other.data[0];
-      final b21 = other.data[1];
-      final b31 = other.data[2];
-      final b41 = other.data[3];
+    final b12 = other.data[4];
+    final b22 = other.data[5];
+    final b32 = other.data[6];
+    final b42 = other.data[7];
 
-      final b12 = other.data[4];
-      final b22 = other.data[5];
-      final b32 = other.data[6];
-      final b42 = other.data[7];
+    final b13 = other.data[8];
+    final b23 = other.data[9];
+    final b33 = other.data[10];
+    final b43 = other.data[11];
 
-      final b13 = other.data[8];
-      final b23 = other.data[9];
-      final b33 = other.data[10];
-      final b43 = other.data[11];
+    final b14 = other.data[12];
+    final b24 = other.data[13];
+    final b34 = other.data[14];
+    final b44 = other.data[15];
 
-      final b14 = other.data[12];
-      final b24 = other.data[13];
-      final b34 = other.data[14];
-      final b44 = other.data[15];
+    result.data[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
+    result.data[1] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
+    result.data[2] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
+    result.data[3] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
 
-      result.data[0] = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
-      result.data[1] = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
-      result.data[2] = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
-      result.data[3] = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
+    result.data[4] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
+    result.data[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
+    result.data[6] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
+    result.data[7] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
 
-      result.data[4] = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
-      result.data[5] = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
-      result.data[6] = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
-      result.data[7] = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
+    result.data[8] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
+    result.data[9] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
+    result.data[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
+    result.data[11] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
 
-      result.data[8] = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
-      result.data[9] = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
-      result.data[10] = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
-      result.data[11] = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
+    result.data[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
+    result.data[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
+    result.data[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
+    result.data[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
 
-      result.data[12] = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
-      result.data[13] = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
-      result.data[14] = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
-      result.data[15] = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
+    final s = this.getScale();
+    result._scaleSignX = sign(s.x) * sign(result._scaleSignX);
+    result._scaleSignY = sign(s.y) * sign(result._scaleSignY);
 
-      final s = this.getScale();
-      result._scaleSignX = sign(s.x) * sign(result._scaleSignX);
-      result._scaleSignY = sign(s.y) * sign(result._scaleSignY);
-
-      return result;
-    }
+    return result;
   }
 
   /**
@@ -297,7 +294,7 @@ class Matrix {
    * @param x
    * @param y
    */
-  translate(x: Int, y: Int) {
+  function translate(x: Int, y: Int) {
     final a11 = this.data[0];
     final a21 = this.data[1];
     final a31 = this.data[2];
@@ -329,12 +326,12 @@ class Matrix {
     return this;
   }
 
-  public setPosition(x: Int, y: Int) {
+  public function setPosition(x: Int, y: Int) {
     this.data[12] = x;
     this.data[13] = y;
   }
 
-  public getPosition(): Vector {
+  public function getPosition(): Vector {
     return vec(this.data[12], this.data[13]);
   }
 
@@ -342,7 +339,7 @@ class Matrix {
    * Applies rotation to the current matrix mutating it
    * @param angle in Radians
    */
-  rotate(angle: Float) {
+  function rotate(angle: Float) {
     final a11 = this.data[0];
     final a21 = this.data[1];
     final a31 = this.data[2];
@@ -374,7 +371,7 @@ class Matrix {
    * @param x
    * @param y
    */
-  scale(x: Float, y: Float) {
+  function scale(x: Float, y: Float) {
     final a11 = this.data[0];
     final a21 = this.data[1];
     final a31 = this.data[2];
@@ -398,7 +395,7 @@ class Matrix {
     return this;
   }
 
-  public setRotation(angle: Float) {
+  public function setRotation(angle: Float) {
     final currentScale = this.getScale();
     final sine = Math.sin(angle);
     final cosine = Math.cos(angle);
@@ -409,18 +406,18 @@ class Matrix {
     this.data[5] = cosine * currentScale.y;
   }
 
-  public getRotation(): Float {
+  public function getRotation(): Float {
     final angle = Math.atan2(this.data[1] / this.getScaleY(), this.data[0] / this.getScaleX());
     return canonicalizeAngle(angle);
   }
 
-  public getScaleX(): Float {
+  public function getScaleX(): Float {
     // absolute scale of the matrix (we lose sign so need to add it back)
     final xscale = vec(this.data[0], this.data[4]).magnitude;
     return this._scaleSignX * xscale;
   }
 
-  public getScaleY(): Float {
+  public function getScaleY(): Float {
     // absolute scale of the matrix (we lose sign so need to add it back)
     final yscale = vec(this.data[1], this.data[5]).magnitude;
     return this._scaleSignY * yscale;
@@ -429,14 +426,14 @@ class Matrix {
   /**
    * Get the scale of the matrix
    */
-  public getScale(): Vector {
+  public function getScale(): Vector {
     return vec(this.getScaleX(), this.getScaleY());
   }
 
-  private _scaleX = 1;
-  private _scaleSignX = 1;
-  public setScaleX(val: Float) {
-    if (this._scaleX === val) {
+  private var _scaleX = 1;
+  private var _scaleSignX = 1;
+  public function setScaleX(val: Float) {
+    if (this._scaleX == val) {
       return;
     }
 
@@ -448,10 +445,10 @@ class Matrix {
     this._scaleX = val;
   }
 
-  private _scaleY = 1;
-  private _scaleSignY = 1;
-  public setScaleY(val: Float) {
-    if (this._scaleY === val) {
+  private var _scaleY = 1;
+  private var _scaleSignY = 1;
+  public function setScaleY(val: Float) {
+    if (this._scaleY == val) {
       return;
     }
     this._scaleSignY = sign(val);
@@ -462,7 +459,7 @@ class Matrix {
     this._scaleY = val;
   }
 
-  public setScale(scale: Vector) {
+  public function setScale(scale: Vector) {
     this.setScaleX(scale.x);
     this.setScaleY(scale.y);
   }
@@ -470,7 +467,7 @@ class Matrix {
   /**
    * Determinant of the upper left 2x2 matrix
    */
-  public getBasisDeterminant() {
+  public function getBasisDeterminant() {
     return this.data[0] * this.data[5] - this.data[1] * this.data[4];
   }
 
@@ -480,7 +477,7 @@ class Matrix {
    * It's recommended you call .reset() the target unless you know what you're doing
    * @param target
    */
-  public getAffineInverse(target?: Matrix): Matrix {
+  public function getAffineInverse(?target: Matrix): Matrix {
     // See http://negativeprobability.blogspot.com/2011/11/affine-transformations-and-their.html
     // See https://www.mathsisfun.com/algebra/matrix-inverse.html
     // Since we are actually only doing 2D transformations we can use this hack
@@ -510,33 +507,33 @@ class Matrix {
     return m;
   }
 
-  public isIdentity(): Bool {
+  public function isIdentity(): Bool {
     return (
-      this.data[0] === 1 &&
-      this.data[1] === 0 &&
-      this.data[2] === 0 &&
-      this.data[3] === 0 &&
-      this.data[4] === 0 &&
-      this.data[5] === 1 &&
-      this.data[6] === 0 &&
-      this.data[7] === 0 &&
-      this.data[8] === 0 &&
-      this.data[9] === 0 &&
-      this.data[10] === 1 &&
-      this.data[11] === 0 &&
-      this.data[12] === 0 &&
-      this.data[13] === 0 &&
-      this.data[14] === 0 &&
-      this.data[15] === 1
+      this.data[0] == 1 &&
+      this.data[1] == 0 &&
+      this.data[2] == 0 &&
+      this.data[3] == 0 &&
+      this.data[4] == 0 &&
+      this.data[5] == 1 &&
+      this.data[6] == 0 &&
+      this.data[7] == 0 &&
+      this.data[8] == 0 &&
+      this.data[9] == 0 &&
+      this.data[10] == 1 &&
+      this.data[11] == 0 &&
+      this.data[12] == 0 &&
+      this.data[13] == 0 &&
+      this.data[14] == 0 &&
+      this.data[15] == 1
     );
   }
 
-  public toString() {
-    return `
+  public function toString() {
+    return '
       [${this.data[0]} ${this.data[4]} ${this.data[8]} ${this.data[12]}]
       [${this.data[1]} ${this.data[5]} ${this.data[9]} ${this.data[13]}]
       [${this.data[2]} ${this.data[6]} ${this.data[10]} ${this.data[14]}]
       [${this.data[3]} ${this.data[7]} ${this.data[11]} ${this.data[15]}]
-    `;
+    ';
   }
 }

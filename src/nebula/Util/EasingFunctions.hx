@@ -1,12 +1,12 @@
-﻿package nebula.Util;
+﻿package nebula.util;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
 /**
  * A definition of an EasingFunction. See {@apilink EasingFunctions}.
  */
 typedef EasingFunction<EaseValue> =
-  (currentTime: Float, startValue: EaseValue, endValue: EaseValue, duration: Int): EaseValue;
+  (currentTime: Float, startValue: EaseValue, endValue: EaseValue, duration: Int) -> EaseValue;
 
 /**
  * Standard easing functions for motion in Excalibur, defined on a domain of [0, duration] and a range from [+startValue,+endValue]
@@ -49,7 +49,7 @@ typedef EasingFunction<EaseValue> =
  * ```
  */
 class EasingFunctions {
-  public static CreateReversibleEasingFunction(easing: EasingFunction<Float>): EasingFunction<Float> {
+  public static function CreateReversibleEasingFunction(easing: EasingFunction<Float>): EasingFunction<Float> {
     return (time: Float, start: Float, end: Float, duration: Int) -> {
       if (end < start) {
         return start - (easing(time, end, start, duration) - end);

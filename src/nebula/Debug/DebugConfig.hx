@@ -1,19 +1,19 @@
-package nebula.Debug;
+package nebula.debug;
 
-import nebula.Debug.DebugFlags;
+import nebula.debug.DebugFlags;
 import nebula.Engine;
 import nebula.Color;
 
-import nebula.Collision.Detection.CollisionContact;
+import nebula.collision.detection.CollisionContact;
 
-import nebula.Util.Clock;
+import nebula.util.Clock;
 
 /**
  * Debug stats containing current and previous frame statistics
  */
 interface DebugStats {
-  currFrame: FrameStats;
-  prevFrame: FrameStats;
+  var currFrame: FrameStats;
+  var prevFrame: FrameStats;
 }
 
 /**
@@ -23,39 +23,39 @@ interface FrameStatistics {
   /**
    * The number of the frame
    */
-  id: Int;
+  var id: Int;
 
   /**
    * Gets the frame's delta (time since last frame scaled by {@apilink Engine.timescale}) (in ms)
    *
    * Excalibur extension depends on this
    */
-  elapsedMs: Float;
+  var elapsedMs: Float;
 
   /**
    * Gets the frame's frames-per-second (FPS)
    */
-  fps: Float;
+  var fps: Float;
 
   /**
    * Duration statistics (in ms)
    */
-  duration: FrameDurationStats;
+  var duration: FrameDurationStats;
 
   /**
    * Actor statistics
    */
-  actors: FrameActorStats;
+  var actors: FrameActorStats;
 
   /**
    * Physics statistics
    */
-  physics: PhysicsStatistics;
+  var physics: PhysicsStatistics;
 
   /**
    * Graphics statistics
    */
-  graphics: GraphicsStatistics;
+  var graphics: GraphicsStatistics;
 }
 
 /**
@@ -65,27 +65,27 @@ interface FrameActorStats {
   /**
    * Gets the frame's number of actors (alive)
    */
-  alive: Int;
+  var alive: Int;
 
   /**
    * Gets the frame's number of actors (killed)
    */
-  killed: Int;
+  var killed: Int;
 
   /**
    * Gets the frame's number of remaining actors (alive - killed)
    */
-  remaining: Int;
+  var remaining: Int;
 
   /**
    * Gets the frame's number of UI actors
    */
-  ui: Int;
+  var ui: Int;
 
   /**
    * Gets the frame's number of total actors (remaining + UI)
    */
-  total: Int;
+  var total: Int;
 }
 
 /**
@@ -95,17 +95,17 @@ interface FrameDurationStats {
   /**
    * Gets the frame's total time to run the update function (in ms)
    */
-  update: Int;
+  var update: Int;
 
   /**
    * Gets the frame's total time to run the draw function (in ms)
    */
-  draw: Int;
+  var draw: Int;
 
   /**
    * Gets the frame's total render duration (update + draw duration) (in ms)
    */
-  total: Int;
+  var total: Int;
 }
 
 /**
@@ -115,42 +115,42 @@ interface PhysicsStatistics {
   /**
    * Gets the number of broadphase collision pairs which
    */
-  pairs: Int;
+  var pairs: Int;
 
   /**
    * Gets the number of actual collisions
    */
-  collisions: Int;
+  var collisions: Int;
 
   /**
    * Copy of the current frame contacts (only updated if debug is toggled on)
    */
-  contacts: Map<String, CollisionContact>;
+  var contacts: Map<String, CollisionContact>;
 
   /**
    * Gets the number of fast moving bodies using raycast continuous collisions in the scene
    */
-  fastBodies: Int;
+  var fastBodies: Int;
 
   /**
    * Gets the number of bodies that had a fast body collision resolution
    */
-  fastBodyCollisions: Int;
+  var fastBodyCollisions: Int;
 
   /**
    * Gets the time it took to calculate the broadphase pairs
    */
-  broadphase: Int;
+  var broadphase: Int;
 
   /**
    * Gets the time it took to calculate the narrowphase
    */
-  narrowphase: Int;
+  var narrowphase: Int;
 }
 
 interface GraphicsStatistics {
-  drawCalls: Int;
-  drawnImages: Int;
+  var drawCalls: Int;
+  var drawnImages: Int;
 }
 
 /**
@@ -159,7 +159,7 @@ interface GraphicsStatistics {
  * updated during a frame.
  */
 class DebugConfig {
-  private _engine: Engine;
+  private var _engine: Engine;
 
   public function new(engine: Engine) {
     this._engine = engine;
@@ -173,7 +173,7 @@ class DebugConfig {
    *
    * This is useful when you need to debug frame by frame.
    */
-  public useTestClock(): TestClock {
+  public function useTestClock(): TestClock {
     var clock = this._engine.clock;
     var wasRunning = clock.isRunning();
     clock.stop();
@@ -193,7 +193,7 @@ class DebugConfig {
    * This is useful when you need to switch back to normal mode after
    * debugging.
    */
-  public useStandardClock(): StandardClock {
+  public function useStandardClock(): StandardClock {
     var currentClock = this._engine.clock;
     var wasRunning = currentClock.isRunning();
     currentClock.stop();
@@ -209,7 +209,7 @@ class DebugConfig {
   /**
    * Performance statistics
    */
-  public stats: DebugStats = {
+  public var stats: DebugStats = {
     /**
      * Current frame statistics. Engine reuses this instance, use {@apilink FrameStats.clone} to copy frame stats.
      * Best accessed on {@apilink postframe} event. See {@apilink FrameStats}
@@ -227,12 +227,12 @@ class DebugConfig {
    * Correct or simulate color blindness using {@apilink ColorBlindnessPostProcessor}.
    * @warning Will reduce FPS.
    */
-  public colorBlindMode: ColorBlindFlags;
+  public var colorBlindMode: ColorBlindFlags;
 
   /**
    * Filter debug context to named entities or entity ids
    */
-  public filter: { useFilter: Bool; nameQuery: String; ids: Int[] } = {
+  public var filter: { useFilter: Bool, nameQuery: String, ids: Array<Int> } = {
     /**
      * Toggle filter on or off (default off) must be on for DebugDraw to use filters
      */
@@ -250,7 +250,7 @@ class DebugConfig {
   /**
    * Entity debug settings
    */
-  public entity = {
+  public var entity = {
     showAll: false,
     showId: false,
     showName: false
@@ -259,7 +259,7 @@ class DebugConfig {
   /**
    * Transform component debug settings
    */
-  public transform = {
+  public var transform = {
     showAll: false,
 
     debugZIndex: 10_000_000,
@@ -279,7 +279,7 @@ class DebugConfig {
   /**
    * Graphics component debug settings
    */
-  public graphics = {
+  public var graphics = {
     showAll: false,
 
     showBounds: false,
@@ -289,7 +289,7 @@ class DebugConfig {
   /**
    * Collider component debug settings
    */
-  public collider = {
+  public var collider = {
     showAll: false,
 
     showBounds: false,
@@ -306,7 +306,7 @@ class DebugConfig {
   /**
    * Physics simulation debug settings
    */
-  public physics = {
+  public var physics = {
     showAll: false,
 
     showBroadphaseSpacePartitionDebug: false,
@@ -322,7 +322,7 @@ class DebugConfig {
   /**
    * Motion component debug settings
    */
-  public motion = {
+  public var motion = {
     showAll: false,
 
     showVelocity: false,
@@ -335,7 +335,7 @@ class DebugConfig {
   /**
    * Body component debug settings
    */
-  public body = {
+  public var body = {
     showAll: false,
 
     showCollisionGroup: false,
@@ -348,7 +348,7 @@ class DebugConfig {
   /**
    * Camera debug settings
    */
-  public camera = {
+  public var camera = {
     showAll: false,
 
     showFocus: false,
@@ -357,7 +357,7 @@ class DebugConfig {
     showZoom: false
   };
 
-  public tilemap = {
+  public var tilemap = {
     showAll: false,
 
     showGrid: false,
@@ -368,7 +368,7 @@ class DebugConfig {
     showColliderGeometry: true
   };
 
-  public isometric = {
+  public var isometric = {
     showAll: false,
     showPosition: false,
     positionColor: Color.Yellow,
@@ -385,31 +385,31 @@ class DebugConfig {
  * creating instances of this every frame.
  */
 class FrameStats implements FrameStatistics {
-  private _id: Int = 0;
-  private _elapsedMs: Int = 0;
-  private _fps: Int = 0;
-  private _actorStats: FrameActorStats = {
+  private var _id: Int = 0;
+  private var _elapsedMs: Int = 0;
+  private var _fps: Int = 0;
+  private var _actorStats: FrameActorStats = {
     alive: 0,
     killed: 0,
     ui: 0,
-    get remaining() {
+    getRemaining: () -> {
       return this.alive - this.killed;
     },
-    get total() {
+    getTotal: () -> {
       return this.remaining + this.ui;
     }
   };
-  private _durationStats: FrameDurationStats = {
+  private var _durationStats: FrameDurationStats = {
     update: 0,
     draw: 0,
-    get total() {
+    getTotal: () -> {
       return this.update + this.draw;
     }
   };
 
-  private _physicsStats: PhysicsStats = new PhysicsStats();
+  private var _physicsStats: PhysicsStats = new PhysicsStats();
 
-  private _graphicsStats: GraphicsStatistics = {
+  private var _graphicsStats: GraphicsStatistics = {
     drawCalls: 0,
     drawnImages: 0
   };
@@ -418,7 +418,7 @@ class FrameStats implements FrameStatistics {
    * Zero out values or clone other IFrameStat stats. Allows instance reuse.
    * @param [otherStats] Optional stats to clone
    */
-  public reset(otherStats?: FrameStatistics) {
+  public function reset(?otherStats: FrameStatistics) {
     if (otherStats) {
       this.id = otherStats.id;
       this.elapsedMs = otherStats.elapsedMs;
@@ -443,7 +443,7 @@ class FrameStats implements FrameStatistics {
   /**
    * Provides a clone of this instance.
    */
-  public clone(): FrameStats {
+  public function clone(): FrameStats {
     var fs = new FrameStats();
 
     fs.reset(this);
@@ -454,21 +454,23 @@ class FrameStats implements FrameStatistics {
   /**
    * Gets the frame's id
    */
-  public get id() {
+  public var id(get, set): Int;
+  function get_id() {
     return this._id;
   }
 
   /**
    * Sets the frame's id
    */
-  public set id(value: Int) {
+  function set_id(value: Int) {
     this._id = value;
   }
 
   /**
    * Gets the frame's delta (time since last frame)
    */
-  public get elapsedMs() {
+  public var elapsedMs(get, set): Int;
+  function get_elapsedMs() {
     return this._elapsedMs;
   }
 
@@ -476,14 +478,15 @@ class FrameStats implements FrameStatistics {
    * Sets the frame's delta (time since last frame). Internal use only.
    * @internal
    */
-  public set elapsedMs(value: Int) {
+  function set_elapsedMs(value: Int) {
     this._elapsedMs = value;
   }
 
   /**
    * Gets the frame's frames-per-second (FPS)
    */
-  public get fps() {
+  public var fps(get, set): Int;
+  function get_fps() {
     return this._fps;
   }
 
@@ -491,53 +494,57 @@ class FrameStats implements FrameStatistics {
    * Sets the frame's frames-per-second (FPS). Internal use only.
    * @internal
    */
-  public set fps(value: Int) {
+  function set_fps(value: Int) {
     this._fps = value;
   }
 
   /**
    * Gets the frame's actor statistics
    */
-  public get actors() {
+  public var actors(get, never): Any;
+  function get_actors() {
     return this._actorStats;
   }
 
   /**
    * Gets the frame's duration statistics
    */
-  public get duration() {
+  public var duration(get, never): Any;
+  function get_duration() {
     return this._durationStats;
   }
 
   /**
    * Gets the frame's physics statistics
    */
-  public get physics() {
+  public var physics(get, never): Any;
+  function get_physics() {
     return this._physicsStats;
   }
 
   /**
    * Gets the frame's graphics statistics
    */
-  public get graphics() {
+  public var graphics(get, never): Any;
+  function get_graphics() {
     return this._graphicsStats;
   }
 }
 
 class PhysicsStats implements PhysicsStatistics {
-  private _pairs: Int = 0;
-  private _collisions: Int = 0;
-  private _contacts: Map<String, CollisionContact> = new Map();
-  private _fastBodies: Int = 0;
-  private _fastBodyCollisions: Int = 0;
-  private _broadphase: Int = 0;
-  private _narrowphase: Int = 0;
+  private var _pairs: Int = 0;
+  private var _collisions: Int = 0;
+  private var _contacts: Map<String, CollisionContact> = new Map();
+  private var _fastBodies: Int = 0;
+  private var _fastBodyCollisions: Int = 0;
+  private var _broadphase: Int = 0;
+  private var _narrowphase: Int = 0;
 
   /**
    * Zero out values or clone other IPhysicsStats stats. Allows instance reuse.
    * @param [otherStats] Optional stats to clone
    */
-  public reset(otherStats?: PhysicsStatistics) {
+  public function reset(?otherStats: PhysicsStatistics) {
     if (otherStats) {
       this.pairs = otherStats.pairs;
       this.collisions = otherStats.collisions;
@@ -556,7 +563,7 @@ class PhysicsStats implements PhysicsStatistics {
   /**
    * Provides a clone of this instance.
    */
-  public clone(): PhysicsStatistics {
+  public function clone(): PhysicsStatistics {
     var ps = new PhysicsStats();
 
     ps.reset(this);
@@ -564,59 +571,59 @@ class PhysicsStats implements PhysicsStatistics {
     return ps;
   }
 
-  public get pairs(): Int {
+  public var pairs(get, set): Int;
+  function get_pairs(): Int {
     return this._pairs;
   }
-
-  public set pairs(value: Int) {
+  function set_pairs(value: Int) {
     this._pairs = value;
   }
 
-  public get collisions(): Int {
+  public var collisions(get, set): Int;
+  function get_collisions(): Int {
     return this._collisions;
   }
-
-  public set collisions(value: Int) {
+  function set_collisions(value: Int) {
     this._collisions = value;
   }
 
-  public get contacts(): Map<String, CollisionContact> {
+  public var contacts(get, set): Map<String, CollisionContact>;
+  function get_contacts(): Map<String, CollisionContact> {
     return this._contacts;
   }
-
-  public set contacts(contacts: Map<String, CollisionContact>) {
+  function set_contacts(contacts: Map<String, CollisionContact>) {
     this._contacts = contacts;
   }
 
-  public get fastBodies(): Int {
+  public var fastBodies(get, set): Int;
+  function get_fastBodies(): Int {
     return this._fastBodies;
   }
-
-  public set fastBodies(value: Int) {
+  function set_fastBodies(value: Int) {
     this._fastBodies = value;
   }
 
-  public get fastBodyCollisions(): Int {
+  public var fastBodyCollisions(get, set): Int;
+  function get_fastBodyCollisions(): Int {
     return this._fastBodyCollisions;
   }
-
-  public set fastBodyCollisions(value: Int) {
+  function set_fastBodyCollisions(value: Int) {
     this._fastBodyCollisions = value;
   }
 
-  public get broadphase(): Int {
+  public var broadphase(get, set): Int;
+  function get_broadphase(): Int {
     return this._broadphase;
   }
-
-  public set broadphase(value: Int) {
+  function set_broadphase(value: Int) {
     this._broadphase = value;
   }
 
-  public get narrowphase(): Int {
+  public var narrowphase(get, set): Int;
+  function get_narrowphase(): Int {
     return this._narrowphase;
   }
-
-  public set narrowphase(value: Int) {
+  function set_narrowphase(value: Int) {
     this._narrowphase = value;
   }
 }

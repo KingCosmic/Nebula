@@ -1,35 +1,35 @@
-package nebula.Graphics.Context.RectangleRenderer;
+package nebula.graphics.context.rectanglerenderer;
 
 import nebula.Color;
-import nebula.Math.Vector;
-import nebula.GraphicsDiagnostics;
+import nebula.math.Vector;
+import nebula.graphics.GraphicsDiagnostics;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
-import nebula.Graphics.Context.QuadIndexBuffer;
-import nebula.Graphics.Context.Renderer;
-import nebula.Graphics.Context.Shader;
-import nebula.Graphics.Context.VertexBuffer;
-import nebula.Graphics.Context.VertexLayout;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.QuadIndexBuffer;
+import nebula.graphics.context.Renderer;
+import nebula.graphics.context.Shader;
+import nebula.graphics.context.VertexBuffer;
+import nebula.graphics.context.VertexLayout;
 
 // import frag from './rectangle-renderer.frag.glsl?raw';
 // import vert from './rectangle-renderer.vert.glsl?raw';
 
 class RectangleRenderer implements RendererPlugin {
-  public readonly type = 'ex.rectangle';
-  public priority: Int = 0;
+  public var type = 'ex.rectangle';
+  public var priority: Int = 0;
 
-  private _maxRectangles: Int = 10922; // max(uint16) / 6 verts
+  private var _maxRectangles: Int = 10922; // max(uint16) / 6 verts
 
-  private _shader!: Shader;
-  private _gl!: WebGLRenderingContext;
-  private _context!: ExcaliburGraphicsContextWebGL;
-  private _buffer!: VertexBuffer;
-  private _layout!: VertexLayout;
-  private _quads!: QuadIndexBuffer;
-  private _rectangleCount: Int = 0;
-  private _vertexIndex: Int = 0;
+  private var _shader: Shader;
+  private var _gl: WebGLRenderingContext;
+  private var _context: ExcaliburGraphicsContextWebGL;
+  private var _buffer: VertexBuffer;
+  private var _layout: VertexLayout;
+  private var _quads: QuadIndexBuffer;
+  private var _rectangleCount: Int = 0;
+  private var _vertexIndex: Int = 0;
 
-  initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
+  function initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
     this._gl = gl;
     this._context = context;
     // https://stackoverflow.com/questions/59197671/glsl-rounded-rectangle-with-variable-border
@@ -45,13 +45,13 @@ class RectangleRenderer implements RendererPlugin {
     this._shader.setUniformMatrix('u_matrix', context.ortho);
 
     this._buffer = new VertexBuffer({
-      gl,
+      gl: gl,
       size: 16 * 4 * this._maxRectangles,
       type: 'dynamic'
     });
 
     this._layout = new VertexLayout({
-      gl,
+      gl: gl,
       shader: this._shader,
       vertexBuffer: this._buffer,
       attributes: [
@@ -67,35 +67,35 @@ class RectangleRenderer implements RendererPlugin {
     this._quads = new QuadIndexBuffer(gl, this._maxRectangles, true);
   }
 
-  public dispose() {
+  public function dispose() {
     this._buffer.dispose();
     this._quads.dispose();
     this._shader.dispose();
-    this._context = null as any;
-    this._gl = null as any;
+    this._context = null;
+    this._gl = null;
   }
 
-  private _isFull() {
+  private function _isFull() {
     if (this._rectangleCount >= this._maxRectangles) {
       return true;
     }
     return false;
   }
 
-  draw(...args: any[]): void {
-    if (args[0] instanceof Vector && args[1] instanceof Vector) {
-      this.drawLine.apply(this, args as any);
+ function draw(...args: Array<Any>): Void {
+    if (Std.isTypeOf(args[0], Vector) && Std.isTypeOf(args[1], Vector)) {
+      this.drawLine.apply(this, args);
     } else {
-      this.drawRectangle.apply(this, args as any);
+      this.drawRectangle.apply(this, args);
     }
   }
 
-  private _transparent = Color.Transparent;
-  private _scratch1 = vec(0, 0);
-  private _scratch2 = vec(0, 0);
-  private _scratch3 = vec(0, 0);
-  private _scratch4 = vec(0, 0);
-  drawLine(start: Vector, end: Vector, color: Color, thickness: Int = 1) {
+  private var _transparent = Color.Transparent;
+  private var _scratch1 = vec(0, 0);
+  private var _scratch2 = vec(0, 0);
+  private var _scratch3 = vec(0, 0);
+  private var _scratch4 = vec(0, 0);
+  function drawLine(start: Vector, end: Vector, color: Color, thickness: Int = 1) {
     if (this._isFull()) {
       this.flush();
     }
@@ -223,7 +223,7 @@ class RectangleRenderer implements RendererPlugin {
     vertexBuffer[this._vertexIndex++] = strokeThickness / width;
   }
 
-  drawRectangle(
+  function drawRectangle(
     pos: Vector,
     width: Int,
     height: Int,
@@ -342,13 +342,13 @@ class RectangleRenderer implements RendererPlugin {
     vertexBuffer[this._vertexIndex++] = strokeThickness;
   }
 
-  hasPendingDraws(): Bool {
-    return this._rectangleCount !== 0;
+  function hasPendingDraws(): Bool {
+    return this._rectangleCount != 0;
   }
 
-  flush(): Void {
+  function flush(): Void {
     // nothing to draw early exit
-    if (this._rectangleCount === 0) {
+    if (this._rectangleCount == 0) {
       return;
     }
 

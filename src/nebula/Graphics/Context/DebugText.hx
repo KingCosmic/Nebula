@@ -1,12 +1,12 @@
-package nebula.Graphics.Context;
+package nebula.graphics.context;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Graphics.ImageSource;
-import nebula.Graphics.SpriteFont;
-import nebula.Graphics.SpriteSheet;
+import nebula.graphics.ImageSource;
+import nebula.graphics.SpriteFont;
+import nebula.graphics.SpriteSheet;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
 // import debugFont from './debug-font.png';
 
@@ -23,14 +23,14 @@ class DebugText {
   /**
    * base64 font
    */
-  public readonly fontSheet = debugFont;
-  public size: Int = 16;
-  private _imageSource!: ImageSource;
-  private _spriteSheet!: SpriteSheet;
-  private _spriteFont!: SpriteFont;
-  public load() {
+  public var fontSheet = debugFont;
+  public var size: Int = 16;
+  private var _imageSource: ImageSource;
+  private var _spriteSheet: SpriteSheet;
+  private var _spriteFont: SpriteFont;
+  public function load() {
     this._imageSource = new ImageSource(this.fontSheet);
-    return this._imageSource.load().then(() => {
+    return this._imageSource.load().then(() -> {
       this._spriteSheet = SpriteSheet.fromImageSource({
         image: this._imageSource,
         grid: {
@@ -55,7 +55,7 @@ class DebugText {
    * @param text
    * @param pos
    */
-  public write(ctx: ExcaliburGraphicsContext, text: String, pos: Vector) {
+  public function write(ctx: ExcaliburGraphicsContext, text: String, pos: Vector) {
     if (this._imageSource.isLoaded()) {
       this._spriteFont.render(ctx, text, null, pos.x, pos.y);
     }

@@ -1,7 +1,7 @@
-﻿package nebula.Actions;
+﻿package nebula.actions;
 
-import nebula.Actions.ActionContext;
+import nebula.actions.ActionContext;
 
 interface Actionable {
-  actions: ActionContext;
+  var actions: ActionContext;
 }

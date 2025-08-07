@@ -1,23 +1,23 @@
-package nebula.Graphics.Context;
+package nebula.graphics.context;
 
 import nebula.GarbageCollector;
-import nebula.Util.Log;
-import nebula.Graphics.Filtering;
-import nebula.Graphics.ImageSource;
-import nebula.Graphics.Wrapping;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.util.Log;
+import nebula.graphics.Filtering;
+import nebula.graphics.ImageSource;
+import nebula.graphics.Wrapping;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
 /**
  * Manages loading image sources into webgl textures, a unique id is associated with all sources
  */
 class TextureLoader {
-  private static _LOGGER = Logger.getInstance();
+  private static var _LOGGER = Logger.getInstance();
 
   public function new(
     gl: WebGL2RenderingContext,
-    private _garbageCollector?: {
-      garbageCollector: GarbageCollector;
-      collectionInterval: Int;
+    ?_garbageCollector: {
+      garbageCollector: GarbageCollector,
+      collectionInterval: Int,
     }
   ) {
     this._gl = gl;
@@ -28,31 +28,31 @@ class TextureLoader {
     }
   }
 
-  public dispose() {
-    for (final [image] of this._textureMap) {
+  public function dispose() {
+    for (image => val in this._textureMap) {
       this.delete(image);
     }
     this._textureMap.clear();
-    this._gl = null as any;
+    this._gl = null;
   }
 
   /**
    * Sets the default filtering for the Excalibur texture loader, default {@apilink ImageFiltering.Blended}
    */
-  public static filtering: ImageFiltering = ImageFiltering.Blended;
-  public static wrapping: ImageWrapConfiguration = { x: ImageWrapping.Clamp, y: ImageWrapping.Clamp };
+  public static var filtering: ImageFiltering = ImageFiltering.Blended;
+  public static var wrapping: ImageWrapConfiguration = { x: ImageWrapping.Clamp, y: ImageWrapping.Clamp };
 
-  private _gl: WebGL2RenderingContext;
+  private var _gl: WebGL2RenderingContext;
 
-  private _textureMap = new Map<HTMLImageSource, WebGLTexture>();
+  private var _textureMap = new Map<HTMLImageSource, WebGLTexture>();
 
-  private static _MAX_TEXTURE_SIZE: Int = 4096;
+  private static var _MAX_TEXTURE_SIZE: Int = 4096;
 
   /**
    * Get the WebGL Texture from a source image
    * @param image
    */
-  public get(image: HTMLImageSource): WebGLTexture {
+  public function get(image: HTMLImageSource): WebGLTexture {
     return this._textureMap.get(image)!;
   }
 
@@ -60,7 +60,7 @@ class TextureLoader {
    * Returns whether a source image has been loaded as a texture
    * @param image
    */
-  public has(image: HTMLImageSource): Bool {
+  public function has(image: HTMLImageSource): Bool {
     return this._textureMap.has(image)!;
   }
 
@@ -70,16 +70,17 @@ class TextureLoader {
    * @param options {ImageSourceOptions} Optionally configure the ImageFiltering and ImageWrapping mode to apply to the loaded texture
    * @param forceUpdate Optionally force a texture to be reloaded, useful if the source graphic has changed
    */
-  public load(image: HTMLImageSource, options?: ImageSourceOptions, forceUpdate = false): WebGLTexture | null {
+  public function load(image: HTMLImageSource, ?options: ImageSourceOptions, forceUpdate = false): Null<WebGLTexture> {
     // Ignore loading if webgl is not registered
     final gl = this._gl;
     if (!gl) {
       return null;
     }
 
-    final { filtering, wrapping } = { ...options };
+    final filtering = options.filtering;
+    final wrapping = options.wrapping;
 
-    var tex: WebGLTexture | null = null;
+    var tex: Null<WebGLTexture> = null;
     // If reuse the texture if it's from the same source
     if (this.has(image)) {
       tex = this.get(image);
@@ -105,9 +106,9 @@ class TextureLoader {
 
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
-    var wrappingConfig: ImageWrapConfiguration | undefined;
+    var wrappingConfig: Null<ImageWrapConfiguration>;
     if (wrapping) {
-      if (typeof wrapping === 'string') {
+      if (Std.isOfType(wrapping, String)) {
         wrappingConfig = {
           x: wrapping,
           y: wrapping
@@ -119,7 +120,11 @@ class TextureLoader {
         };
       }
     }
-    final { x: xWrap, y: yWrap } = wrappingConfig ?? TextureLoader.wrapping;
+    final config = wrappingConfig ?? TextureLoader.wrapping;
+
+    final xWrap = config.x;
+    final yWrap = config.y;
+
     switch (xWrap) {
       case ImageWrapping.Clamp:
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -150,8 +155,8 @@ class TextureLoader {
     // NEAREST for pixel art, LINEAR for hi-res
     final filterMode = filtering ?? TextureLoader.filtering;
 
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filterMode === ImageFiltering.Pixel ? gl.NEAREST : gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filterMode === ImageFiltering.Pixel ? gl.NEAREST : gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filterMode == ImageFiltering.Pixel ? gl.NEAREST : gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filterMode == ImageFiltering.Pixel ? gl.NEAREST : gl.LINEAR);
 
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
@@ -160,7 +165,7 @@ class TextureLoader {
     return tex;
   }
 
-  public delete(image: HTMLImageSource): Void {
+  public function delete(image: HTMLImageSource): Void {
     // Ignore loading if webgl is not registered
     final gl = this._gl;
     if (!gl) {
@@ -181,7 +186,7 @@ class TextureLoader {
    * @param image
    * @returns if the image will be supported at runtime
    */
-  public static checkImageSizeSupportedAndLog(image: HTMLImageSource) {
+  public static function checkImageSizeSupportedAndLog(image: HTMLImageSource) {
     final originalSrc = image.dataset.originalSrc ?? 'internal canvas bitmap';
     if (image.width > TextureLoader._MAX_TEXTURE_SIZE || image.height > TextureLoader._MAX_TEXTURE_SIZE) {
       TextureLoader._LOGGER.error(
@@ -206,10 +211,10 @@ class TextureLoader {
   /**
    * Looks for textures that haven't been drawn in a while
    */
-  private _collect = (image: HTMLImageSource) => {
+  private var _collect = (image: HTMLImageSource) -> {
     if (this._gl) {
       final name = image.dataset.originalSrc ?? image.constructor.name;
-      TextureLoader._LOGGER.debug(`WebGL Texture for ${name} collected`);
+      TextureLoader._LOGGER.debug('WebGL Texture for ${name} collected');
       this.delete(image);
       return true;
     }

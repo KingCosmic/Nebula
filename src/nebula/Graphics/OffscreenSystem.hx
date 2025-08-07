@@ -1,57 +1,55 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.GraphicsComponent;
+import nebula.graphics.GraphicsComponent;
 
 import nebula.Events;
 import nebula.Scene;
 import nebula.Screen;
 
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.EntityComponentSystem.System;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.entitycomponentsystem.System;
 
-import nebula.Graphics.ParallaxComponent;
+import nebula.graphics.ParallaxComponent;
 
-import nebula.Math.Vector;
-import nebula.Math.CoordPlane;
+import nebula.math.Vector;
+import nebula.math.CoordPlane;
 
 import nebula.Camera;
 
-import nebula.Collision.BoundingBox;
-
-import nebula.EntityComponentSystem;
+import nebula.collision.BoundingBox;
 
 class OffscreenSystem extends System {
-  static priority: Int = SystemPriority.Higher;
+  static var priority: Int = SystemPriority.Higher;
 
-  public systemType = SystemType.Draw;
-  private _camera!: Camera;
-  private _screen!: Screen;
-  private _worldBounds!: BoundingBox;
-  query: Query<typeof TransformComponent | typeof GraphicsComponent>;
+  public var systemType = SystemType.Draw;
+  private var _camera: Camera;
+  private var _screen: Screen;
+  private var _worldBounds: BoundingBox;
+  var query: Query;
 
-  public function new(public world: World) {
+  public function new(world: World) {
     super();
     this.query = this.world.query([TransformComponent, GraphicsComponent]);
   }
 
-  public initialize(world: World, scene: Scene): Void {
+  public function initialize(world: World, scene: Scene): Void {
     this._camera = scene.camera;
     this._screen = scene.engine.screen;
   }
 
-  update(): void {
+  function update(): Void {
     this._worldBounds = this._screen.getWorldBounds();
     var transform: TransformComponent;
     var graphics: GraphicsComponent;
-    var maybeParallax: ParallaxComponent | undefined;
+    var maybeParallax: Null<ParallaxComponent>;
 
-    for (var i = 0; i < this.query.entities.length; i++) {
+    for (i in 0...this.query.entities.length) {
       final entity = this.query.entities[i];
       graphics = entity.get(GraphicsComponent);
       transform = entity.get(TransformComponent);
       maybeParallax = entity.get(ParallaxComponent);
 
-      var parallaxOffset: Vector | undefined;
+      var parallaxOffset: Null<Vector>;
       if (maybeParallax) {
         // We use the Tiled formula
         // https://doc.mapeditor.org/en/latest/manual/layers/#parallax-scrolling-factor
@@ -74,11 +72,11 @@ class OffscreenSystem extends System {
     }
   }
 
-  private _isOffscreen(transform: TransformComponent, graphics: GraphicsComponent, parallaxOffset: Vector | undefined) {
+  private function _isOffscreen(transform: TransformComponent, graphics: GraphicsComponent, ?parallaxOffset: Vector) {
     if (graphics.forceOnScreen) {
       return false;
     }
-    if (transform.coordPlane === CoordPlane.World) {
+    if (transform.coordPlane == CoordPlane.World) {
       var bounds = graphics.localBounds;
       if (parallaxOffset) {
         bounds = bounds.translate(parallaxOffset);

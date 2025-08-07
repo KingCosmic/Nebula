@@ -1,22 +1,22 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
 import nebula.Color;
 
-import nebula.Util.Log;
+import nebula.util.Log;
 
-import nebula.Graphics.Font;
-import nebula.Graphics.FontTextInstance;
+import nebula.graphics.Font;
+import nebula.graphics.FontTextInstance;
 
 class FontCache {
-  public static FONT_TIMEOUT = 500;
-  private static _LOGGER = Logger.getInstance();
-  private static _TEXT_USAGE = new Map<FontTextInstance, Int>();
-  private static _TEXT_CACHE = new Map<String, FontTextInstance>();
-  private static _MEASURE_CACHE = new Map<String, BoundingBox>();
+  public static var FONT_TIMEOUT = 500;
+  private static var _LOGGER = Logger.getInstance();
+  private static var _TEXT_USAGE = new Map<FontTextInstance, Int>();
+  private static var _TEXT_CACHE = new Map<String, FontTextInstance>();
+  private static var _MEASURE_CACHE = new Map<String, BoundingBox>();
 
-  static measureText(text: String, font: Font, maxWidth?: Int): BoundingBox {
+  static function measureText(text: String, font: Font, ?maxWidth: Int): BoundingBox {
     final hash = FontTextInstance.getHashCode(font, text);
     if (FontCache._MEASURE_CACHE.has(hash)) {
       return FontCache._MEASURE_CACHE.get(hash)!;
@@ -27,7 +27,7 @@ class FontCache {
     return measurement;
   }
 
-  static getTextInstance(text: String, font: Font, color: Color): FontTextInstance {
+  static function getTextInstance(text: String, font: Font, color: Color): FontTextInstance {
     final hash = FontTextInstance.getHashCode(font, text, color);
     var textInstance = FontCache._TEXT_CACHE.get(hash);
     if (!textInstance) {
@@ -42,10 +42,10 @@ class FontCache {
     return textInstance;
   }
 
-  static checkAndClearCache() {
-    final deferred: FontTextInstance[] = [];
-    final currentHashCodes = new Set<String>();
-    for (final [textInstance, time] of FontCache._TEXT_USAGE.entries()) {
+  static function checkAndClearCache() {
+    final deferred: Array<FontTextInstance> = [];
+    final currentHashCodes = new Map<String, Bool>();
+    for (textInstance => time in FontCache._TEXT_USAGE) {
       // if bitmap hasn't been used in 100 ms clear it
       if (time + FontCache.FONT_TIMEOUT < performance.now()) {
         FontCache._LOGGER.debug('Text cache entry timed out ${textInstance.text}');
@@ -57,19 +57,19 @@ class FontCache {
       }
     }
     // Deferred removal of text instances
-    deferred.forEach((t) => {
+    deferred.forEach((t) -> {
       FontCache._TEXT_USAGE.delete(t);
     });
 
     // Regenerate text instance cache
     this._TEXT_CACHE.clear();
-    for (final [textInstance] of this._TEXT_USAGE.entries()) {
+    for (textInstance => val in this._TEXT_USAGE) {
       this._TEXT_CACHE.set(textInstance.getHashCode(), textInstance);
     }
 
     // Regenerated measurement cache
     final newTextMeasurementCache = new Map<String, BoundingBox>();
-    for (final current of currentHashCodes) {
+    for (current in currentHashCodes) {
       if (FontCache._MEASURE_CACHE.has(current)) {
         newTextMeasurementCache.set(current, FontCache._MEASURE_CACHE.get(current)!);
       }
@@ -78,15 +78,16 @@ class FontCache {
     this._MEASURE_CACHE = newTextMeasurementCache;
   }
 
-  public static get cacheSize() {
+  public static var cacheSize(get, never): Int;
+  static function get_cacheSize() {
     return FontCache._TEXT_USAGE.size;
   }
 
   /**
    * Force clear all cached text bitmaps
    */
-  public static clearCache() {
-    for (final [textInstance] of FontCache._TEXT_USAGE.entries()) {
+  public static function clearCache() {
+    for (textInstance => val in FontCache._TEXT_USAGE) {
       textInstance.dispose();
     }
     FontCache._TEXT_USAGE.clear();

@@ -1,49 +1,47 @@
-package nebula.EntityComponentSystem;
+package nebula.entitycomponentsystem;
 
 import nebula.Scene;
-import nebula.Util.Log;
-import nebula.EntityComponentSystem.Component;
-import nebula.EntityComponentSystem.Entity;
-import nebula.EntityComponentSystem.EntityManager;
-import nebula.EntityComponentSystem.Query;
-import nebula.EntityComponentSystem.QueryManager;
-import nebula.EntityComponentSystem.System;
-import nebula.EntityComponentSystem.SystemManager;
-import nebula.EntityComponentSystem.TagQuery;
+import nebula.util.Log;
+import nebula.entitycomponentsystem.Component;
+import nebula.entitycomponentsystem.Entity;
+import nebula.entitycomponentsystem.EntityManager;
+import nebula.entitycomponentsystem.Query;
+import nebula.entitycomponentsystem.QueryManager;
+import nebula.entitycomponentsystem.System;
+import nebula.entitycomponentsystem.SystemManager;
+import nebula.entitycomponentsystem.TagQuery;
 
 /**
  * The World is a self-contained entity component system for a particular context.
  */
 class World {
-  private _logger = Logger.getInstance();
-  public queryManager: QueryManager = new QueryManager(this);
-  public entityManager: EntityManager = new EntityManager(this);
-  public systemManager: SystemManager = new SystemManager(this);
+  private var _logger = Logger.getInstance();
+  public var queryManager: QueryManager = new QueryManager(this);
+  public var entityManager: EntityManager = new EntityManager(this);
+  public var systemManager: SystemManager = new SystemManager(this);
 
   /**
    * The context type is passed to the system updates
    * @param scene
    */
-  public function new(public scene: Scene) {}
+  public function new(scene: Scene) {}
 
   /**
    * Query the ECS world for entities that match your components
    */
-  query<TKnownComponentCtors extends ComponentCtor<Component> = never, TAnyComponentCtors extends ComponentCtor<Component> = never>(
-    params: TKnownComponentCtors[] | QueryParams<TKnownComponentCtors, TAnyComponentCtors>
-  ): Query<TKnownComponentCtors, TAnyComponentCtors> {
+  function query(params: Array<Any>): Query<TKnownComponentCtors, TAnyComponentCtors> {
     return this.queryManager.createQuery(params);
   }
 
-  queryTags<TKnownTags extends string>(requiredTags: TKnownTags[]): TagQuery<TKnownTags> {
+  function queryTags(requiredTags: Array<String>): TagQuery<TKnownTags> {
     return this.queryManager.createTagQuery(requiredTags);
   }
 
   /**
    * Update systems by type and time elapsed in milliseconds
    */
-  update(type: SystemType, elapsed: Float) {
-    if (type === SystemType.Update) {
+  function update(type: SystemType, elapsed: Int) {
+    if (type == SystemType.Update) {
       this.entityManager.updateEntities(this.scene, elapsed);
     }
     this.systemManager.updateSystems(type, this.scene, elapsed);
@@ -56,20 +54,13 @@ class World {
    * Add an entity to the ECS world
    * @param entity
    */
-  add(entity: Entity);
-  /**
-   * Add a system to the ECS world
-   * @param system
-   */
-  add(system: System);
-  add(system: SystemCtor<System>);
-  add(entityOrSystem: Entity | System | SystemCtor<System>) {
-    if (entityOrSystem instanceof Entity) {
+  function add(entityOrSystem: Any) {
+    if (Std.isOfType(entityOrSystem, Entity)) {
       this.entityManager.addEntity(entityOrSystem);
       return;
     }
 
-    if (entityOrSystem instanceof System || isSystemConstructor(entityOrSystem)) {
+    if (Std.isOfType(entityOrSystem, System) || isSystemConstructor(entityOrSystem)) {
       this.systemManager.addSystem(entityOrSystem);
       return;
     }
@@ -84,7 +75,7 @@ class World {
   /**
    * Get a system out of the ECS world
    */
-  get(system: SystemCtor<System>) {
+  function get(system: SystemCtor<System>) {
     return this.systemManager.get(system);
   }
 
@@ -92,19 +83,13 @@ class World {
    * Remove an entity from the ECS world
    * @param entity
    */
-  remove(entity: Entity, deferred?: Bool)
-  /**
-   * Remove a system from the ECS world
-   * @param system
-   */
-  remove(system: System);
-  remove(entityOrSystem: Entity | System, deferred = true) {
-    if (entityOrSystem instanceof Entity) {
+  function remove(entityOrSystem: Any, deferred = true) {
+    if (Std.isOfType(entityOrSystem, Entity)) {
       this.entityManager.removeEntity(entityOrSystem, deferred);
       return;
     }
 
-    if (entityOrSystem instanceof System) {
+    if (Std.isOfType(entityOrSystem, System)) {
       this.systemManager.removeSystem(entityOrSystem);
       return;
     }
@@ -116,15 +101,16 @@ class World {
     );
   }
 
-  get entities() {
+  public var entities(get, never): Array<Entity>;
+  function get_entities() {
     return this.entityManager.entities;
   }
 
-  clearEntities() {
+  function clearEntities() {
     this.entityManager.clear();
   }
 
-  clearSystems() {
+  function clearSystems() {
     this.systemManager.clear();
   }
 }

@@ -1,15 +1,17 @@
+package nebula.input;
+
 /**
  * Turn on move and drag events for an {@apilink Actor}
  */
 
-export interface CapturePointerConfig {
+interface CapturePointerConfig {
   /**
    * Capture PointerMove events (may be expensive!)
    */
-  captureMoveEvents: boolean;
+  var captureMoveEvents: Bool;
 
   /**
    * Capture PointerDrag events (may be expensive!)
    */
-  captureDragEvents: boolean;
+  var captureDragEvents: Bool;
 }

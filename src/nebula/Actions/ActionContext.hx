@@ -1,32 +1,30 @@
-package nebula.Actions;
+package nebula.actions;
 
-import nebula.Util.EasingFunctions;
-import nebula.Actions.ActionQueue;
-import nebula.Actions.Action.Repeat;
-import nebula.Actions.Action.RepeatForever;
-import nebula.Actions.Action.MoveBy;
-import nebula.Actions.Action.MoveTo;
-import nebula.Actions.Action.RotateTo;
-import nebula.Actions.Action.RotateBy;
-import nebula.Actions.Action.ScaleTo;
-import nebula.Actions.Action.ScaleBy;
-import nebula.Actions.Action.CallMethod;
-import nebula.Actions.Action.EaseTo;
-import nebula.Actions.Action.EaseBy;
-import nebula.Actions.Action.Blink;
-import nebula.Actions.Action.Fade;
-import nebula.Actions.Action.Delay;
-import nebula.Actions.Action.Die;
-import nebula.Actions.Action.Follow;
-import nebula.Actions.Action.Meet;
-import nebula.Math;
+import nebula.util.EasingFunctions;
+import nebula.actions.ActionQueue;
+import nebula.actions.action.Repeat;
+import nebula.actions.action.RepeatForever;
+import nebula.actions.action.MoveBy;
+import nebula.actions.action.MoveTo;
+import nebula.actions.action.RotateTo;
+import nebula.actions.action.RotateBy;
+import nebula.actions.action.ScaleTo;
+import nebula.actions.action.ScaleBy;
+import nebula.actions.action.CallMethod;
+import nebula.actions.action.EaseTo;
+import nebula.actions.action.EaseBy;
+import nebula.actions.action.Blink;
+import nebula.actions.action.Fade;
+import nebula.actions.action.Delay;
+import nebula.actions.action.Die;
+import nebula.actions.action.Follow;
+import nebula.actions.action.Meet;
 
-import nebula.EntityComponentSystem.Entity;
-import nebula.Actions;
+import nebula.entitycomponentsystem.Entity;
 import nebula.Color;
-import nebula.Actions.Action.Flash;
-import nebula.Actions.Action.CurveTo;
-import nebula.Actions.Action.CurveBy;
+import nebula.actions.action.Flash;
+import nebula.actions.action.CurveTo;
+import nebula.actions.action.CurveBy;
 
 /**
  * The fluent Action API allows you to perform "actions" on
@@ -35,30 +33,30 @@ import nebula.Actions.Action.CurveBy;
  * the {@apilink Action} interface.
  */
 class ActionContext {
-  private _entity: Entity;
-  private _queue: ActionQueue;
+  private var _entity: Entity;
+  private var _queue: ActionQueue;
 
-  constructor(entity: Entity) {
+  public function new(entity: Entity) {
     this._entity = entity;
     this._queue = new ActionQueue(entity);
   }
 
-  public getQueue(): ActionQueue {
+  public function getQueue(): ActionQueue {
     return this._queue;
   }
 
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     this._queue.update(elapsed);
   }
 
   /**
    * Clears all queued actions from the Actor
    */
-  public clearActions(): void {
+  public function clearActions(): Void {
     this._queue.clearActions();
   }
 
-  public runAction(action: Action) {
+  public function runAction(action: Action) {
     action.reset();
     this._queue.add(action);
     return this;
@@ -69,7 +67,7 @@ class ActionContext {
    * to be the actors current position
    * @param options
    */
-  public curveBy(options: CurveByOptions): ActionContext {
+  public function curveBy(options: CurveByOptions): ActionContext {
     this._queue.add(new CurveBy(this._entity, options));
     return this;
   }
@@ -79,21 +77,11 @@ class ActionContext {
    * to be the actors current position
    * @param options
    */
-  public curveTo(options: CurveToOptions): ActionContext {
+  public function curveTo(options: CurveToOptions): ActionContext {
     this._queue.add(new CurveTo(this._entity, options));
     return this;
   }
 
-  /**
-   * This method will move an actor to the specified `x` and `y` position over the
-   * specified duration using a given {@apilink EasingFunctions} and return back the actor. This
-   * method is part of the actor 'Action' fluent API allowing action chaining.
-   * @param pos       The x,y vector location to move the actor to
-   * @param duration  The time it should take the actor to move to the new location in milliseconds
-   * @param easingFcn Use {@apilink EasingFunction} or a custom function to use to calculate position, Default is {@apilink EasingFunctions.Linear}
-   * @deprecated use new moveTo({pos: Vector, duration: number, easing: EasingFunction})
-   */
-  public easeTo(pos: Vector, duration: Float, easingFcn?: EasingFunction): ActionContext;
   /**
    * This method will move an actor to the specified `x` and `y` position over the
    * specified duration using a given {@apilink EasingFunctions} and return back the actor. This
@@ -104,37 +92,14 @@ class ActionContext {
    * @param easingFcn Use {@apilink EasingFunction} or a custom function to use to calculate position, Default is {@apilink EasingFunctions.Linear}
    * @deprecated use new moveTo({pos: Vector, duration: number, easing: EasingFunction})
    */
-  public easeTo(x: Float, y: Float, duration: Float, easingFcn?: EasingFunction): ActionContext;
-  public easeTo(...args: any[]): ActionContext {
-    var x = 0;
-    var y = 0;
-    var duration = 0;
-    var easingFcn = EasingFunctions.Linear;
-    if (args[0] instanceof Vector) {
-      x = args[0].x;
-      y = args[0].y;
-      duration = args[1];
-      easingFcn = args[2] ?? easingFcn;
-    } else {
-      x = args[0];
-      y = args[1];
-      duration = args[2];
-      easingFcn = args[3] ?? easingFcn;
-    }
+  public function easeTo(vector: Vector, duration: Int, easeFn: EasingFunctions = EasingFunctions.Linear): ActionContext {
+    var x = vector.x;
+    var y = vector.y;
 
     this._queue.add(new EaseTo(this._entity, x, y, duration, easingFcn));
     return this;
   }
 
-  /**
-   * This method will move an actor by a specified vector offset relative to the current position given
-   * a duration and a {@apilink EasingFunction}. This method is part of the actor 'Action' fluent API allowing action chaining.
-   * @param offset Vector offset relative to the current position
-   * @param duration The duration in milliseconds
-   * @param easingFcn Use {@apilink EasingFunction} or a custom function to use to calculate position, Default is {@apilink EasingFunctions.Linear}
-   * @deprecated use new moveBy({offset: Vector, duration: number, easing: EasingFunction})
-   */
-  public easeBy(offset: Vector, duration: Float, easingFcn?: EasingFunction): ActionContext;
   /**
    * This method will move an actor by a specified x and y offset relative to the current position given
    * a duration and a {@apilink EasingFunction}. This method is part of the actor 'Action' fluent API allowing action chaining.
@@ -143,34 +108,14 @@ class ActionContext {
    * @param easingFcn Use {@apilink EasingFunction} or a custom function to use to calculate position, Default is {@apilink EasingFunctions.Linear}
    * @deprecated use new moveBy({offset: Vector, duration: number, easing: EasingFunction})
    */
-  public easeBy(offsetX: Float, offsetY: Float, duration: Float, easingFcn?: EasingFunction): ActionContext;
-  public easeBy(...args: any[]): ActionContext {
-    var offsetX = 0;
-    var offsetY = 0;
-    var duration = 0;
-    var easingFcn = EasingFunctions.Linear;
-    if (args[0] instanceof Vector) {
-      offsetX = args[0].x;
-      offsetY = args[0].y;
-      duration = args[1];
-      easingFcn = args[2] ?? easingFcn;
-    } else {
-      offsetX = args[0];
-      offsetY = args[1];
-      duration = args[2];
-      easingFcn = args[3] ?? easingFcn;
-    }
+  public function easeBy(offset: Vector, duration: Float, ?easingFcn: EasingFunction = EasingFunctions.Linear): ActionContext {
+    var offsetX = offset.x;
+    var offsetY = offset.y;
 
     this._queue.add(new EaseBy(this._entity, offsetX, offsetY, duration, easingFcn));
     return this;
   }
 
-  /**
-   * Moves an actor to a specified {@link Vector} in a given duration in milliseconds.
-   * You may optionally specify an {@link EasingFunction}
-   * @param options
-   */
-  public moveTo(options: MoveToOptions): ActionContext;
   /**
    * This method will move an actor to the specified x and y position at the
    * speed specified (in pixels per second) and return back the actor. This
@@ -178,42 +123,13 @@ class ActionContext {
    * @param pos    The x,y vector location to move the actor to
    * @param speed  The speed in pixels per second to move
    */
-  public moveTo(pos: Vector, speed: Float): ActionContext;
-  /**
-   * This method will move an actor to the specified x and y position at the
-   * speed specified (in pixels per second) and return back the actor. This
-   * method is part of the actor 'Action' fluent API allowing action chaining.
-   * @param x      The x location to move the actor to
-   * @param y      The y location to move the actor to
-   * @param speed  The speed in pixels per second to move
-   */
-  public moveTo(x: Float, y: Float, speed: Float): ActionContext;
-  public moveTo(xOrPosOrOptions: Float | Vector | MoveToOptions, yOrSpeed?: Float, speedOrUndefined?: Float): ActionContext {
-    var x = 0;
-    var y = 0;
-    var speed = 0;
-    if (xOrPosOrOptions instanceof Vector) {
-      x = xOrPosOrOptions.x;
-      y = xOrPosOrOptions.y;
-      speed = +(yOrSpeed ?? 0);
-      this._queue.add(new MoveTo(this._entity, x, y, speed));
-    } else if (typeof xOrPosOrOptions === 'number' && typeof yOrSpeed === 'number' && typeof speedOrUndefined === 'number') {
-      x = xOrPosOrOptions;
-      y = yOrSpeed;
-      speed = speedOrUndefined;
-      this._queue.add(new MoveTo(this._entity, x, y, speed));
-    } else if (isMoveToOptions(xOrPosOrOptions)) {
-      this._queue.add(new MoveToWithOptions(this._entity, xOrPosOrOptions));
-    }
+  public function moveTo(pos: Vector, speed: Int): ActionContext {
+    var x = pos.x;
+    var y = pos.y;
+    this._queue.add(new MoveTo(this._entity, x, y, speed));
     return this;
   }
 
-  /**
-   * Moves an actor by a specified offset {@link Vector} in a given duration in milliseconds.
-   * You may optionally specify an {@link EasingFunction}
-   * @param options
-   */
-  public moveBy(options: MoveByOptions): ActionContext;
   /**
    * This method will move an actor by the specified x offset and y offset from its current position, at a certain speed.
    * This method is part of the actor 'Action' fluent API allowing action chaining.
@@ -221,38 +137,16 @@ class ActionContext {
    * @param yOffset     The y location to move the actor to
    * @param speed  The speed in pixels per second the actor should move
    */
-  public moveBy(offset: Vector, speed: Float): ActionContext;
-  public moveBy(xOffset: Float, yOffset: Float, speed: Float): ActionContext;
-  public moveBy(
-    xOffsetOrVectorOrOptions: Float | Vector | MoveByOptions,
-    yOffsetOrSpeed?: Float,
-    speedOrUndefined?: Float
+  public function moveBy(
+    offset: Vector,
+    ?speed: Float
   ): ActionContext {
-    var xOffset = 0;
-    var yOffset = 0;
-    var speed = 0;
-    if (xOffsetOrVectorOrOptions instanceof Vector && typeof yOffsetOrSpeed === 'number') {
-      xOffset = xOffsetOrVectorOrOptions.x;
-      yOffset = xOffsetOrVectorOrOptions.y;
-      speed = yOffsetOrSpeed;
-      this._queue.add(new MoveBy(this._entity, xOffset, yOffset, speed));
-    } else if (typeof xOffsetOrVectorOrOptions === 'number' && typeof yOffsetOrSpeed === 'number' && typeof speedOrUndefined === 'number') {
-      xOffset = xOffsetOrVectorOrOptions;
-      yOffset = yOffsetOrSpeed;
-      speed = speedOrUndefined;
-      this._queue.add(new MoveBy(this._entity, xOffset, yOffset, speed));
-    } else if (isMoveByOptions(xOffsetOrVectorOrOptions)) {
-      this._queue.add(new MoveByWithOptions(this._entity, xOffsetOrVectorOrOptions));
-    }
+    var xOffset = offset.x;
+    var yOffset = offset.y;
+    this._queue.add(new MoveBy(this._entity, xOffset, yOffset, speed));
     return this;
   }
 
-  /**
-   * Rotates an actor to a specified angle over a duration in milliseconds,
-   * you make pick a rotation strategy {@link RotationType} to pick the direction
-   * @param options
-   */
-  public rotateTo(options: RotateToOptions): ActionContext;
   /**
    * This method will rotate an actor to the specified angle at the speed
    * specified (in radians per second) and return back the actor. This
@@ -261,22 +155,11 @@ class ActionContext {
    * @param speed         The angular velocity of the rotation specified in radians per second
    * @param rotationType  The {@apilink RotationType} to use for this rotation
    */
-  public rotateTo(angle: Float, speed: Foat, rotationType?: RotationType): ActionContext;
-  public rotateTo(angleRadiansOrOptions: Float | RotateToOptions, speed?: Float, rotationType?: RotationType): ActionContext {
-    if (typeof angleRadiansOrOptions === 'number' && typeof speed === 'number') {
-      this._queue.add(new RotateTo(this._entity, angleRadiansOrOptions, speed, rotationType));
-    } else if (typeof angleRadiansOrOptions === 'object') {
-      this._queue.add(new RotateToWithOptions(this._entity, angleRadiansOrOptions));
-    }
+  public function rotateTo(angleRadians: Float, ?speed: Float, ?rotationType: RotationType): ActionContext {
+    this._queue.add(new RotateTo(this._entity, angleRadians, speed, rotationType));
     return this;
   }
 
-  /**
-   * Rotates an actor by a specified offset angle over a duration in milliseconds,
-   * you make pick a rotation strategy {@link RotationType} to pick the direction
-   * @param options
-   */
-  public rotateBy(options: RotateByOptions): ActionContext;
   /**
    * This method will rotate an actor by the specified angle offset, from it's current rotation given a certain speed
    * in radians/sec and return back the actor. This method is part
@@ -285,30 +168,11 @@ class ActionContext {
    * @param speed          The speed in radians/sec the actor should rotate at
    * @param rotationType  The {@apilink RotationType} to use for this rotation, default is shortest path
    */
-  public rotateBy(angleRadiansOffset: Float, speed: Float, rotationType?: RotationType): ActionContext;
-  public rotateBy(angleRadiansOffsetOrOptions: Float | RotateByOptions, speed?: Float, rotationType?: RotationType): ActionContext {
-    if (typeof angleRadiansOffsetOrOptions === 'object') {
-      this._queue.add(new RotateByWithOptions(this._entity, angleRadiansOffsetOrOptions));
-    } else {
-      this._queue.add(new RotateBy(this._entity, angleRadiansOffsetOrOptions, speed, rotationType));
-    }
+  public function rotateBy(angleRadiansOffset: Float, ?speed: Float, ?rotationType: RotationType): ActionContext {
+    this._queue.add(new RotateBy(this._entity, angleRadiansOffset, speed, rotationType));
     return this;
   }
 
-  /**
-   * Scales an actor to a specified scale {@link Vector} over a duration in milliseconds
-   * @param options
-   */
-  public scaleTo(options: ScaleToOptions): ActionContext;
-  /**
-   * This method will scale an actor to the specified size at the speed
-   * specified (in magnitude increase per second) and return back the
-   * actor. This method is part of the actor 'Action' fluent API allowing
-   * action chaining.
-   * @param size    The scale to adjust the actor to over time
-   * @param speed   The speed of scaling specified in magnitude increase per second
-   */
-  public scaleTo(size: Vector, speed: Vector): ActionContext;
   /**
    * This method will scale an actor to the specified size at the speed
    * specified (in magnitude increase per second) and return back the
@@ -319,55 +183,19 @@ class ActionContext {
    * @param speedX  The speed of scaling specified in magnitude increase per second on X axis
    * @param speedY  The speed of scaling specified in magnitude increase per second on Y axis
    */
-  public scaleTo(sizeX: Float, sizeY: Float, speedX: Float, speedY: Float): ActionContext;
-  public scaleTo(
-    sizeXOrVectorOrOptions: Float | Vector | ScaleToOptions,
-    sizeYOrSpeed?: Float | Vector,
-    speedXOrUndefined?: Float | undefined,
-    speedYOrUndefined?: Float | undefined
+  public function scaleTo(
+    vector: Vector,
+    ?speed: Vector,
   ): ActionContext {
-    var sizeX = 1;
-    var sizeY = 1;
-    var speedX = 0;
-    var speedY = 0;
-
-    if (isScaleToOptions(sizeXOrVectorOrOptions)) {
-      this._queue.add(new ScaleToWithOptions(this._entity, sizeXOrVectorOrOptions));
-      return this;
-    }
-
-    if (sizeXOrVectorOrOptions instanceof Vector && sizeYOrSpeed instanceof Vector) {
-      sizeX = sizeXOrVectorOrOptions.x;
-      sizeY = sizeXOrVectorOrOptions.y;
-
-      speedX = sizeYOrSpeed.x;
-      speedY = sizeYOrSpeed.y;
-    }
-    if (typeof sizeXOrVectorOrOptions === 'number' && typeof sizeYOrSpeed === 'number') {
-      sizeX = sizeXOrVectorOrOptions;
-      sizeY = sizeYOrSpeed;
-
-      speedX = speedXOrUndefined as any;
-      speedY = speedYOrUndefined as any;
-    }
+    var sizeX = vector.x;
+    var sizeY = vector.y;
+    var speedX = speed.x;
+    var speedY = speed.y;
 
     this._queue.add(new ScaleTo(this._entity, sizeX, sizeY, speedX, speedY));
     return this;
   }
 
-  /**
-   * Scales an actor by a specified scale offset {@link Vector} over a duration in milliseconds
-   * @param options
-   */
-  public scaleBy(options: ScaleByOptions): ActionContext;
-  /**
-   * This method will scale an actor by an amount relative to the current scale at a certain speed in scale units/sec
-   * and return back the actor. This method is part of the
-   * actor 'Action' fluent API allowing action chaining.
-   * @param offset   The scaling factor to apply to the actor
-   * @param speed    The speed to scale at in scale units/sec
-   */
-  public scaleBy(offset: Vector, speed: Float): ActionContext;
   /**
    * This method will scale an actor by an amount relative to the current scale at a certain speed in scale units/sec
    * and return back the actor. This method is part of the
@@ -376,31 +204,14 @@ class ActionContext {
    * @param sizeOffsetY   The scaling factor to apply on Y axis
    * @param speed    The speed to scale at in scale units/sec
    */
-  public scaleBy(sizeOffsetX: Float, sizeOffsetY: Float, speed: Float): ActionContext;
-  public scaleBy(
-    sizeOffsetXOrVectorOrOptions: Float | Vector | ScaleByOptions,
-    sizeOffsetYOrSpeed?: Float,
-    speed?: Float | undefined
+  public function scaleBy(
+    vector: Vector,
+    ?speed: Float,
   ): ActionContext {
-    if (isScaleByOptions(sizeOffsetXOrVectorOrOptions)) {
-      this._queue.add(new ScaleByWithOptions(this._entity, sizeOffsetXOrVectorOrOptions));
-      return this;
-    }
-    var sizeOffsetX = 1;
-    var sizeOffsetY = 1;
+    var sizeOffsetX = vector.x;
+    var sizeOffsetY = vector.y;
 
-    if (sizeOffsetXOrVectorOrOptions instanceof Vector) {
-      sizeOffsetX = sizeOffsetXOrVectorOrOptions.x;
-      sizeOffsetY = sizeOffsetXOrVectorOrOptions.y;
-
-      speed = sizeOffsetYOrSpeed;
-    }
-    if (typeof sizeOffsetXOrVectorOrOptions === 'number' && typeof sizeOffsetYOrSpeed === 'number') {
-      sizeOffsetX = sizeOffsetXOrVectorOrOptions;
-      sizeOffsetY = sizeOffsetYOrSpeed;
-    }
-
-    this._queue.add(new ScaleBy(this._entity, sizeOffsetX, sizeOffsetY, speed as any));
+    this._queue.add(new ScaleBy(this._entity, sizeOffsetX, sizeOffsetY, speed));
     return this;
   }
 
@@ -413,7 +224,7 @@ class ActionContext {
    * @param timeNotVisible  The amount of time to stay not visible per blink in milliseconds
    * @param numBlinks       The number of times to blink
    */
-  public blink(timeVisible: Int, timeNotVisible: Int, numBlinks: Int = 1): ActionContext {
+  public function blink(timeVisible: Int, timeNotVisible: Int, numBlinks: Int = 1): ActionContext {
     this._queue.add(new Blink(this._entity, timeVisible, timeNotVisible, numBlinks));
     return this;
   }
@@ -425,7 +236,7 @@ class ActionContext {
    * @param opacity  The ending opacity
    * @param duration     The time it should take to fade the actor (in milliseconds)
    */
-  public fade(opacity: Float, duration: Float): ActionContext {
+  public function fade(opacity: Float, duration: Int): ActionContext {
     this._queue.add(new Fade(this._entity, opacity, duration));
     return this;
   }
@@ -435,7 +246,7 @@ class ActionContext {
    * @param color
    * @param duration The duration in milliseconds
    */
-  public flash(color: Color, duration: number = 1000) {
+  public function flash(color: Color, duration: Int = 1000) {
     this._queue.add(new Flash(this._entity, color, duration));
     return this;
   }
@@ -446,17 +257,17 @@ class ActionContext {
    * 'Action' fluent API allowing action chaining.
    * @param duration  The amount of time to delay the next action in the queue from executing in milliseconds
    */
-  public delay(duration: Float): ActionContext {
+  public function delay(duration: Int): ActionContext {
     this._queue.add(new Delay(duration));
     return this;
   }
 
   /**
    * This method will add an action to the queue that will remove the actor from the
-   * scene once it has completed its previous  Any actions on the
+   * scene once it has completed its previous Any actions on the
    * action queue after this action will not be executed.
    */
-  public die(): ActionContext {
+  public function die(): ActionContext {
     this._queue.add(new Die(this._entity));
     return this;
   }
@@ -466,7 +277,7 @@ class ActionContext {
    * action queue. This is useful if you want to execute code in after a specific
    * action, i.e An actor arrives at a destination after traversing a path
    */
-  public callMethod(method: () => any): ActionContext {
+  public function callMethod(method: () -> Any): ActionContext {
     this._queue.add(new CallMethod(method));
     return this;
   }
@@ -488,7 +299,7 @@ class ActionContext {
    * @param times  The number of times to repeat all the previous actions in the action queue. If nothing is specified the actions
    * will repeat forever
    */
-  public repeat(repeatBuilder: (repeatContext: ActionContext) => any, times?: Int): ActionContext {
+  public function repeat(repeatBuilder: (repeatContext: ActionContext) -> Any, ?times: Int): ActionContext {
     if (!times) {
       this.repeatForever(repeatBuilder);
       return this;
@@ -513,7 +324,7 @@ class ActionContext {
    * ```
    * @param repeatBuilder The builder to specify the repeatable list of actions
    */
-  public repeatForever(repeatBuilder: (repeatContext: ActionContext) => any): ActionContext {
+  public function repeatForever(repeatBuilder: (repeatContext: ActionContext) -> Any): ActionContext {
     this._queue.add(new RepeatForever(this._entity, repeatBuilder));
     return this;
   }
@@ -523,8 +334,8 @@ class ActionContext {
    * @param entity           The entity to follow
    * @param followDistance  The distance to maintain when following, if not specified the actor will follow at the current distance.
    */
-  public follow(entity: Entity, followDistance?: Float): ActionContext {
-    if (followDistance === undefined) {
+  public function follow(entity: Entity, ?followDistance: Int): ActionContext {
+    if (followDistance == null) {
       this._queue.add(new Follow(this._entity, entity));
     } else {
       this._queue.add(new Follow(this._entity, entity, followDistance));
@@ -539,10 +350,10 @@ class ActionContext {
    * @param speed  The speed in pixels per second to move, if not specified it will match the speed of the other actor
    * @param tolerance  The tolerance in pixels to meet, if not specified it will be 1 pixel
    */
-  public meet(entity: Entity, speed?: Float, tolerance?: Int): ActionContext {
-    if (speed === undefined && tolerance === undefined) {
+  public function meet(entity: Entity, ?speed: Int, ?tolerance: Int): ActionContext {
+    if (speed == null && tolerance == null) {
       this._queue.add(new Meet(this._entity, entity));
-    } else if (tolerance === undefined) {
+    } else if (tolerance == null) {
       this._queue.add(new Meet(this._entity, entity, speed));
     } else {
       this._queue.add(new Meet(this._entity, entity, speed, tolerance));
@@ -554,10 +365,10 @@ class ActionContext {
    * Returns a promise that resolves when the current action queue up to now
    * is finished.
    */
-  public toPromise(): Promise<void> {
-    const temp = new Promise<void>((resolve) => {
+  public function toPromise(): Promise<Void> {
+    final temp = new Promise((resolve) -> {
       this._queue.add(
-        new CallMethod(() => {
+        new CallMethod(() -> {
           resolve();
         })
       );

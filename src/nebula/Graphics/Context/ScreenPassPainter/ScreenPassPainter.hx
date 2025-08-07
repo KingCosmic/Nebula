@@ -1,12 +1,12 @@
-package nebula.Graphics.Context.ScreenPassPainter;
+package nebula.graphics.context.screenpasspainter;
 
-import nebula.Graphics.Shader;
-import nebula.Graphics.VertexBuffer;
-import nebula.Graphics.VertexLayout;
+import nebula.graphics.context.Shader;
+import nebula.graphics.context.VertexBuffer;
+import nebula.graphics.context.VertexLayout;
 
-import nebula.Graphics.PostProcessor.PostProcessor;
+import nebula.graphics.postprocessor.PostProcessor;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
 
 // import screenVertex from './screen-vertex.glsl?raw';
 // import screenFragment from './screen-fragment.glsl?raw';
@@ -15,10 +15,10 @@ import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
  * This is responsible for painting the entire screen during the render passes
  */
 class ScreenPassPainter {
-  private _gl: WebGLRenderingContext;
-  private _shader: Shader;
-  private _buffer: VertexBuffer;
-  private _layout: VertexLayout;
+  private var _gl: WebGLRenderingContext;
+  private var _shader: Shader;
+  private var _buffer: VertexBuffer;
+  private var _layout: VertexLayout;
   public function new(context: ExcaliburGraphicsContextWebGL) {
     final gl = context.__gl;
     this._gl = gl;
@@ -30,7 +30,7 @@ class ScreenPassPainter {
     this._shader.compile();
     // Setup memory layout
     this._buffer = new VertexBuffer({
-      gl,
+      gl: gl,
       type: 'static',
       // clip space quad + uv since we don't need a camera
       data: new Float32Array([
@@ -40,7 +40,7 @@ class ScreenPassPainter {
       ])
     });
     this._layout = new VertexLayout({
-      gl,
+      gl: gl,
       shader: this._shader,
       vertexBuffer: this._buffer,
       attributes: [
@@ -51,7 +51,7 @@ class ScreenPassPainter {
     this._buffer.upload();
   }
 
-  renderWithPostProcessor(postprocessor: PostProcessor): Void {
+  function renderWithPostProcessor(postprocessor: PostProcessor): Void {
     final gl = this._gl;
     final shader = postprocessor.getShader();
     shader.use();
@@ -64,7 +64,7 @@ class ScreenPassPainter {
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
-  renderToScreen(): void {
+  function renderToScreen(): Void {
     final gl = this._gl;
     this._shader.use();
     this._layout.use();

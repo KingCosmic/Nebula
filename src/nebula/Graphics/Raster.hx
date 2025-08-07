@@ -1,18 +1,18 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Graphic;
+import nebula.graphics.Graphic;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
 import nebula.Color;
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
-import nebula.Util.Watch;
-import nebula.Util.Util;
+import nebula.util.Watch;
+import nebula.util.Util;
 
-import nebula.Graphics.Filtering;
+import nebula.graphics.Filtering;
 
 interface RasterOptions extends GraphicOptions {
   /**
@@ -22,41 +22,41 @@ interface RasterOptions extends GraphicOptions {
    *
    * Adjusting this value can be useful if you are working with small rasters.
    */
-  quality?: Int;
+  var quality: Null<Int>;
   /**
    * Optionally specify "smoothing" if you want antialiasing to apply to the raster's bitmap context, by default `false`
    */
-  smoothing?: Bool;
+  var smoothing: Null<Bool>;
 
   /**
    * Optionally specify the color of the raster's bitmap context, by default {@apilink Color.Black}
    */
-  color?: Color;
+  var color: Null<Color>;
 
   /**
    * Optionally specify the stroke color of the raster's bitmap context, by default undefined
    */
-  strokeColor?: Color;
+  var strokeColor: Null<Color>;
 
   /**
    * Optionally specify the line width of the raster's bitmap, by default 1 pixel
    */
-  lineWidth?: Int;
+  var lineWidth: Null<Int>;
 
   /**
    * Optionally specify the line dash of the raster's bitmap, by default `[]` which means none
    */
-  lineDash?: Int[];
+  var lineDash: Null<Array<Int>>;
 
   /**
    * Optionally specify the line end style, default is "butt".
    */
-  lineCap?: 'butt' | 'round' | 'square';
+  var lineCap: Null<String>;
 
   /**
    * Optionally specify the padding to apply to the bitmap
    */
-  padding?: Int;
+  var padding: Null<Int>;
 
   /**
    * Optionally specify what image filtering mode should be used, {@apilink ImageFiltering.Pixel} for pixel art,
@@ -64,7 +64,7 @@ interface RasterOptions extends GraphicOptions {
    *
    * By default unset, rasters defer to the engine antialiasing setting
    */
-  filtering?: ImageFiltering;
+  var filtering: Null<ImageFiltering>;
 }
 
 /**
@@ -74,16 +74,16 @@ interface RasterOptions extends GraphicOptions {
  * Implementors must implement the {@apilink Raster.execute} method to rasterize their drawing.
  */
 abstract class Raster extends Graphic {
-  public filtering?: ImageFiltering;
-  public lineCap: 'butt' | 'round' | 'square' = 'butt';
-  public quality: Int = 1;
+  public var filtering: Null<ImageFiltering>;
+  public var lineCap: String;
+  public var quality: Int = 1;
 
-  public _bitmap: HTMLCanvasElement;
-  protected _ctx: CanvasRenderingContext2D;
-  private _dirty: Bool = true;
+  public var _bitmap: HTMLCanvasElement;
+  public var _ctx: CanvasRenderingContext2D;
+  private var _dirty: Bool = true;
 
-  public function new(options?: RasterOptions) {
-    super(omit({ ...options }, ['width', 'height'])); // rasters do some special sauce with width/height
+  public function new(?options: RasterOptions) {
+    super(omit(options, ['width', 'height'])); // rasters do some special sauce with width/height
     if (options) {
       this.quality = options.quality ?? this.quality;
       this.color = options.color ?? Color.Black;
@@ -126,7 +126,8 @@ abstract class Raster extends Graphic {
   /**
    * Gets whether the graphic is dirty, this means there are changes that haven't been re-rasterized
    */
-  public get dirty() {
+  public var dirty(get, never): Bool;
+  function get_dirty() {
     return this._dirty;
   }
 
@@ -134,130 +135,136 @@ abstract class Raster extends Graphic {
    * Flags the graphic as dirty, meaning it must be re-rasterized before draw.
    * This should be called any time the graphics state changes such that it affects the outputted drawing
    */
-  public flagDirty() {
+  public function flagDirty() {
     this._dirty = true;
   }
 
-  private _originalWidth?: Int;
+  private var _originalWidth: Null<Int>;
   /**
    * Gets or sets the current width of the Raster graphic. Setting the width will cause the raster
    * to be flagged dirty causing a re-raster on the next draw.
    *
    * Any `padding`s or `quality` set will be factored into the width
    */
-  public get width() {
+  public var width(get, set): Int;
+  function get_width() {
     return Math.abs(this._getTotalWidth() * this.scale.x);
   }
-  public set width(value: Int) {
+  function set_width(value: Int) {
     value /= Math.abs(this.scale.x);
     this._bitmap.width = value;
     this._originalWidth = value;
     this.flagDirty();
   }
 
-  private _originalHeight?: Int;
+  private var _originalHeight: Null<Int>;
   /**
    * Gets or sets the current height of the Raster graphic. Setting the height will cause the raster
    * to be flagged dirty causing a re-raster on the next draw.
    *
    * Any `padding` or `quality` set will be factored into the height
    */
-  public get height() {
+  public var height(get, set): Int;
+  function get_height() {
     return Math.abs(this._getTotalHeight() * this.scale.y);
   }
-
-  public set height(value: Int) {
+  function set_height(value: Int) {
     value /= Math.abs(this.scale.y);
     this._bitmap.height = value;
     this._originalHeight = value;
     this.flagDirty();
   }
 
-  private _getTotalWidth() {
+  private function _getTotalWidth() {
     return ((this._originalWidth ?? this._bitmap.width) + this.padding * 2) * 1;
   }
 
-  private _getTotalHeight() {
+  private function _getTotalHeight() {
     return ((this._originalHeight ?? this._bitmap.height) + this.padding * 2) * 1;
   }
 
   /**
    * Returns the local bounds of the Raster including the padding
    */
-  public get localBounds() {
+  public var localBounds(get, never): BoundingBox;
+  function get_localBounds() {
     return BoundingBox.fromDimension(this._getTotalWidth() * this.scale.x, this._getTotalHeight() * this.scale.y, Vector.Zero);
   }
 
-  private _smoothing: Bool = false;
+  private var _smoothing: Bool = false;
   /**
    * Gets or sets the smoothing (anti-aliasing of the graphic). Setting the height will cause the raster
    * to be flagged dirty causing a re-raster on the next draw.
    */
-  public get smoothing() {
+  public var smoothing(get, set): Bool;
+  function get_smoothing() {
     return this._smoothing;
   }
-  public set smoothing(value: Bool) {
+  function set_smoothing(value: Bool) {
     this._smoothing = value;
     this.flagDirty();
   }
 
-  private _color: Color = watch(Color.Black, () => this.flagDirty());
+  private var _color: Color = watch(Color.Black, () -> this.flagDirty());
   /**
    * Gets or sets the fillStyle of the Raster graphic. Setting the fillStyle will cause the raster to be
    * flagged dirty causing a re-raster on the next draw.
    */
-  public get color() {
+  public var color(get, set): Color;
+  function get_color() {
     return this._color;
   }
-  public set color(value) {
+  function set_color(value) {
     this.flagDirty();
-    this._color = watch(value, () => this.flagDirty());
+    this._color = watch(value, () -> this.flagDirty());
   }
 
-  private _strokeColor: Color | undefined;
+  private var _strokeColor: Null<Color>;
   /**
    * Gets or sets the strokeStyle of the Raster graphic. Setting the strokeStyle will cause the raster to be
    * flagged dirty causing a re-raster on the next draw.
    */
-  public get strokeColor() {
+  public var strokeColor(get, set): Null<Color>;
+  function get_strokeColor() {
     return this._strokeColor;
   }
-  public set strokeColor(value: Color | undefined) {
+  function set_strokeColor(value: Null<Color>) {
     this.flagDirty();
     if (value) {
-      this._strokeColor = watch(value, () => this.flagDirty());
+      this._strokeColor = watch(value, () -> this.flagDirty());
     }
   }
 
-  private _lineWidth: Int = 1;
+  private var _lineWidth: Int = 1;
   /**
    * Gets or sets the line width of the Raster graphic. Setting the lineWidth will cause the raster to be
    * flagged dirty causing a re-raster on the next draw.
    */
-  public get lineWidth() {
+  public var lineWidth(get, set): Int;
+  function get_lineWidth() {
     return this._lineWidth;
   }
-  public set lineWidth(value) {
+  function set_lineWidth(value: Int) {
     this._lineWidth = value;
     this.flagDirty();
   }
 
-  private _lineDash: Int[] = [];
-  public get lineDash() {
+  private var _lineDash: Array<Int> = [];
+  public var lineDash(get, set): Array<Int>;
+  function get_lineDash() {
     return this._lineDash;
   }
-
-  public set lineDash(value) {
+  function set_lineDash(value: Array<Int>) {
     this._lineDash = value;
     this.flagDirty();
   }
 
-  private _padding: Int = 0;
-  public get padding() {
+  private var _padding: Int = 0;
+  public var padding(get, set): Int;
+  function get_padding() {
     return this._padding;
   }
-
-  public set padding(value: Int) {
+  function set_padding(value: Int) {
     this._padding = value;
     this.flagDirty();
   }
@@ -275,11 +282,11 @@ abstract class Raster extends Graphic {
     this._ctx.restore();
   }
 
-  private _applyRasterProperties(ctx: CanvasRenderingContext2D) {
+  private function _applyRasterProperties(ctx: CanvasRenderingContext2D) {
     this._bitmap.width = this._getTotalWidth() * this.quality;
     this._bitmap.height = this._getTotalHeight() * this.quality;
     // Do a bad thing to pass the filtering as an attribute
-    this._bitmap.setAttribute('filtering', this.filtering as any);
+    this._bitmap.setAttribute('filtering', this.filtering);
     this._bitmap.setAttribute('forceUpload', 'true');
     ctx.scale(this.quality, this.quality);
     ctx.translate(this.padding, this.padding);
@@ -291,7 +298,7 @@ abstract class Raster extends Graphic {
     ctx.fillStyle = this.color?.toString();
   }
 
-  private _drawImage(ex: ExcaliburGraphicsContext, x: Int, y: Int) {
+  private function _drawImage(ex: ExcaliburGraphicsContext, x: Int, y: Int) {
     if (this._dirty) {
       this.rasterize();
     }
@@ -304,5 +311,5 @@ abstract class Raster extends Graphic {
    * should be implemented. Once `rasterize()` the graphic can be drawn to the {@apilink ExcaliburGraphicsContext} via `draw(...)`
    * @param ctx Canvas to draw the graphic to
    */
-  abstract execute(ctx: CanvasRenderingContext2D): Void;
+  abstract function execute(ctx: CanvasRenderingContext2D): Void;
 }

@@ -1,39 +1,39 @@
-package nebula.Util;
+package nebula.util;
 
 /**
  * Defines a generic message that can contain any data
  * @template T is the typescript Type of the data
  */
 interface Message<T> {
-  type: String;
-  data: T;
+  var type: String;
+  var data: T;
 }
 
 /**
  * Defines an interface for an observer to receive a message via a notify() method
  */
 interface Observer<T> {
-  notify(message: T): Void;
+  function notify(message: T): Void;
 }
 
 /**
  * Defines an interface for something that might be an observer if a notify() is present
  */
-type MaybeObserver<T> = Partial<Observer<T>>;
+typedef MaybeObserver<T> = Partial<Observer<T>>;
 
 /**
  * Simple Observable implementation
  * @template T is the typescript Type that defines the data being observed
  */
 class Observable<T> {
-  public observers: Observer<T>[] = [];
-  public subscriptions: ((val: T) => dynamic)[] = [];
+  public var observers: Array<Observer<T>> = [];
+  public var subscriptions: Array<((val: T) -> Any)> = [];
 
   /**
    * Register an observer to listen to this observable
    * @param observer
    */
-  register(observer: Observer<T>) {
+  function register(observer: Observer<T>) {
     this.observers.push(observer);
   }
 
@@ -41,7 +41,7 @@ class Observable<T> {
    * Register a callback to listen to this observable
    * @param func
    */
-  subscribe(func: (val: T) => dynamic) {
+  function subscribe(func: (val: T) -> Any) {
     this.subscriptions.push(func);
   }
 
@@ -49,9 +49,9 @@ class Observable<T> {
    * Remove an observer from the observable
    * @param observer
    */
-  unregister(observer: Observer<T>) {
+  function unregister(observer: Observer<T>) {
     final i = this.observers.indexOf(observer);
-    if (i !== -1) {
+    if (i != -1) {
       this.observers.splice(i, 1);
     }
   }
@@ -60,9 +60,9 @@ class Observable<T> {
    * Remove a callback that is listening to this observable
    * @param func
    */
-  unsubscribe(func: (val: T) => dynamic) {
+  function unsubscribe(func: (val: T) -> Any) {
     final i = this.subscriptions.indexOf(func);
-    if (i !== -1) {
+    if (i != -1) {
       this.subscriptions.splice(i, 1);
     }
   }
@@ -71,22 +71,20 @@ class Observable<T> {
    * Broadcasts a message to all observers and callbacks
    * @param message
    */
-  notifyAll(message: T) {
-    final observersLength = this.observers.length;
-    for (var i = 0; i < observersLength; i++) {
-      this.observers[i].notify(message);
+  function notifyAll(message: T) {
+    for (observer in this.observers) {
+      observer.notify(message);
     }
-    final subscriptionsLength = this.subscriptions.length;
-    for (var i = 0; i < subscriptionsLength; i++) {
-      this.subscriptions[i](message);
+    for (subscription in this.subscriptions) {
+      subscription(message);
     }
   }
 
   /**
    * Removes all observers and callbacks
    */
-  clear() {
-    this.observers.length = 0;
-    this.subscriptions.length = 0;
+  function clear() {
+    this.observers = [];
+    this.subscriptions = [];
   }
 }

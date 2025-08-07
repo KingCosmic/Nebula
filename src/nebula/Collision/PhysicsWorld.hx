@@ -1,62 +1,62 @@
-package nebula.Collision;
+package nebula.collision;
 
-import nebula.Math.Ray;
-import nebula.Util.Required;
-import nebula.Util.Observable;
+import nebula.math.Ray;
+import nebula.util.Observable;
 
-import type { BoundingBox, Collider, CollisionProcessor, RayCastHit, RayCastOptions } from './Index';
-import { DynamicTreeCollisionProcessor, SparseHashGridCollisionProcessor } from './Index';
+import nebula.collision.BodyComponent;
+import nebula.collision.PhysicsConfig;
 
-import nebula.Collision.BodyComponent;
-import nebula.Collision.PhysicsConfig;
+import nebula.util.Watch;
+import nebula.math.Vector;
 
-import nebula.Util.Watch;
-import nebula.Math.Vector;
-
-import nebula.Collision.Detection.SpatialPartitionStrategy;
+import nebula.collision.detection.SpatialPartitionStrategy;
 
 class PhysicsWorld {
-  $configUpdate = new Observable<DeepRequired<PhysicsConfig>>();
+  var configUpdate = new Observable<DeepRequired<PhysicsConfig>>();
 
-  private _configDirty = false;
-  private _config: DeepRequired<PhysicsConfig>;
-  get config(): DeepRequired<PhysicsConfig> {
-    return watchDeep(this._config, (change) => {
+  private var _configDirty = false;
+  private var _config: DeepRequired<PhysicsConfig>;
+
+  public var config(get, set): Any;
+  function get_config(): DeepRequired<PhysicsConfig> {
+    return watchDeep(this._config, (change) -> {
       this.$configUpdate.notifyAll(change);
     });
   }
-  set config(newConfig: DeepRequired<PhysicsConfig>) {
+  function set_config(newConfig: DeepRequired<PhysicsConfig>) {
     this._config = newConfig;
     this.$configUpdate.notifyAll(newConfig);
   }
 
-  private _collisionProcessor: CollisionProcessor;
+  private var _collisionProcessor: CollisionProcessor;
   /**
    * Spatial data structure for locating potential collision pairs and ray casts
    */
-  public get collisionProcessor(): CollisionProcessor {
+  public var collisionProcessor(get, never): CollisionProcessor;
+  function get_collisionProcessor(): CollisionProcessor {
     if (this._configDirty) {
       this._configDirty = false;
       // preserve tracked colliders if config updates
       final colliders = this._collisionProcessor.getColliders();
-      if (this._config.spatialPartition === SpatialPartitionStrategy.SparseHashGrid) {
+      if (this._config.spatialPartition == SpatialPartitionStrategy.SparseHashGrid) {
         this._collisionProcessor = new SparseHashGridCollisionProcessor(this._config.sparseHashGrid);
       } else {
         this._collisionProcessor = new DynamicTreeCollisionProcessor(this._config);
       }
-      for (final collider of colliders) {
+      for (collider in colliders) {
         this._collisionProcessor.track(collider);
       }
     }
     return this._collisionProcessor;
   }
-  public function new(config: DeepRequired<PhysicsConfig>) {
+
+  public function new(config: PhysicsConfig) {
     this.config = config;
-    this.$configUpdate.subscribe((config) => {
+    this.configUpdate.subscribe((config) -> {
       this._configDirty = true;
       BodyComponent.updateDefaultPhysicsConfig(config.bodies);
     });
-    if (this._config.spatialPartition === SpatialPartitionStrategy.SparseHashGrid) {
+    if (this._config.spatialPartition == SpatialPartitionStrategy.SparseHashGrid) {
       this._collisionProcessor = new SparseHashGridCollisionProcessor(this._config.sparseHashGrid);
     } else {
       this._collisionProcessor = new DynamicTreeCollisionProcessor(this._config);
@@ -68,7 +68,7 @@ class PhysicsWorld {
    * @param ray
    * @param options
    */
-  public rayCast(ray: Ray, options?: RayCastOptions): RayCastHit[] {
+  public function rayCast(ray: Ray, ?options: RayCastOptions): Array<RayCastHit> {
     return this.collisionProcessor.rayCast(ray, options);
   }
 
@@ -76,10 +76,7 @@ class PhysicsWorld {
    * Query for colliders in the scene's physics world
    * @param point
    */
-  public query(point: Vector): Collider[];
-  public query(bounds: BoundingBox): Collider[];
-  public query(pointOrBounds: Vector | BoundingBox): Collider[] {
-    // FIXME workaround TS: https://github.com/microsoft/TypeScript/issues/14107
-    return this._collisionProcessor.query(pointOrBounds as any);
+  public function query(pointOrBounds: Any): Array<Collider> {
+    return this._collisionProcessor.query(pointOrBounds);
   }
 }

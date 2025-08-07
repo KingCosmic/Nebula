@@ -1,42 +1,41 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.Math.Vector;
-import nebula.Math;
+import nebula.math.Vector;
 
-import nebula.EntityComponentSystem.Entity;
-import nebula.EntityComponentSystem.Components.MotionComponent;
-import nebula.EntityComponentSystem.Components.TransformComponent;
+import nebula.entitycomponentsystem.Entity;
+import nebula.entitycomponentsystem.components.MotionComponent;
+import nebula.entitycomponentsystem.components.TransformComponent;
 
-import nebula.Actions.Action;
+import nebula.actions.Action;
 
 interface ScaleByOptions {
   /**
    * Absolute scale to change to
    */
-  scaleOffset: Vector;
+  var scaleOffset: Vector;
   /**
    * Duration to take in milliseconds
    */
-  duration: Float;
+  var duration: Int;
 }
 
-function isScaleByOptions(x: any): x is ScaleByOptions {
-  return typeof x.scaleOffset === 'object' && typeof x.duration === 'number';
+function isScaleByOptions(x: Any) {
+  return (Std.isOfType(x.scaleOffset, Vector) && Std.isOfType(x.duration, Int));
 }
 
 class ScaleByWithOptions implements Action {
-  id = nextActionId();
-  private _durationMs: Float;
-  private _tx: TransformComponent;
-  private _started: Bool = false;
-  private _currentMs: Float;
-  private _stopped: Bool = false;
-  private _motion: MotionComponent;
-  private _endScale: Vector = vec(1, 1);
-  private _scaleOffset: Vector = vec(0, 0);
-  private _startScale: Vector = vec(1, 1);
+  var id = nextActionId();
+  private var _durationMs: Float;
+  private var _tx: TransformComponent;
+  private var _started: Bool = false;
+  private var _currentMs: Float;
+  private var _stopped: Bool = false;
+  private var _motion: MotionComponent;
+  private var _endScale: Vector = vec(1, 1);
+  private var _scaleOffset: Vector = vec(0, 0);
+  private var _startScale: Vector = vec(1, 1);
   public function new(
-    public entity: Entity,
+    entity: Entity,
     options: ScaleByOptions
   ) {
     this._scaleOffset = options.scaleOffset;
@@ -48,7 +47,7 @@ class ScaleByWithOptions implements Action {
     this._durationMs = options.duration;
     this._currentMs = this._durationMs;
   }
-  update(elapsed: Float) {
+  function update(elapsed: Int) {
     if (!this._started) {
       this._startScale = this._tx.scale;
       this._endScale = this._startScale.add(this._scaleOffset);
@@ -59,7 +58,7 @@ class ScaleByWithOptions implements Action {
     var newScale = lerpVector(this._startScale, this._endScale, t);
     var currentScale = this._tx.scale;
     var seconds = elapsed / 1000;
-    var sx = newScale.sub(currentScale).scale(seconds === 0 ? 0 : 1 / seconds);
+    var sx = newScale.sub(currentScale).scale(seconds == 0 ? 0 : 1 / seconds);
     this._motion.scaleFactor = sx;
 
     if (this.isComplete()) {
@@ -67,17 +66,17 @@ class ScaleByWithOptions implements Action {
       this._motion.angularVelocity = 0;
     }
   }
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     return this._stopped || this._currentMs < 0;
   }
 
-  public stop() {
+  public function stop() {
     this._motion.scaleFactor = Vector.Zero;
     this._stopped = true;
     this._currentMs = 0;
   }
 
-  public reset() {
+  public function reset() {
     this._currentMs = this._durationMs;
     this._started = false;
     this._stopped = false;
@@ -85,22 +84,22 @@ class ScaleByWithOptions implements Action {
 }
 
 class ScaleBy implements Action {
-  id = nextActionId();
-  private _tx: TransformComponent;
-  private _motion: MotionComponent;
-  public x!: Float;
-  public y!: Float;
-  private _startScale!: Vector;
-  private _endScale!: Vector;
-  private _offset: Vector;
-  private _distanceX!: Float;
-  private _distanceY!: Float;
-  private _directionX!: Float;
-  private _directionY!: Float;
-  private _started = false;
-  private _stopped = false;
-  private _speedX: Float;
-  private _speedY: Float;
+  var id = nextActionId();
+  private var _tx: TransformComponent;
+  private var _motion: MotionComponent;
+  public var x: Float;
+  public var y: Float;
+  private var _startScale: Vector;
+  private var _endScale: Vector;
+  private var _offset: Vector;
+  private var _distanceX: Float;
+  private var _distanceY: Float;
+  private var _directionX: Float;
+  private var _directionY: Float;
+  private var _started = false;
+  private var _stopped = false;
+  private var _speedX: Float;
+  private var _speedY: Float;
   public function new(entity: Entity, scaleOffsetX: Float, scaleOffsetY: Float, speed: Float) {
     this._tx = entity.get(TransformComponent);
     this._motion = entity.get(MotionComponent);
@@ -108,7 +107,7 @@ class ScaleBy implements Action {
     this._speedX = this._speedY = speed;
   }
 
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     if (!this._started) {
       this._started = true;
       this._startScale = this._tx.scale.clone();
@@ -129,7 +128,7 @@ class ScaleBy implements Action {
     }
   }
 
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     return (
       this._stopped ||
       (Math.abs(this._tx.scale.x - this._startScale.x) >= this._distanceX - 0.01 &&
@@ -137,13 +136,13 @@ class ScaleBy implements Action {
     );
   }
 
-  public stop() {
+  public function stop() {
     this._motion.scaleFactor.x = 0;
     this._motion.scaleFactor.y = 0;
     this._stopped = true;
   }
 
-  public reset() {
+  public function reset() {
     this._started = false;
     this._stopped = false;
   }

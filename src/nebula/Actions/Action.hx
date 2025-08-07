@@ -1,16 +1,16 @@
-package nebula.Actions;
+package nebula.actions;
 
-import nebula.EntityComponentSystem.Entity;
+import nebula.entitycomponentsystem.Entity;
 
 /**
  * Used for implementing actions for the {@apilink ActionContext | `Action API`}.
  */
 interface Action {
-  id: Int;
-  update(elapsed: Float): void;
-  isComplete(entity: Entity): Bool;
-  reset(): void;
-  stop(): void;
+  var id: Int;
+  function update(elapsed: Float): Void;
+  function isComplete(entity: Entity): Bool;
+  function reset(): Void;
+  function stop(): Void;
 }
 
 var _ACTION_ID = 0;

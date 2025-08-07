@@ -1,38 +1,38 @@
-package nebula.Director;
+package nebula.director;
 
-import nebula.Util.Audio;
-import nebula.Util.Future;
-import nebula.Util.Util;
+import nebula.util.Audio;
+import nebula.util.Future;
+import nebula.util.Util;
 
-import nebula.Resources.Sound.Sound;
+import nebula.resources.sound.Sound;
 
 import nebula.Engine;
 
 import nebula.Color;
 
-import Nebul.EventEmitter;
+import nebula.EventEmitter;
 
-import nebula.Interfaces.Loadable;
+import nebula.interfaces.Loadable;
 
-import nebula.Graphics.Canvas;
-import nebula.Graphics.Filtering;
+import nebula.graphics.Canvas;
+import nebula.graphics.Filtering;
 
-import nebula.Math.Util;
+import nebula.math.Util;
 
 interface DefaultLoaderOptions {
   /**
    * List of loadables
    */
-  loadables?: Loadable<any>[];
+  var loadables: Null<Array<Loadable<Any>>>;
 }
 
-type LoaderEvents = {
+typedef TLoaderEvents = {
   // Add event types here
-  beforeload: void;
-  afterload: void;
-  useraction: void;
-  loadresourcestart: Loadable<any>;
-  loadresourceend: Loadable<any>;
+  var beforeload: Null<Any>;
+  var afterload: Null<Any>;
+  var useraction: Null<Any>;
+  var loadresourcestart: Loadable<Any>;
+  var loadresourceend: Loadable<Any>;
 };
 
 var LoaderEvents = {
@@ -44,35 +44,28 @@ var LoaderEvents = {
   LoadResourceEnd: 'loadresourceend'
 };
 
-type LoaderConstructor = new (...args: any[]) => DefaultLoader;
-/**
- * Returns true if the constructor is for an Excalibur Loader
- */
-function isLoaderConstructor(x: any): x is LoaderConstructor {
-  return !!x?.prototype && !!x?.prototype?.constructor?.name;
-}
-
-class DefaultLoader implements Loadable<Loadable<any>[]> {
-  public data!: Loadable<any>[];
-  public events = new EventEmitter<LoaderEvents>();
-  public canvas: Canvas = new Canvas({
+class DefaultLoader implements Loadable<Array<Loadable<Any>>> {
+  public var data: Array<Loadable<Any>>;
+  public var events = new EventEmitter<LoaderEvents>();
+  public var canvas: Canvas = new Canvas({
     filtering: ImageFiltering.Blended,
     smoothing: true,
     cache: false,
     draw: this.onDraw.bind(this)
   });
-  private _resources: Loadable<any>[] = [];
-  public get resources(): readonly Loadable<any>[] {
+  private var _resources: Array<Loadable<Any>> = [];
+  public var resources(get, never): Array<Loadable<Any>>;
+  function get_resources(): Array<Loadable<Any>> {
     return this._resources;
   }
-  private _numLoaded: Int = 0;
-  public engine!: Engine;
+  private var _numLoaded: Int = 0;
+  public var engine: Engine;
 
   /**
    * @param options Optionally provide the list of resources you want to load at constructor time
    */
-  constructor(options?: DefaultLoaderOptions) {
-    if (options && options.loadables?.length) {
+  public function new(?options: DefaultLoaderOptions) {
+    if (options && options.loadables.length) {
       this.addResources(options.loadables);
     }
   }
@@ -81,7 +74,7 @@ class DefaultLoader implements Loadable<Loadable<any>[]> {
    * Called by the engine before loading
    * @param engine
    */
-  public onInitialize(engine: Engine) {
+  public function onInitialize(engine: Engine) {
     this.engine = engine;
     this.canvas.width = this.engine.screen.resolution.width;
     this.canvas.height = this.engine.screen.resolution.height;
@@ -94,30 +87,30 @@ class DefaultLoader implements Loadable<Loadable<any>[]> {
    * audio from playing until the user performs an action.
    *
    */
-  public async onUserAction(): Promise<void> {
-    return await Promise.resolve();
+  public function onUserAction(): Any {
+    return null;
   }
 
   /**
    * Overridable lifecycle method, called directly before loading starts
    */
-  public async onBeforeLoad() {
+  public function onBeforeLoad() {
     // override me
   }
 
   /**
    * Overridable lifecycle method, called after loading has completed
    */
-  public async onAfterLoad() {
+  public function onAfterLoad() {
     // override me
-    await delay(500, this.engine.clock); // avoid a flicker
+    delay(500, this.engine.clock); // avoid a flicker
   }
 
   /**
    * Add a resource to the loader to load
    * @param loadable  Resource to add
    */
-  public addResource(loadable: Loadable<any>) {
+  public function addResource(loadable: Loadable<Any>) {
     this._resources.push(loadable);
   }
 
@@ -125,23 +118,21 @@ class DefaultLoader implements Loadable<Loadable<any>[]> {
    * Add a list of resources to the loader to load
    * @param loadables  The list of resources to load
    */
-  public addResources(loadables: Loadable<any>[]) {
-    var i = 0;
-    var len = loadables.length;
-
-    for (i; i < len; i++) {
-      this.addResource(loadables[i]);
+  public function addResources(loadables: Array<Loadable<Any>>) {
+    for (loadable in loadables) {
+      this.addResource(loadable);
     }
   }
 
-  public markResourceComplete(): void {
+  public function markResourceComplete() {
     this._numLoaded++;
   }
 
   /**
    * Returns the progress of the loader as a number between [0, 1] inclusive.
    */
-  public get progress(): Float {
+  public var progress(get, never): Float;
+  function get_progress(): Float {
     var total = this._resources.length;
     return total > 0 ? clamp(this._numLoaded, 0, total) / total : 1;
   }
@@ -149,18 +140,18 @@ class DefaultLoader implements Loadable<Loadable<any>[]> {
   /**
    * Returns true if the loader has completely loaded all resources
    */
-  public isLoaded() {
-    return this._numLoaded === this._resources.length;
+  public function isLoaded() {
+    return this._numLoaded == this._resources.length;
   }
 
-  private _totalTimeMs = 0;
+  private var _totalTimeMs = 0;
 
   /**
    * Optionally override the onUpdate
    * @param engine
    * @param elapsed
    */
-  onUpdate(engine: Engine, elapsed: Float): void {
+  function onUpdate(engine: Engine, elapsed: Float): Void {
     this._totalTimeMs += elapsed;
     // override me
   }
@@ -168,7 +159,7 @@ class DefaultLoader implements Loadable<Loadable<any>[]> {
   /**
    * Optionally override the onDraw
    */
-  onDraw(ctx: CanvasRenderingContext2D) {
+  function onDraw(ctx: Any) {
     var seconds = this._totalTimeMs / 1000;
 
     ctx.fillStyle = Color.Black.toRGBA();
@@ -193,9 +184,9 @@ class DefaultLoader implements Loadable<Loadable<any>[]> {
     ctx.restore();
   }
 
-  private _loadingFuture = new Future<void>();
-  public areResourcesLoaded() {
-    if (this._resources.length === 0) {
+  private var _loadingFuture = new Future<Void>();
+  public function areResourcesLoaded() {
+    if (this._resources.length == 0) {
       // special case no resources mean loaded;
       return Promise.resolve();
     }
@@ -208,15 +199,15 @@ class DefaultLoader implements Loadable<Loadable<any>[]> {
    * Begin loading all of the supplied resources, returning a promise
    * that resolves when loading of all is complete AND the user has interacted with the loading screen
    */
-  public async load(): Promise<Loadable<any>[]> {
-    await this.onBeforeLoad();
+  public function load(): Any {
+    this.onBeforeLoad();
     this.events.emit('beforeload');
     this.canvas.flagDirty();
 
-    await Promise.all(
-      this._resources.map(async (r) => {
+    Promise.all(
+      this._resources.map((r) -> {
         this.events.emit('loadresourcestart', r);
-        await r.load().finally(() => {
+        r.load().finally(() -> {
           // capture progress
           this._numLoaded++;
           this.canvas.flagDirty();
@@ -226,8 +217,8 @@ class DefaultLoader implements Loadable<Loadable<any>[]> {
     );
 
     // Wire all sound to the engine
-    for (var resource of this._resources) {
-      if (resource instanceof Sound) {
+    for (resource in this._resources) {
+      if (Std.isOfType(resource, Sound)) {
         resource.wireEngine(this.engine);
       }
     }
@@ -237,37 +228,28 @@ class DefaultLoader implements Loadable<Loadable<any>[]> {
     // Unlock browser AudioContext in after user gesture
     // See: https://github.com/excaliburjs/Excalibur/issues/262
     // See: https://github.com/excaliburjs/Excalibur/issues/1031
-    await this.onUserAction();
+    this.onUserAction();
     this.events.emit('useraction');
-    await WebAudio.unlock();
+    WebAudio.unlock();
 
-    await this.onAfterLoad();
+    this.onAfterLoad();
     this.events.emit('afterload');
     return (this.data = this._resources);
   }
 
-  public emit<TEventName extends EventKey<LoaderEvents>>(eventName: TEventName, event: LoaderEvents[TEventName]): void;
-  public emit(eventName: String, event?: any): void;
-  public emit<TEventName extends EventKey<LoaderEvents> | String>(eventName: TEventName, event?: any): void {
+  public function emit(eventName: String, ?event: Any): Void {
     this.events.emit(eventName, event);
   }
 
-  public on<TEventName extends EventKey<LoaderEvents>>(eventName: TEventName, handler: Handler<LoaderEvents[TEventName]>): Subscription;
-  public on(eventName: String, handler: Handler<unknown>): Subscription;
-  public on<TEventName extends EventKey<LoaderEvents> | String>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function on(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.on(eventName, handler);
   }
 
-  public once<TEventName extends EventKey<LoaderEvents>>(eventName: TEventName, handler: Handler<LoaderEvents[TEventName]>): Subscription;
-  public once(eventName: String, handler: Handler<unknown>): Subscription;
-  public once<TEventName extends EventKey<LoaderEvents> | String>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function once(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.once(eventName, handler);
   }
 
-  public off<TEventName extends EventKey<LoaderEvents>>(eventName: TEventName, handler: Handler<LoaderEvents[TEventName]>): void;
-  public off(eventName: String, handler: Handler<unknown>): void;
-  public off(eventName: String): void;
-  public off<TEventName extends EventKey<LoaderEvents> | String>(eventName: TEventName, handler?: Handler<any>): void {
-    (this.events as any).off(eventName, handler);
+  public function off(eventName: String, ?handler: Handler<Any>): Void {
+    this.events.off(eventName, handler);
   }
 }

@@ -1,9 +1,8 @@
-package nebula.EntityComponentSystem;
+package nebula.entitycomponentsystem;
 
-import nebula.EntityComponentSystem.Component;
-import nebula.EntityComponentSystem.Types;
+import nebula.entitycomponentsystem.Component;
 
-import nebula.Interfaces.LifecycleEvents;
+import nebula.interfaces.LifecycleEvents;
 
 import nebula.Engine;
 
@@ -12,60 +11,58 @@ import nebula.EventEmitter;
 
 import nebula.Scene;
 
-import nebula.Util.Observable;
-import nebula.Util.Util;
-import nebula.Util.Log;
+import nebula.util.Observable;
+import nebula.util.Util;
+import nebula.util.Log;
 
 /**
  * Interface holding an entity component pair
  */
 interface EntityComponent {
-  component: Component;
-  entity: Entity;
+  var component: Component;
+  var entity: Any;
 }
 
 /**
  * AddedComponent message
  */
 class AddedComponent implements Message<EntityComponent> {
-  readonly type: 'Component Added' = 'Component Added';
-  public function new(public data: EntityComponent) {}
+  var type: String = 'Component Added';
+  public function new(data: EntityComponent) {}
 }
 
 /**
  * Type guard to know if message is f an Added Component
  */
-function isAddedComponent(x: Message<EntityComponent>): x is AddedComponent {
-  return !!x && x.type === 'Component Added';
+function isAddedComponent(x: Message<EntityComponent>) {
+  return !!x && x.type == 'Component Added';
 }
 
 /**
  * RemovedComponent message
  */
 class RemovedComponent implements Message<EntityComponent> {
-  readonly type: 'Component Removed' = 'Component Removed';
-  public function new(public data: EntityComponent) {}
+  var type: String = 'Component Removed';
+  public function new(data: EntityComponent) {}
 }
 
 /**
  * Type guard to know if message is for a Removed Component
  */
-function isRemovedComponent(x: Message<EntityComponent>): x is RemovedComponent {
-  return !!x && x.type === 'Component Removed';
+function isRemovedComponent(x: Message<EntityComponent>) {
+  return !!x && x.type == 'Component Removed';
 }
 
 /**
  * Built in events supported by all entities
  */
-type EntityEvents = {
-  initialize: InitializeEvent;
-  //@ts-ignore
-  add: AddEvent;
-  //@ts-ignore
-  remove: RemoveEvent;
-  preupdate: PreUpdateEvent;
-  postupdate: PostUpdateEvent;
-  kill: KillEvent;
+typedef TEntityEvents = {
+  var initialize: InitializeEvent;
+  var add: AddEvent;
+  var remove: RemoveEvent;
+  var preupdate: PreUpdateEvent<Actor>;
+  var postupdate: PostUpdateEvent<Actor>;
+  var kill: KillEvent;
 };
 
 final EntityEvents = {
@@ -77,41 +74,41 @@ final EntityEvents = {
   Kill: 'kill'
 };
 
-interface EntityOptions<TComponents extends Component> {
-  name?: String;
-  components?: TComponents[];
-  silenceWarnings?: Bool;
+interface EntityOptions<TComponents:Component> {
+  var name: Null<String>;
+  var components: Null<Array<TComponents>>;
+  var silenceWarnings: Null<Bool>;
 }
 
 /**
- * An Entity is the base type of anything that can have behavior in Excalibur, they are part of the built in entity component system
+ * An Any is the base type of anything that can have behavior in Excalibur, they are part of the built in entity component system
  *
  * Entities can be strongly typed with the components they contain
  *
  * ```typescript
- * const entity = new Entity<ComponentA | ComponentB>();
+ * const entity = new Any<ComponentA | ComponentB>();
  * entity.components.a; // Type ComponentA
  * entity.components.b; // Type ComponentB
  * ```
  */
-class Entity<TKnownComponents extends Component = dynamic> implements OnInitialize, OnPreUpdate, OnPostUpdate, OnAdd, OnRemove {
-  private static _ID = 0;
+class Entity implements OnInitialize implements OnPreUpdate implements OnPostUpdate implements OnAdd implements OnRemove {
+  private static var _ID = 0;
   /**
    * The unique identifier for the entity
    */
-  public id: Int = Entity._ID++;
+  public var id: Int = this._ID++;
 
-  public name = `Entity#${this.id}`;
+  public var name = 'Any#${this.id}';
 
   /**
    * Listen to or emit events for an entity
    */
-  public events = new EventEmitter<EntityEvents>();
-  private _tags = new Set<String>();
-  public componentAdded$ = new Observable<Component>();
-  public componentRemoved$ = new Observable<Component>();
-  public tagAdded$ = new Observable<String>();
-  public tagRemoved$ = new Observable<String>();
+  public var events = new EventEmitter<TEntityEvents>();
+  private var _tags = new Map<String, Bool>();
+  public var componentAdded = new Observable<Component>();
+  public var componentRemoved = new Observable<Component>();
+  public var tagAdded = new Observable<String>();
+  public var tagRemoved = new Observable<String>();
   /**
    * Current components on the entity
    *
@@ -119,55 +116,41 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    *
    * Use addComponent/removeComponent otherwise the ECS will not be notified of changes.
    */
-  public readonly components = new Map<Function, Component>();
-  public componentValues: Component[] = [];
-  private _componentsToRemove: ComponentCtor[] = [];
+  public var components = new Map<Function, Component>();
+  public var componentValues: Array<Component> = [];
+  private var _componentsToRemove: Array<Any> = [];
 
-  public function new(options: EntityOptions<TKnownComponents>);
-  public function new(components?: TKnownComponents[], name?: String);
-  public function new(componentsOrOptions?: TKnownComponents[] | EntityOptions<TKnownComponents>, name?: String) {
-    var componentsToAdd!: TKnownComponents[];
-    var nameToAdd: String | undefined;
+  public function new(?components: Array<Any>, name: String) {
     var silence = false;
-    if (Array.isArray(componentsOrOptions)) {
-      componentsToAdd = componentsOrOptions;
-      nameToAdd = name;
-    } else if (componentsOrOptions && typeof componentsOrOptions === 'object') {
-      final { components, name, silenceWarnings } = componentsOrOptions;
-      componentsToAdd = components ?? [];
-      nameToAdd = name;
-      silence = !!silenceWarnings;
-    }
-    if (nameToAdd) {
-      this.name = nameToAdd;
-    }
-    if (componentsToAdd) {
-      for (final component of componentsToAdd) {
+    this.name = nameToAdd;
+    if (components) {
+      for (component in components) {
         this.addComponent(component);
       }
     }
 
-    if (process.env.NODE_ENV === 'development') {
-      if (!silence) {
-        setTimeout(() => {
-          if (!this.scene && !this.isInitialized) {
-            Logger.getInstance().warn('Entity "${this.name || this.id}" was not added to a scene.');
-          }
-        }, 5000);
-      }
-    }
+    // if (process.env.NODE_ENV == 'development') {
+    //   if (!silence) {
+    //     setTimeout(() => {
+    //       if (!this.scene && !this.isInitialized) {
+    //         Logger.getInstance().warn('Any "${this.name || this.id}" was not added to a scene.');
+    //       }
+    //     }, 5000);
+    //   }
+    // }
   }
 
   /**
    * The current scene that the entity is in, if any
    */
-  public scene: Scene | null = null;
+  public var scene: Null<Scene> = null;
 
   /**
    * Whether this entity is active, if set to false it will be reclaimed
    * @deprecated use isActive
    */
-  public get active(): Bool {
+  public var active(get, set): Bool;
+  function get_active(): Bool {
     return this.isActive;
   }
 
@@ -175,20 +158,20 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Whether this entity is active, if set to false it will be reclaimed
    * @deprecated use isActive
    */
-  public set active(val: Bool) {
+  function set_active(val: Bool) {
     this.isActive = val;
   }
 
   /**
    * Whether this entity is active, if set to false it will be reclaimed
    */
-  public isActive: Bool = true;
+  public var isActive: Bool = true;
 
   /**
    * Kill the entity, means it will no longer be updated. Kills are deferred to the end of the update.
    * If parented it will be removed from the parent when killed.
    */
-  public kill() {
+  public function kill() {
     if (this.isActive) {
       this.isActive = false;
       this.unparent();
@@ -196,14 +179,15 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
     this.emit('kill', new KillEvent(this));
   }
 
-  public isKilled() {
+  public function isKilled() {
     return !this.isActive;
   }
 
   /**
    * Specifically get the tags on the entity from {@apilink TagsComponent}
    */
-  public get tags(): Set<String> {
+  public var tags(get, never): Map<String, Bool>;
+  function get_tags(): Map<String, Bool> {
     return this._tags;
   }
 
@@ -211,7 +195,7 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Check if a tag exists on the entity
    * @param tag name to check for
    */
-  public hasTag(tag: String): Bool {
+  public function hasTag(tag: String): Bool {
     return this._tags.has(tag);
   }
 
@@ -219,9 +203,9 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Adds a tag to an entity
    * @param tag
    */
-  public addTag(tag: String): Entity<TKnownComponents> {
+  public function addTag(tag: String) {
     this._tags.add(tag);
-    this.tagAdded$.notifyAll(tag);
+    this.tagAdded.notifyAll(tag);
     return this;
   }
 
@@ -231,23 +215,24 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Removals are deferred until the end of update
    * @param tag
    */
-  public removeTag(tag: String): Entity<TKnownComponents> {
+  public function removeTag(tag: String) {
     this._tags.delete(tag);
-    this.tagRemoved$.notifyAll(tag);
+    this.tagRemoved.notifyAll(tag);
     return this;
   }
 
   /**
-   * The types of the components on the Entity
+   * The types of the components on the Any
    */
-  public get types(): ComponentCtor[] {
-    return Array.from(this.components.keys()) as ComponentCtor[];
+  public var types(get, never): Array<Any>;
+  function get_types() {
+    return Array.from(this.components.keys());
   }
 
   /**
    * Returns all component instances on entity
    */
-  public getComponents(): Component[] {
+  public function getComponents(): Array<Component> {
     return Array.from(this.components.values());
   }
 
@@ -255,8 +240,8 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Verifies that an entity has all the required types
    * @param requiredTypes
    */
-  hasAll<TComponent extends Component>(requiredTypes: ComponentCtor<TComponent>[]): Bool {
-    for (var i = 0; i < requiredTypes.length; i++) {
+  function hasAll(requiredTypes: Array<Any>): Bool {
+    for (i in 0...requiredTypes.length) {
       if (!this.components.has(requiredTypes[i])) {
         return false;
       }
@@ -268,8 +253,8 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Verifies that an entity has all the required tags
    * @param requiredTags
    */
-  hasAllTags(requiredTags: String[]): Bool {
-    for (var i = 0; i < requiredTags.length; i++) {
+  function hasAllTags(requiredTags: Array<String>): Bool {
+    for (i in 0...requiredTags.length) {
       if (!this.tags.has(requiredTags[i])) {
         return false;
       }
@@ -277,30 +262,32 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
     return true;
   }
 
-  get<TComponent extends Component>(type: ComponentCtor<TComponent>): MaybeKnownComponent<TComponent, TKnownComponents> {
-    return this.components.get(type) as MaybeKnownComponent<TComponent, TKnownComponents>;
+  function get(type: String): Component {
+    return this.components.get(type);
   }
 
-  private _parent: Entity | null = null;
-  public get parent(): Entity | null {
+  private var _parent: Null<Any> = null;
+  public var parent(get, never): Null<Any>;
+  function get_parent(): Null<Any> {
     return this._parent;
   }
 
-  public childrenAdded$ = new Observable<Entity>();
-  public childrenRemoved$ = new Observable<Entity>();
+  public var childrenAdded = new Observable<Any>();
+  public var childrenRemoved = new Observable<Any>();
 
-  private _children: Entity[] = [];
+  private var _children: Array<Any> = [];
   /**
    * Get the direct children of this entity
    */
-  public get children(): readonly Entity[] {
+  public var children(get, never): Array<Any>;
+  function get_children() {
     return this._children;
   }
 
   /**
    * Unparents this entity, if there is a parent. Otherwise it does nothing.
    */
-  public unparent() {
+  public function unparent() {
     if (this._parent) {
       this._parent.removeChild(this);
       this._parent = null;
@@ -311,16 +298,16 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Adds an entity to be a child of this entity
    * @param entity
    */
-  public addChild(entity: Entity): Entity {
-    if (entity.parent === null) {
+  public function addChild(entity: Any): Any {
+    if (entity.parent == null) {
       if (this.getAncestors().includes(entity)) {
         throw new Error('Cycle detected, cannot add entity');
       }
       this._children.push(entity);
       entity._parent = this;
-      this.childrenAdded$.notifyAll(entity);
+      this.childrenAdded.notifyAll(entity);
     } else {
-      throw new Error('Entity already has a parent, cannot add without unparenting');
+      throw new Error('Any already has a parent, cannot add without unparenting');
     }
     return this;
   }
@@ -329,11 +316,11 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Remove an entity from children if it exists
    * @param entity
    */
-  public removeChild(entity: Entity): Entity {
-    if (entity.parent === this) {
+  public function removeChild(entity: Any): Any {
+    if (entity.parent == this) {
       removeItemFromArray(entity, this._children);
       entity._parent = null;
-      this.childrenRemoved$.notifyAll(entity);
+      this.childrenRemoved.notifyAll(entity);
     }
     return this;
   }
@@ -341,10 +328,12 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
   /**
    * Removes all children from this entity
    */
-  public removeAllChildren(): Entity {
+  public function removeAllChildren(): Any {
     // Avoid modifying the array issue by walking backwards
-    for (var i = this.children.length - 1; i >= 0; i--) {
+    var i = this.children.length - 1;
+    while (i >= 0) {
       this.removeChild(this.children[i]);
+      i--;
     }
     return this;
   }
@@ -352,8 +341,8 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
   /**
    * Returns a list of parent entities starting with the topmost parent. Includes the current entity.
    */
-  public getAncestors(): Entity[] {
-    final result: Entity[] = [this];
+  public function getAncestors(): Array<Any> {
+    final result: Array<Any> = [this];
     var current = this.parent;
     while (current) {
       result.push(current);
@@ -365,9 +354,9 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
   /**
    * Returns a list of all the entities that descend from this entity. Includes the current entity.
    */
-  public getDescendants(): Entity[] {
-    var result: Entity[] = [this];
-    var queue: Entity[] = [this];
+  public function getDescendants(): Array<Any> {
+    var result: Array<Any> = [this];
+    var queue: Array<Any> = [this];
     while (queue.length > 0) {
       final curr = queue.pop();
       if (curr) {
@@ -381,15 +370,15 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
   /**
    * Creates a deep copy of the entity and a copy of all its components
    */
-  public clone(): Entity {
-    final newEntity = new Entity();
-    for (final c of this.types) {
+  public function clone(): Any {
+    final newEntity = new Any();
+    for (c in this.types) {
       final componentInstance = this.get(c);
       if (componentInstance) {
         newEntity.addComponent(componentInstance.clone());
       }
     }
-    for (final child of this.children) {
+    for (child in this.children) {
       newEntity.addChild(child.clone());
     }
     return newEntity;
@@ -397,24 +386,24 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
 
   /**
    * Adds a copy of all the components from another template entity as a "prefab"
-   * @param templateEntity Entity to use as a template
+   * @param templateEntity Any to use as a template
    * @param force Force component replacement if it already exists on the target entity
    */
-  public addTemplate(templateEntity: Entity, force: Bool = false): Entity {
-    for (final c of templateEntity.getComponents()) {
+  public function addTemplate(templateEntity: Any, force: Bool = false): Any {
+    for (c in templateEntity.getComponents()) {
       this.addComponent(c.clone(), force);
     }
-    for (final child of templateEntity.children) {
+    for (child in templateEntity.children) {
       this.addChild(child.clone().addTemplate(child));
     }
     return this;
   }
 
-  private _getClassHierarchyRoot(componentType: ComponentCtor): ComponentCtor {
+  private function _getClassHierarchyRoot(componentType: String): Any {
     var current = componentType;
     var parent = Object.getPrototypeOf(current.prototype)?.constructor;
 
-    while (parent && parent !== Object && parent !== Component) {
+    while (parent && parent != Object && parent != Component) {
       current = parent;
       parent = Object.getPrototypeOf(current.prototype)?.constructor;
     }
@@ -423,30 +412,30 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
 
   /**
    * Adds a component to the entity
-   * @param component Component or Entity to add copy of components from
+   * @param component Component or Any to add copy of components from
    * @param force Optionally overwrite any existing components of the same type
    */
-  public function addComponent<TComponent extends Component>(component: TComponent, force: Bool = false): Entity<TKnownComponents | TComponent> {
+  public function addComponent<TComponent:Component>(component: TComponent, force: Bool = false): Any {
     // if component already exists, skip if not forced
-    if (this.has(component.constructor as ComponentCtor)) {
+    if (this.has(component.constructor)) {
       if (force) {
         // Remove existing component type if exists when forced
-        this.removeComponent(component.constructor as ComponentCtor, true);
+        this.removeComponent(component.constructor, true);
       } else {
         // early exit component exits
-        return this as Entity<TKnownComponents | TComponent>;
+        return this;
       }
     }
 
     // TODO circular dependencies will be a problem
     if (component.dependencies && component.dependencies.length) {
-      for (final ctor of component.dependencies) {
-        this.addComponent(new ctor());
+      for (Ctor in component.dependencies) {
+        this.addComponent(new Ctor());
       }
     }
 
     component.owner = this;
-    final rootComponent = this._getClassHierarchyRoot(component.constructor as ComponentCtor);
+    final rootComponent = this._getClassHierarchyRoot(component.constructor);
     this.components.set(rootComponent, component);
     this.components.set(component.constructor, component);
     this.componentValues.push(component);
@@ -454,8 +443,8 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
       component.onAdd(this);
     }
 
-    this.componentAdded$.notifyAll(component);
-    return this as Entity<TKnownComponents | TComponent>;
+    this.componentAdded.notifyAll(component);
+    return this;
   }
 
   /**
@@ -465,21 +454,21 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * @param typeOrInstance
    * @param force
    */
-  public function removeComponent<TComponent extends Component>(
-    typeOrInstance: ComponentCtor<TComponent> | TComponent,
+  public function removeComponent<TComponent:Component>(
+    typeOrInstance: TComponent,
     force = false
-  ): Entity<Exclude<TKnownComponents, TComponent>> {
+  ): Any {
     var type: ComponentCtor<TComponent>;
     if (isComponentCtor(typeOrInstance)) {
       type = typeOrInstance;
     } else {
-      type = typeOrInstance.constructor as ComponentCtor<TComponent>;
+      type = typeOrInstance.constructor;
     }
 
     if (force) {
       final componentToRemove = this.components.get(type);
       if (componentToRemove) {
-        this.componentRemoved$.notifyAll(componentToRemove);
+        this.componentRemoved.notifyAll(componentToRemove);
         componentToRemove.owner = undefined;
         if (componentToRemove.onRemove) {
           componentToRemove.onRemove(this);
@@ -497,12 +486,12 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
       this._componentsToRemove.push(type);
     }
 
-    return this as any;
+    return this;
   }
 
-  public clearComponents() {
+  public function clearComponents() {
     final components = this.types;
-    for (final c of components) {
+    for (c in components) {
       this.removeComponent(c);
     }
   }
@@ -511,8 +500,8 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * @hidden
    * @internal
    */
-  public processComponentRemoval() {
-    for (final type of this._componentsToRemove) {
+  public function processComponentRemoval() {
+    for (type in this._componentsToRemove) {
       this.removeComponent(type, true);
     }
     this._componentsToRemove.length = 0;
@@ -522,21 +511,23 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Check if a component type exists
    * @param type
    */
-  public function has<TComponent extends Component>(type: ComponentCtor<TComponent>): Bool {
+  public function has(type: String): Bool {
     return this.components.has(type);
   }
 
-  private _isInitialized = false;
-  private _isAdded = false;
+  private var _isInitialized = false;
+  private var _isAdded = false;
 
   /**
    * Gets whether the actor is Initialized
    */
-  public get isInitialized(): Bool {
+  public var isInitialized(get, never): Bool;
+  function get_isInitialized(): Bool {
     return this._isInitialized;
   }
 
-  public get isAdded(): Bool {
+  public var isAdded(get, never): Bool;
+  function get_isAdded(): Bool {
     return this._isAdded;
   }
 
@@ -588,7 +579,7 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Internal _preupdate handler for {@apilink onPreUpdate} lifecycle event
    * @internal
    */
-  public _preupdate(engine: Engine, elapsed: Float) {
+  public function _preupdate(engine: Engine, elapsed: Int) {
     this.events.emit('preupdate', new PreUpdateEvent(engine, elapsed, this));
     this.onPreUpdate(engine, elapsed);
   }
@@ -599,7 +590,7 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    * Internal _preupdate handler for {@apilink onPostUpdate} lifecycle event
    * @internal
    */
-  public _postupdate(engine: Engine, elapsed: Float) {
+  public function _postupdate(engine: Engine, elapsed: Int) {
     this.events.emit('postupdate', new PostUpdateEvent(engine, elapsed, this));
     this.onPostUpdate(engine, elapsed);
   }
@@ -610,7 +601,7 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    *
    * Synonymous with the event handler `.on('initialize', (evt) => {...})`
    */
-  public onInitialize(engine: Engine) {
+  public function onInitialize(engine: Engine) {
     // Override me
   }
 
@@ -620,7 +611,7 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    *
    * Synonymous with the event handler `.on('add', (evt) => {...})`
    */
-  public onAdd(engine: Engine) {
+  public function onAdd(engine: Engine) {
     // Override me
   }
 
@@ -630,7 +621,7 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    *
    * Synonymous with the event handler `.on('remove', (evt) => {...})`
    */
-  public onRemove(engine: Engine) {
+  public function onRemove(engine: Engine) {
     // Override me
   }
 
@@ -639,7 +630,7 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    *
    * `onPreUpdate` is called directly before an entity is updated.
    */
-  public onPreUpdate(engine: Engine, elapsed: number) {
+  public function onPreUpdate(engine: Engine, elapsed: Int) {
     // Override me
   }
 
@@ -648,50 +639,41 @@ class Entity<TKnownComponents extends Component = dynamic> implements OnInitiali
    *
    * `onPostUpdate` is called directly after an entity is updated.
    */
-  public onPostUpdate(engine: Engine, elapsed: Float) {
+  public function onPostUpdate(engine: Engine, elapsed: Int) {
     // Override me
   }
 
   /**
    *
-   * Entity update lifecycle, called internally
+   * Any update lifecycle, called internally
    * @internal
    * @param engine
    * @param elapsed
    */
-  public update(engine: Engine, elapsed: Float) {
+  public function update(engine: Engine, elapsed: Int) {
     this._initialize(engine);
     this._add(engine);
     this._preupdate(engine, elapsed);
-    for (final child of this.children) {
+    for (child in this.children) {
       child.update(engine, elapsed);
     }
     this._postupdate(engine, elapsed);
     this._remove(engine);
   }
 
-  public function emit<TEventName extends EventKey<EntityEvents>>(eventName: TEventName, event: EntityEvents[TEventName]): void;
-  public function emit(eventName: String, event?: any): void;
-  public function emit<TEventName extends EventKey<EntityEvents> | String>(eventName: TEventName, event?: any): void {
+  public function emit(eventName: String, ?event: Any): Void {
     this.events.emit(eventName, event);
   }
 
-  public function on<TEventName extends EventKey<EntityEvents>>(eventName: TEventName, handler: Handler<EntityEvents[TEventName]>): Subscription;
-  public function on(eventName: String, handler: Handler<unknown>): Subscription;
-  public function on<TEventName extends EventKey<EntityEvents> | String>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function on(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.on(eventName, handler);
   }
 
-  public once<TEventName extends EventKey<EntityEvents>>(eventName: TEventName, handler: Handler<EntityEvents[TEventName]>): Subscription;
-  public once(eventName: String, handler: Handler<unknown>): Subscription;
-  public once<TEventName extends EventKey<EntityEvents> | String>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function once(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.once(eventName, handler);
   }
 
-  public off<TEventName extends EventKey<EntityEvents>>(eventName: TEventName, handler: Handler<EntityEvents[TEventName]>): void;
-  public off(eventName: String, handler: Handler<unknown>): void;
-  public off(eventName: String): void;
-  public off<TEventName extends EventKey<EntityEvents> | String>(eventName: TEventName, handler?: Handler<any>): void {
+  public function off(eventName: String, ?handler: Handler<Any>): Void {
     if (handler) {
       this.events.off(eventName, handler);
     } else {

@@ -1,56 +1,55 @@
-package nebula.Debug;
+package nebula.debug;
 
 import nebula.Engine;
 import nebula.Scene;
 import nebula.Camera;
 
-import nebula.EntityComponentSystem.Components.MotionComponent;
-import nebula.Collision.ColliderComponent;
+import nebula.entitycomponentsystem.components.MotionComponent;
+import nebula.collision.ColliderComponent;
 
-import nebula.EntityComponentSystem;
-import nebula.EntityComponentSystem.System;
+import nebula.entitycomponentsystem.System;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Math.Vector;
-import nebula.Math.Util;
+import nebula.math.Vector;
+import nebula.math.Util;
 
-import nebula.Collision.BodyComponent;
-import nebula.Collision.CollisionSystem;
-import nebula.Collision.Colliders.CompositeCollider;
+import nebula.collision.BodyComponent;
+import nebula.collision.CollisionSystem;
+import nebula.collision.colliders.CompositeCollider;
 
-import nebula.Graphics.GraphicsComponent;
+import nebula.graphics.GraphicsComponent;
 
-import nebula.Particles.Particles;
+import nebula.particles.Particles;
 
-import nebula.Graphics.DebugGraphicsComponent;
+import nebula.graphics.DebugGraphicsComponent;
 
-import nebula.Math.CoordPlane;
-import nebula.Graphics.Debug;
+import nebula.math.CoordPlane;
+import nebula.graphics.Debug;
 
 class DebugSystem extends System {
-  static priority = SystemPriority.Lowest;
+  static var priority = SystemPriority.Lowest;
 
-  public readonly systemType = SystemType.Draw;
-  private _graphicsContext: ExcaliburGraphicsContext;
-  private _collisionSystem: CollisionSystem;
-  private _camera: Camera;
-  private _engine: Engine;
-  query: Query<typeof TransformComponent>;
+  public var systemType = SystemType.Draw;
+  private var _graphicsContext: ExcaliburGraphicsContext;
+  private var _collisionSystem: CollisionSystem;
+  private var _camera: Camera;
+  private var _engine: Engine;
+  var query: Query<TransformComponent>;
 
-  public function new(public world: World) {
+  public function new(world: World) {
     super();
     this.query = this.world.query([TransformComponent]);
   }
 
-  public initialize(world: World, scene: Scene) {
+  public function initialize(world: World, scene: Scene) {
     this._graphicsContext = scene.engine.graphicsContext;
     this._camera = scene.camera;
     this._engine = scene.engine;
     this._collisionSystem = world.systemManager.get(CollisionSystem);
   }
 
-  update() {
+  function update() {
     if (!this._engine.isDebug) {
       return;
     }
@@ -81,23 +80,23 @@ class DebugSystem extends System {
     var bodySettings = this._engine.debug.body;
 
     var cameraSettings = this._engine.debug.camera;
-    for (let i = 0; i < this.query.entities.length; i++) {
-      var entity = this.query.entities[i];
+
+    for (entity in this.query.entities) {
       if (entity.hasTag('offscreen')) {
         // skip offscreen entities
         continue;
       }
-      if (entity instanceof Particle) {
+      if (Std.isOfType(entity, Particle)) {
         // Particles crush the renderer :(
         continue;
       }
       if (filterSettings.useFilter) {
-        var allIds = filterSettings.ids.length === 0;
+        var allIds = filterSettings.ids.length == 0;
         var idMatch = allIds || filterSettings.ids.includes(entity.id);
         if (!idMatch) {
           continue;
         }
-        var allNames = filterSettings.nameQuery === '';
+        var allNames = filterSettings.nameQuery == '';
         var nameMatch = allNames || entity.name.includes(filterSettings.nameQuery);
         if (!nameMatch) {
           continue;
@@ -114,7 +113,7 @@ class DebugSystem extends System {
       this._pushCameraTransform(tx);
 
       this._graphicsContext.save();
-      if (tx.coordPlane === CoordPlane.Screen) {
+      if (tx.coordPlane == CoordPlane.Screen) {
         this._graphicsContext.translate(this._engine.screen.contentArea.left, this._engine.screen.contentArea.top);
       }
       this._graphicsContext.z = txSettings.debugZIndex;
@@ -125,21 +124,21 @@ class DebugSystem extends System {
           this._graphicsContext.debug.drawPoint(Vector.Zero, { size: 4, color: txSettings.positionColor });
         }
         if (txSettings.showAll || txSettings.showPositionLabel) {
-          this._graphicsContext.debug.drawText(`pos${tx.pos.toString(2)}`, cursor);
+          this._graphicsContext.debug.drawText('pos${tx.pos.toString(2)}', cursor);
           cursor = cursor.add(lineHeight);
         }
         if (txSettings.showAll || txSettings.showZIndex) {
-          this._graphicsContext.debug.drawText(`z(${tx.z.toFixed(1)})`, cursor);
+          this._graphicsContext.debug.drawText('z(${tx.z.toFixed(1)})', cursor);
           cursor = cursor.add(lineHeight);
         }
 
         if (entitySettings.showAll || entitySettings.showId) {
-          this._graphicsContext.debug.drawText(`id(${id}) ${entity.parent ? 'child of id(' + entity.parent?.id + ')' : ''}`, cursor);
+          this._graphicsContext.debug.drawText('id(${id}) ${entity.parent ? 'child of id(' + entity.parent?.id + ')' : ''}', cursor);
           cursor = cursor.add(lineHeight);
         }
 
         if (entitySettings.showAll || entitySettings.showName) {
-          this._graphicsContext.debug.drawText(`name(${name})`, cursor);
+          this._graphicsContext.debug.drawText('name(${name})', cursor);
           cursor = cursor.add(lineHeight);
         }
 
@@ -150,7 +149,7 @@ class DebugSystem extends System {
             txSettings.rotationColor,
             2
           );
-          this._graphicsContext.debug.drawText(`rot deg(${toDegrees(tx.rotation).toFixed(2)})`, cursor);
+          this._graphicsContext.debug.drawText('rot deg(${toDegrees(tx.rotation).toFixed(2)})', cursor);
           cursor = cursor.add(lineHeight);
         }
 
@@ -182,27 +181,27 @@ class DebugSystem extends System {
       body = entity.get(BodyComponent);
       if (body) {
         if (bodySettings.showAll || bodySettings.showCollisionGroup) {
-          this._graphicsContext.debug.drawText(`collision group(${body.group.name})`, cursor);
+          this._graphicsContext.debug.drawText('collision group(${body.group.name})', cursor);
           cursor = cursor.add(lineHeight);
         }
 
         if (bodySettings.showAll || bodySettings.showCollisionType) {
-          this._graphicsContext.debug.drawText(`collision type(${body.collisionType})`, cursor);
+          this._graphicsContext.debug.drawText('collision type(${body.collisionType})', cursor);
           cursor = cursor.add(lineHeight);
         }
 
         if (bodySettings.showAll || bodySettings.showMass) {
-          this._graphicsContext.debug.drawText(`mass(${body.mass})`, cursor);
+          this._graphicsContext.debug.drawText('mass(${body.mass})', cursor);
           cursor = cursor.add(lineHeight);
         }
 
         if (bodySettings.showAll || bodySettings.showMotion) {
-          this._graphicsContext.debug.drawText(`motion(${body.sleepMotion})`, cursor);
+          this._graphicsContext.debug.drawText('motion(${body.sleepMotion})', cursor);
           cursor = cursor.add(lineHeight);
         }
 
         if (bodySettings.showAll || bodySettings.showSleeping) {
-          this._graphicsContext.debug.drawText(`sleeping(${body.canSleep ? body.isSleeping : 'cant sleep'})`, cursor);
+          this._graphicsContext.debug.drawText('sleeping(${body.canSleep ? body.isSleeping : 'cant sleep'})', cursor);
           cursor = cursor.add(lineHeight);
         }
       }
@@ -211,14 +210,14 @@ class DebugSystem extends System {
 
       // World space
       this._graphicsContext.save();
-      if (tx.coordPlane === CoordPlane.Screen) {
+      if (tx.coordPlane == CoordPlane.Screen) {
         this._graphicsContext.translate(this._engine.screen.contentArea.left, this._engine.screen.contentArea.top);
       }
       this._graphicsContext.z = txSettings.debugZIndex;
       motion = entity.get(MotionComponent);
       if (motion) {
         if (motionSettings.showAll || motionSettings.showVelocity) {
-          this._graphicsContext.debug.drawText(`vel${motion.vel.toString(2)}`, cursor.add(tx.globalPos));
+          this._graphicsContext.debug.drawText('vel${motion.vel.toString(2)}', cursor.add(tx.globalPos));
           this._graphicsContext.drawLine(tx.globalPos, tx.globalPos.add(motion.vel), motionSettings.velocityColor, 2);
           cursor = cursor.add(lineHeight);
         }
@@ -239,14 +238,14 @@ class DebugSystem extends System {
           });
         }
         if (colliderSettings.showAll || colliderSettings.showBounds) {
-          if (collider instanceof CompositeCollider) {
+          if (Std.isOfType(collider, CompositeCollider)) {
             var colliders = collider.getColliders();
-            for (var collider of colliders) {
+            for (collider in colliders) {
               var bounds = collider.bounds;
               var pos = vec(bounds.left, bounds.top);
               this._graphicsContext.debug.drawRect(pos.x, pos.y, bounds.width, bounds.height, { color: colliderSettings.boundsColor });
               if (colliderSettings.showAll || colliderSettings.showOwner) {
-                this._graphicsContext.debug.drawText(`owner id(${collider.owner.id})`, pos);
+                this._graphicsContext.debug.drawText('owner id(${collider.owner.id})', pos);
               }
             }
             colliderComp.bounds.draw(this._graphicsContext, colliderSettings.boundsColor);
@@ -255,7 +254,7 @@ class DebugSystem extends System {
             var pos = vec(bounds.left, bounds.top);
             this._graphicsContext.debug.drawRect(pos.x, pos.y, bounds.width, bounds.height, { color: colliderSettings.boundsColor });
             if (colliderSettings.showAll || colliderSettings.showOwner) {
-              this._graphicsContext.debug.drawText(`owner id(${colliderComp.owner.id})`, pos);
+              this._graphicsContext.debug.drawText('owner id(${colliderComp.owner.id})', pos);
             }
           }
         }
@@ -271,9 +270,9 @@ class DebugSystem extends System {
       this._collisionSystem.debug(this._graphicsContext);
     }
     if (physicsSettings.showAll || physicsSettings.showCollisionContacts || physicsSettings.showCollisionNormals) {
-      for (var [_, contact] of this._engine.debug.stats.currFrame.physics.contacts) {
+      for (_ => contact in this._engine.debug.stats.currFrame.physics.contacts) {
         if (physicsSettings.showAll || physicsSettings.showCollisionContacts) {
-          for (var point of contact.points) {
+          for (point in contact.points) {
             this._graphicsContext.debug.drawPoint(point, {
               size: physicsSettings.contactSize,
               color: physicsSettings.collisionContactColor
@@ -282,7 +281,7 @@ class DebugSystem extends System {
         }
 
         if (physicsSettings.showAll || physicsSettings.showCollisionNormals) {
-          for (var point of contact.points) {
+          for (point in contact.points) {
             this._graphicsContext.debug.drawLine(point, contact.normal.scale(30).add(point), {
               color: physicsSettings.collisionNormalColor
             });
@@ -299,7 +298,7 @@ class DebugSystem extends System {
         this._graphicsContext.drawCircle(this._camera.pos, 4, cameraSettings.focusColor);
       }
       if (cameraSettings.showAll || cameraSettings.showZoom) {
-        this._graphicsContext.debug.drawText(`zoom(${this._camera.zoom})`, this._camera.pos);
+        this._graphicsContext.debug.drawText('zoom(${this._camera.zoom})', this._camera.pos);
       }
       this._graphicsContext.restore();
     }
@@ -307,7 +306,7 @@ class DebugSystem extends System {
     this._graphicsContext.flush();
   }
 
-  postupdate(engine: Scene<unknown>, elapsed: Float) {
+  function postupdate(engine: Scene, elapsed: Int) {
     if (this._engine.isDebug) {
       this._graphicsContext.save();
       if (this._camera) {
@@ -322,9 +321,9 @@ class DebugSystem extends System {
    * This applies the current entity transform to the graphics context
    * @param entity
    */
-  private _applyTransform(entity: Entity) {
+  private function _applyTransform(entity: Entity) {
     var ancestors = entity.getAncestors();
-    for (var ancestor of ancestors) {
+    for (ancestor in ancestors) {
       var transform = ancestor?.get(TransformComponent);
       if (transform) {
         this._graphicsContext.translate(transform.pos.x, transform.pos.y);
@@ -338,9 +337,9 @@ class DebugSystem extends System {
    * Applies the current camera transform if in world coordinates
    * @param transform
    */
-  private _pushCameraTransform(transform: TransformComponent) {
+  private function _pushCameraTransform(transform: TransformComponent) {
     // Establish camera offset per entity
-    if (transform.coordPlane === CoordPlane.World) {
+    if (transform.coordPlane == CoordPlane.World) {
       this._graphicsContext.save();
       if (this._camera) {
         this._camera.draw(this._graphicsContext);
@@ -352,8 +351,8 @@ class DebugSystem extends System {
    * Resets the current camera transform if in world coordinates
    * @param transform
    */
-  private _popCameraTransform(transform: TransformComponent) {
-    if (transform.coordPlane === CoordPlane.World) {
+  private function _popCameraTransform(transform: TransformComponent) {
+    if (transform.coordPlane == CoordPlane.World) {
       // Apply camera world offset
       this._graphicsContext.restore();
     }

@@ -1,4 +1,4 @@
-package nebula.Interfaces;
+package nebula.interfaces;
 
 interface Clonable<T> {
   function clone(): T;

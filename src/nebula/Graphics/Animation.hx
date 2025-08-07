@@ -1,11 +1,11 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Graphic;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Graphics.SpriteSheet;
+import nebula.graphics.Graphic;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.graphics.SpriteSheet;
 
-import nebula.Util.Log;
-import nebula.Math.Util;
+import nebula.util.Log;
+import nebula.math.Util;
 
 import nebula.EventEmitter;
 
@@ -15,37 +15,37 @@ interface HasTick {
    * @param elapsed The amount of real world time in milliseconds that has elapsed that must be updated in the animation
    * @param idempotencyToken Optional idempotencyToken prevents a ticking animation from updating twice per frame
    */
-  tick(elapsed: Float, idempotencyToken?: Int): Void;
+  function tick(elapsed: Float, ?idempotencyToken: Int): Void;
 }
 
 enum AnimationDirection {
   /**
    * Animation is playing forwards
    */
-  Forward = 'forward',
+  Forward;
   /**
    * Animation is playing backwards
    */
-  Backward = 'backward'
+  Backward;
 }
 
 enum AnimationStrategy {
   /**
    * Animation ends without displaying anything
    */
-  End = 'end',
+  End;
   /**
    * Animation loops to the first frame after the last frame
    */
-  Loop = 'loop',
+  Loop;
   /**
    * Animation plays to the last frame, then backwards to the first frame, then repeats
    */
-  PingPong = 'pingpong',
+  PingPong;
   /**
    * Animation ends stopping on the last frame
    */
-  Freeze = 'freeze'
+  Freeze;
 }
 
 /**
@@ -55,15 +55,15 @@ interface Frame {
   /**
    * Optionally specify a graphic to show, no graphic shows an empty frame
    */
-  graphic?: Graphic;
+  var graphic: Null<Graphic>;
   /**
    * Optionally specify the number of ms the frame should be visible, overrides the animation duration (default 100 ms)
    */
-  duration?: Int;
+  var duration: Null<Int>;
 }
 
 interface FrameEvent extends Frame {
-  frameIndex: Int;
+  var frameIndex: Int;
 }
 
 /**
@@ -73,39 +73,39 @@ interface AnimationOptions {
   /**
    * List of frames in the order you wish to play them
    */
-  frames: Frame[];
+  var frames: Array<Frame>;
   /**
    * Optionally set a positive speed multiplier on the animation.
    *
    * By default 1, meaning 1x speed. If set to 2, it will play the animation twice as fast.
    */
-  speed?: Int;
+  var speed: Null<Int>;
   /**
    * Optionally reverse the direction of play
    */
-  reverse?: Bool;
+  var reverse: Null<Bool>;
   /**
    * Optionally specify a default frame duration in ms (Default is 100)
    */
-  frameDuration?: Int;
+  var frameDuration: Null<Int>;
   /**
    * Optionally specify a total duration of the animation in ms to calculate each frame's duration
    */
-  totalDuration?: Int;
+  var totalDuration: Null<Int>;
   /**
    * Optionally specify the {@apilink AnimationStrategy} for the Animation
    */
-  strategy?: AnimationStrategy;
+  var strategy: Null<AnimationStrategy>;
   /**
    * Optionally set arbitrary meta data for the animation
    */
-  data?: Record<String, dynamic>;
+  var data: Null<Record<String, Any>>;
 }
 
-type AnimationEvents = {
-  frame: FrameEvent;
-  loop: Animation;
-  end: Animation;
+typedef TAnimationEvents = {
+  var frame: FrameEvent;
+  var loop: Animation;
+  var end: Animation;
 };
 
 final AnimationEvents = {
@@ -118,7 +118,7 @@ interface FromSpriteSheetOptions {
   /**
    * {@apilink SpriteSheet} to source the animation frames from
    */
-  spriteSheet: SpriteSheet;
+  var priteSheet: SpriteSheet;
   /**
    * The list of (x, y) positions of sprites in the {@apilink SpriteSheet} of each frame, for example (0, 0)
    * is the the top left sprite, (0, 1) is the sprite directly below that, and so on.
@@ -126,34 +126,34 @@ interface FromSpriteSheetOptions {
    * You may optionally specify a duration for the frame in milliseconds as well, this will override
    * the default duration.
    */
-  frameCoordinates: { x: Int; y: Int; duration?: Int; options?: GetSpriteOptions }[];
+  var frameCoordinates: Array<{ x: Int, y: Int, duration: Null<Int>, options: Null<GetSpriteOptions> }>;
   /**
    * Optionally specify a default duration for frames in milliseconds
    * @deprecated use `durationPerFrame`
    */
-  durationPerFrameMs?: Int;
+  var durationPerFrameMs: Null<Int>;
   /**
    * Optionally specify a default duration for frames in milliseconds
    */
-  durationPerFrame?: Int;
+  var durationPerFrame: Null<Int>;
   /**
    * Optionally set a positive speed multiplier on the animation.
    *
    * By default 1, meaning 1x speed. If set to 2, it will play the animation twice as fast.
    */
-  speed?: Int;
+  var speed: Null<Int>;
   /**
    * Optionally specify the animation strategy for this animation, by default animations loop {@apilink AnimationStrategy.Loop}
    */
-  strategy?: AnimationStrategy;
+  var strategy: Null<AnimationStrategy>;
   /**
    * Optionally specify the animation should be reversed
    */
-  reverse?: Bool;
+  var reverse: Null<Bool>;
   /**
    * Optionally set arbitrary meta data for the animation
    */
-  data?: Record<String, dynamic>;
+  var data: Null<Record<String, Any>>;
 }
 
 /**
@@ -162,23 +162,23 @@ interface FromSpriteSheetOptions {
  * To create an Animation from a {@apilink SpriteSheet}, use {@apilink Animation.fromSpriteSheet}
  */
 class Animation extends Graphic implements HasTick {
-  private static _LOGGER = Logger.getInstance();
-  public events = new EventEmitter<AnimationEvents>();
-  public frames: Frame[] = [];
-  public strategy: AnimationStrategy = AnimationStrategy.Loop;
-  public frameDuration: Int = 100;
-  public data: Map<String, dynamic>;
+  private static var _LOGGER = Logger.getInstance();
+  public var events = new EventEmitter<AnimationEvents>();
+  public var frames: Array<Frame> = [];
+  public var strategy: AnimationStrategy = AnimationStrategy.Loop;
+  public var frameDuration: Int = 100;
+  public var data: Map<String, Any>;
 
-  private _idempotencyToken = -1;
+  private var _idempotencyToken = -1;
 
-  private _firstTick = true;
-  private _currentFrame = 0;
-  private _timeLeftInFrame = 0;
-  private _pingPongDirection = 1;
-  private _done = false;
-  private _playing = true;
-  private _speed = 1;
-  private _wasResetDuringFrameCalc: Bool = false;
+  private var _firstTick = true;
+  private var _currentFrame = 0;
+  private var _timeLeftInFrame = 0;
+  private var _pingPongDirection = 1;
+  private var _done = false;
+  private var _playing = true;
+  private var _speed = 1;
+  private var _wasResetDuringFrameCalc: Bool = false;
 
   public function new(options: GraphicOptions & AnimationOptions) {
     super(options);
@@ -186,25 +186,29 @@ class Animation extends Graphic implements HasTick {
     this.speed = options.speed ?? this.speed;
     this.strategy = options.strategy ?? this.strategy;
     this.frameDuration = options.totalDuration ? options.totalDuration / this.frames.length : (options.frameDuration ?? this.frameDuration);
-    this.data = options.data ? new Map(Object.entries(options.data)) : new Map<string, any>();
+    this.data = options.data ? new Map(Object.entries(options.data)) : new Map<String, Any>();
     if (options.reverse) {
       this.reverse();
     }
     this.goToFrame(0);
   }
 
-  public clone(): Animation {
-    return new Animation({
-      frames: this.frames.map((f) => ({ ...f })),
-      frameDuration: this.frameDuration,
-      speed: this.speed,
-      reverse: this._reversed,
-      strategy: this.strategy,
-      ...this.cloneGraphicOptions()
-    });
+  public function clone(): Animation {
+    var config = Object.spreadwith(
+      {
+        frames: this.frames.map((f) -> f),
+        frameDuration: this.frameDuration,
+        speed: this.speed,
+        reverse: this._reversed,
+        strategy: this.strategy,
+      },
+      this.cloneGraphicOptions()
+    );
+
+    return new Animation(config);
   }
 
-  public override get width(): Int {
+  override function get_width(): Int {
     final maybeFrame = this.currentFrame;
     if (maybeFrame && maybeFrame.graphic) {
       return Math.abs(maybeFrame.graphic.width * this.scale.x);
@@ -212,7 +216,7 @@ class Animation extends Graphic implements HasTick {
     return 0;
   }
 
-  public override get height(): Int {
+  override function get_height(): Int {
     final maybeFrame = this.currentFrame;
     if (maybeFrame && maybeFrame.graphic) {
       return Math.abs(maybeFrame.graphic.height * this.scale.y);
@@ -235,12 +239,12 @@ class Animation extends Graphic implements HasTick {
    * @param durationPerFrame duration per frame in milliseconds
    * @param strategy Optional strategy, default AnimationStrategy.Loop
    */
-  public static fromSpriteSheet(
+  public static function fromSpriteSheet(
     spriteSheet: SpriteSheet,
-    spriteSheetIndex: Int[],
+    spriteSheetIndex: Array<Int>,
     durationPerFrame: Int,
     strategy: AnimationStrategy = AnimationStrategy.Loop,
-    data?: Record<String, dynamic>
+    ?data: Record<String, Any>
   ): Animation {
     final maxIndex = spriteSheet.sprites.length - 1;
     final invalidIndices = spriteSheetIndex.filter((index) => index < 0 || index > maxIndex);
@@ -251,13 +255,13 @@ class Animation extends Graphic implements HasTick {
     }
     return new Animation({
       frames: spriteSheet.sprites
-        .filter((_, index) => spriteSheetIndex.indexOf(index) > -1)
+        .filter((_, index) -> spriteSheetIndex.indexOf(index) > -1)
         .map((f) => ({
           graphic: f,
           duration: durationPerFrame
         })),
       strategy: strategy,
-      data
+      data: data
     });
   }
 
@@ -282,12 +286,24 @@ class Animation extends Graphic implements HasTick {
    * @param options
    * @returns Animation
    */
-  public static fromSpriteSheetCoordinates(options: FromSpriteSheetOptions): Animation {
-    final { spriteSheet, frameCoordinates, durationPerFrame, durationPerFrameMs, speed, strategy, reverse, data } = options;
+  public static function fromSpriteSheetCoordinates(options: FromSpriteSheetOptions): Animation {
+    final spriteSheet = options.spriteSheet,
+          frameCoordinates = options.frameCoordinates,
+          durationPerFrame = options.durationPerFrame,
+          durationPerFrameMs = options.durationPerFrameMs,
+          speed = options.speed,
+          strategy = options.strategy,
+          reverse = options.reverse,
+          data = options.data;
+
     final defaultDuration = durationPerFrame ?? durationPerFrameMs ?? 100;
-    final frames: Frame[] = [];
-    for (final coord of frameCoordinates) {
-      final { x, y, duration, options } = coord;
+    final frames: Array<Frame> = [];
+    for (coord in frameCoordinates) {
+      final x = coord.x,
+            y = coord.y,
+            duration = coord.duration,
+            options = coord.options;
+
       final sprite = spriteSheet.getSprite(x, y, options);
       if (sprite) {
         frames.push({
@@ -302,11 +318,11 @@ class Animation extends Graphic implements HasTick {
     }
 
     return new Animation({
-      frames,
-      strategy,
-      speed,
-      reverse,
-      data
+      frames: frames,
+      strategy: strategy,
+      speed: speed,
+      reverse: reverse,
+      data: data
     });
   }
 
@@ -316,7 +332,8 @@ class Animation extends Graphic implements HasTick {
    * 1 meaning normal 1x speed.
    * 2 meaning 2x speed and so on.
    */
-  public get speed(): Int {
+  public var speed(get, set): Int;
+  function get_speed(): Int {
     return this._speed;
   }
 
@@ -326,7 +343,7 @@ class Animation extends Graphic implements HasTick {
    * 1 meaning normal 1x speed.
    * 2 meaning 2x speed and so on.
    */
-  public set speed(val: Int) {
+  function set_speed(val: Int) {
     this._speed = clamp(Math.abs(val), 0, Infinity);
   }
 
@@ -336,7 +353,8 @@ class Animation extends Graphic implements HasTick {
    * Use {@apilink Animation.currentFrameIndex} to get the frame number and
    * {@apilink Animation.goToFrame} to set the current frame index
    */
-  public get currentFrame(): Null<Frame> {
+  public var currentFrame(get, never): Null<Frame>;
+  function get_currentFrame(): Null<Frame> {
     if (this._currentFrame >= 0 && this._currentFrame < this.frames.length) {
       return this.frames[this._currentFrame];
     }
@@ -348,34 +366,38 @@ class Animation extends Graphic implements HasTick {
    *
    * Use {@apilink Animation.currentFrame} to grab the current {@apilink Frame} object
    */
-  public get currentFrameIndex(): Int {
+  public var currentFrameIndex(get, never): Int;
+  function get_currentFrameIndex(): Int {
     return this._currentFrame;
   }
 
   /**
    * Returns the amount of time in milliseconds left in the current frame
    */
-  public get currentFrameTimeLeft(): Int {
+  public var currentFrameTimeLeft(get, never): Int;
+  function get_currentFrameTimeLeft(): Int {
     return this._timeLeftInFrame;
   }
 
   /**
    * Returns `true` if the animation is playing
    */
-  public get isPlaying(): Bool {
+  public var isPlaying(get, never): Bool;
+  function get_isPlaying(): Bool {
     return this._playing;
   }
 
-  private _reversed = false;
+  private var _reversed = false;
 
-  public get isReversed() {
+  public var isReversed(get, never): Bool;
+  function get_isReversed() {
     return this._reversed;
   }
 
   /**
    * Reverses the play direction of the Animation, this preserves the current frame
    */
-  public reverse(): Void {
+  public function reverse(): Void {
     // Don't mutate with the original frame list, create a copy
     this.frames = this.frames.slice().reverse();
     this._reversed = !this._reversed;
@@ -384,24 +406,25 @@ class Animation extends Graphic implements HasTick {
   /**
    * Returns the current play direction of the animation
    */
-  public get direction(): AnimationDirection {
+  public var direction(get, never): AnimationDirection;
+  function get_direction(): AnimationDirection {
     // Keep logically consistent with ping-pong direction
     // If ping-pong is forward = 1 and reversed is true then we are logically reversed
-    final reversed = this._reversed && this._pingPongDirection === 1 ? true : false;
+    final reversed = this._reversed && this._pingPongDirection == 1 ? true : false;
     return reversed ? AnimationDirection.Backward : AnimationDirection.Forward;
   }
 
   /**
    * Plays or resumes the animation from the current frame
    */
-  public play(): Void {
+  public function play(): Void {
     this._playing = true;
   }
 
   /**
    * Pauses the animation on the current frame
    */
-  public pause(): Void {
+  public function pause(): Void {
     this._playing = false;
     this._firstTick = true; // firstTick must be set to emit the proper frame event
   }
@@ -409,7 +432,7 @@ class Animation extends Graphic implements HasTick {
   /**
    * Reset the animation back to the beginning, including if the animation were done
    */
-  public reset(): Void {
+  public function reset(): Void {
     this._wasResetDuringFrameCalc = true;
     this._done = false;
     this._firstTick = true;
@@ -424,7 +447,8 @@ class Animation extends Graphic implements HasTick {
   /**
    * Returns `true` if the animation can end
    */
-  public get canFinish(): Bool {
+  public var canFinish(get, never): Bool;
+  function get_canFinish(): Bool {
     switch (this.strategy) {
       case AnimationStrategy.End:
       case AnimationStrategy.Freeze: {
@@ -442,7 +466,8 @@ class Animation extends Graphic implements HasTick {
    *
    * See the `ex.Animation.canFinish()` method to know if an animation type can end
    */
-  public get done(): Bool {
+  public var done(get, never): Bool;
+  function get_done(): Bool {
     return this._done;
   }
 
@@ -454,17 +479,17 @@ class Animation extends Graphic implements HasTick {
    * @param frameNumber
    * @param duration
    */
-  public goToFrame(frameNumber: Int, duration?: Int) {
+  public function goToFrame(frameNumber: Int, ?duration: Int) {
     this._currentFrame = frameNumber;
     this._timeLeftInFrame = duration ?? this.frameDuration;
     final maybeFrame = this.frames[this._currentFrame];
     if (maybeFrame && !this._done) {
       this._timeLeftInFrame = duration ?? (maybeFrame?.duration || this.frameDuration);
-      this.events.emit('frame', { ...maybeFrame, frameIndex: this.currentFrameIndex });
+      this.events.emit('frame', Object.spreadWith(maybeFrame, { frameIndex: this.currentFrameIndex }));
     }
   }
 
-  private _nextFrame(): Int {
+  private function _nextFrame(): Int {
     this._wasResetDuringFrameCalc = false;
     final currentFrame = this._currentFrame;
     if (this._done) {
@@ -475,7 +500,7 @@ class Animation extends Graphic implements HasTick {
     switch (this.strategy) {
       case AnimationStrategy.Loop: {
         next = (currentFrame + 1) % this.frames.length;
-        if (next === 0) {
+        if (next == 0) {
           this.events.emit('loop', this);
         }
         break;
@@ -525,8 +550,8 @@ class Animation extends Graphic implements HasTick {
    * @param elapsed Milliseconds elapsed
    * @param idempotencyToken Prevents double ticking in a frame by passing a unique token to the frame
    */
-  public tick(elapsed: Int, idempotencyToken: Int = 0): Void {
-    if (this._idempotencyToken === idempotencyToken) {
+  public function tick(elapsed: Int, idempotencyToken: Int = 0): Void {
+    if (this._idempotencyToken == idempotencyToken) {
       return;
     }
     this._idempotencyToken = idempotencyToken;
@@ -537,7 +562,7 @@ class Animation extends Graphic implements HasTick {
     // if it's the first frame emit frame event
     if (this._firstTick) {
       this._firstTick = false;
-      this.events.emit('frame', { ...this.currentFrame, frameIndex: this.currentFrameIndex });
+      this.events.emit('frame', Object.spreadWith(this.currentFrame, { frameIndex: this.currentFrameIndex }));
     }
 
     this._timeLeftInFrame -= elapsed * this._speed;
@@ -546,7 +571,7 @@ class Animation extends Graphic implements HasTick {
     }
   }
 
-  _drawImage(ctx: ExcaliburGraphicsContext, x: Int, y: Int) {
+  function _drawImage(ctx: ExcaliburGraphicsContext, x: Int, y: Int) {
     if (this.currentFrame && this.currentFrame.graphic) {
       this.currentFrame.graphic.draw(ctx, x, y);
     }

@@ -1,5 +1,7 @@
+package nebula.graphics.postprocessor;
+
 enum ColorBlindnessMode {
-  Protanope = 'Protanope',
-  Deuteranope = 'Deuteranope',
-  Tritanope = 'Tritanope'
+  Protanope;
+  Deuteranope;
+  Tritanope;
 }

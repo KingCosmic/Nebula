@@ -1,10 +1,10 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Debug.DebugConfig;
+import nebula.debug.DebugConfig;
 
-import nebula.EntityComponentSystem.Component;
+import nebula.entitycomponentsystem.Component;
 
 /**
  * Provide arbitrary drawing for the purposes of debugging your game
@@ -14,8 +14,8 @@ import nebula.EntityComponentSystem.Component;
  */
 class DebugGraphicsComponent extends Component {
   public function new(
-    public draw: (ctx: ExcaliburGraphicsContext, debugFlags: DebugConfig) => void,
-    public useTransform = true
+    draw: (ctx: ExcaliburGraphicsContext, debugFlags: DebugConfig) -> Void,
+    useTransform = true
   ) {
     super();
   }

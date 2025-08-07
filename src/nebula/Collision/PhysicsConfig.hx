@@ -1,10 +1,9 @@
-package nebula.Collision;
+package nebula.collision;
 
-import nebula.Math.Vector;
-import nebula.Util.Required;
-import nebula.Collision.SolverStrategy;
-import nebula.Collision.Solver.ContactBias;
-import nebula.Collision.Detection.SpatialPartitionStrategy;
+import nebula.math.Vector;
+import nebula.collision.SolverStrategy;
+import nebula.collision.solver.ContactBias;
+import nebula.collision.detection.SpatialPartitionStrategy;
 
 interface DynamicTreeConfig {
   /**
@@ -12,14 +11,14 @@ interface DynamicTreeConfig {
    *
    * Default 5 pixels
    */
-  boundsPadding?: Int;
+  var boundsPadding: Null<Int>;
 
   /**
    * Factor to add to the collider BoundingBox, bounding box (dimensions += vel * dynamicTreeVelocityMultiplier);
    *
    * Default 2
    */
-  velocityMultiplier?: Int;
+  var velocityMultiplier: Null<Int>;
 }
 
 interface SparseHashGridConfig {
@@ -28,14 +27,14 @@ interface SparseHashGridConfig {
    *
    * A good size means that your average collider in your game would fit inside the cell size by size dimension.
    */
-  size: Float;
+  var size: Float;
 }
 
 interface PhysicsConfig {
   /**
    * Excalibur physics simulation is enabled
    */
-  enabled?: Bool;
+  var enabled: Null<Bool>;
   /**
    * Configure gravity that applies to all {@apilink CollisionType.Active} bodies.
    *
@@ -45,7 +44,7 @@ interface PhysicsConfig {
    *
    * {@apilink BodyComponent.useGravity} to opt out
    */
-  gravity?: Vector;
+  var gravity: Null<Vector>;
   /**
    * Configure the type of physics simulation you would like
    *
@@ -54,19 +53,19 @@ interface PhysicsConfig {
    *
    * Default is Arcade
    */
-  solver?: SolverStrategy;
+  var solver: Null<SolverStrategy>;
 
   /**
    * Configure physics sub-stepping, this can increase simulation fidelity by doing smaller physics steps
    *
    * Default is 1 step
    */
-  substep?: Int;
+  var substep: Null<Int>;
 
   /**
    * Configure colliders
    */
-  colliders?: {
+  var colliders: Null<{
     /**
      * Treat composite collider's member colliders as either separate colliders for the purposes of onCollisionStart/onCollision
      * or as a single collider together.
@@ -79,20 +78,20 @@ interface PhysicsConfig {
      *
      * Default is 'together' if unset
      */
-    compositeStrategy?: 'separate' | 'together';
-  };
+    var compositeStrategy: Null<String>;
+  }>;
 
   /**
    * Configure excalibur continuous collision (WIP)
    */
-  continuous?: {
+  var continuous: Null<{
     /**
      * Enable fast moving body checking, this enables checking for collision pairs via raycast for fast moving objects to prevent
      * bodies from tunneling through one another.
      *
      * Default true
      */
-    checkForFastBodies?: Bool;
+    var checkForFastBodies: Null<Bool>;
 
     /**
      * Disable minimum fast moving body raycast, by default if checkForFastBodies = true Excalibur will only check if the
@@ -101,67 +100,67 @@ interface PhysicsConfig {
      *
      * Default false
      */
-    disableMinimumSpeedForFastBody?: Bool;
+    var disableMinimumSpeedForFastBody: Null<Bool>;
 
     /**
      * Surface epsilon is used to help deal with predicting collisions by applying a slop
      *
      * Default 0.1
      */
-    surfaceEpsilon?: Float;
-  };
+    var surfaceEpsilon: Null<Float>;
+  }>;
 
   /**
    * Configure body defaults
    */
-  bodies?: {
+  var bodies: Null<{
     /**
      * Configure default mass that bodies have
      *
      * Default 10 mass units
      */
-    defaultMass?: Int;
+    var defaultMass: Null<Int>;
 
     /**
      * Sleep epsilon
      *
      * Default 0.07
      */
-    sleepEpsilon?: Float;
+    var sleepEpsilon: Null<Float>;
 
     /**
      * Wake Threshold, the amount of "motion" need to wake a body from sleep
      *
      * Default 0.07 * 3;
      */
-    wakeThreshold?: Float;
+    var wakeThreshold: Null<Float>;
 
     /**
      * Sleep bias
      *
      * Default 0.9
      */
-    sleepBias?: Float;
+    var sleepBias: Null<Float>;
 
     /**
      * By default bodies do not sleep, this can be turned on to improve perf if you have a lot of bodies.
      *
      * Default false
      */
-    canSleepByDefault?: Bool;
-  };
+    var canSleepByDefault: Null<Bool>;
+  }>;
 
   /**
    * Configure the spatial data structure for locating pairs and raycasts
    */
-  spatialPartition?: SpatialPartitionStrategy;
-  sparseHashGrid?: SparseHashGridConfig;
-  dynamicTree?: DynamicTreeConfig;
+  var spatialPartition: Null<SpatialPartitionStrategy>;
+  var sparseHashGrid: Null<SparseHashGridConfig>;
+  var dynamicTree: Null<DynamicTreeConfig>;
 
   /**
    * Configure the {@apilink ArcadeSolver}
    */
-  arcade?: {
+  var arcade: Null<{
     /**
      * Hints the {@apilink ArcadeSolver} to preferentially solve certain contact directions first.
      *
@@ -172,34 +171,34 @@ interface PhysicsConfig {
      * left/right forces)
      * * By default {@apilink ContactSolveBias.None} which sorts by distance
      */
-    contactSolveBias?: ContactSolveBias;
-  };
+    var contactSolveBias: Null<ContactSolveBias>;
+  }>;
 
   /**
    * Configure the {@apilink RealisticSolver}
    */
-  realistic?: {
-    contactSolveBias?: ContactSolveBias;
+  var realistic: Null<{
+    var contactSolveBias: Null<ContactSolveBias>;
     /**
      * Number of position iterations (overlap) to run in the solver
      *
      * Default 3 iterations
      */
-    positionIterations?: Int;
+    var positionIterations: Null<Int>;
 
     /**
      * Number of velocity iteration (response) to run in the solver
      *
      * Default 8 iterations
      */
-    velocityIterations?: Int;
+    var velocityIterations: Null<Int>;
 
     /**
      * Amount of overlap to tolerate in pixels
      *
      * Default 1 pixel
      */
-    slop?: Int;
+    var slop: Null<Int>;
 
     /**
      * Amount of positional overlap correction to apply each position iteration of the solver
@@ -207,7 +206,7 @@ interface PhysicsConfig {
      *
      * Default 0.2
      */
-    steeringFactor?: Float;
+    var steeringFactor: Null<Float>;
 
     /**
      * Warm start set to true re-uses impulses from previous frames back in the solver. Re-using impulses helps
@@ -215,47 +214,49 @@ interface PhysicsConfig {
      *
      * Default true
      */
-    warmStart?: Bool;
-  };
+    var warmStart: Null<Bool>;
+  }>;
 }
 
-final getDefaultPhysicsConfig: () => DeepRequired<PhysicsConfig> = () => ({
-  enabled: true,
-  gravity: vec(0, 0).clone(),
-  solver: SolverStrategy.Arcade,
-  substep: 1,
-  colliders: {
-    compositeStrategy: 'together'
-  },
-  continuous: {
-    checkForFastBodies: true,
-    disableMinimumSpeedForFastBody: false,
-    surfaceEpsilon: 0.1
-  },
-  bodies: {
-    canSleepByDefault: false,
-    sleepEpsilon: 0.07,
-    wakeThreshold: 0.07 * 3,
-    sleepBias: 0.9,
-    defaultMass: 10
-  },
-  spatialPartition: SpatialPartitionStrategy.SparseHashGrid,
-  sparseHashGrid: {
-    size: 100
-  },
-  dynamicTree: {
-    boundsPadding: 5,
-    velocityMultiplier: 2
-  },
-  arcade: {
-    contactSolveBias: ContactSolveBias.None
-  },
-  realistic: {
-    contactSolveBias: ContactSolveBias.None,
-    positionIterations: 3,
-    velocityIterations: 8,
-    slop: 1,
-    steeringFactor: 0.2,
-    warmStart: true
+final getDefaultPhysicsConfig: () -> DeepRequired<PhysicsConfig> = () -> {
+  return {
+    enabled: true,
+    gravity: vec(0, 0).clone(),
+    solver: SolverStrategy.Arcade,
+    substep: 1,
+    colliders: {
+      compositeStrategy: 'together'
+    },
+    continuous: {
+      checkForFastBodies: true,
+      disableMinimumSpeedForFastBody: false,
+      surfaceEpsilon: 0.1
+    },
+    bodies: {
+      canSleepByDefault: false,
+      sleepEpsilon: 0.07,
+      wakeThreshold: 0.07 * 3,
+      sleepBias: 0.9,
+      defaultMass: 10
+    },
+    spatialPartition: SpatialPartitionStrategy.SparseHashGrid,
+    sparseHashGrid: {
+      size: 100
+    },
+    dynamicTree: {
+      boundsPadding: 5,
+      velocityMultiplier: 2
+    },
+    arcade: {
+      contactSolveBias: ContactSolveBias.None
+    },
+    realistic: {
+      contactSolveBias: ContactSolveBias.None,
+      positionIterations: 3,
+      velocityIterations: 8,
+      slop: 1,
+      steeringFactor: 0.2,
+      warmStart: true
+    }
   }
-});
+};

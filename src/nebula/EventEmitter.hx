@@ -14,12 +14,12 @@ typedef Subscription = {
   function close(): Void;
 }
 
-enum EitherOr<A, B> {
+enum Either<A, B> {
   First(a: A);
   Second(b: B);
 }
 
-typedef EventNameOrString = EitherOr<EventKey<EventMap>, String>;
+typedef EventNameOrString = Either<EventKey<EventMap>, String>;
 
 /**
  * Excalibur's typed event emitter, this allows events to be sent with any string to Type mapping

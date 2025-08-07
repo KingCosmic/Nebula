@@ -1,22 +1,21 @@
-package nebula.Actions;
+package nebula.actions;
 
-import nebula.EntityComponentSystem;
-import nebula.EntityComponentSystem.System;
-import nebula.ActionsComponent;
+import nebula.entitycomponentsystem.System;
+import nebula.actions.ActionsComponent;
 
 class ActionsSystem extends System {
-  static priority = SystemPriority.Higher;
+  static var priority = SystemPriority.Higher;
 
-  systemType = SystemType.Update;
-  private _actions: ActionsComponent[] = [];
-  query: Query<typeof ActionsComponent>;
+  var systemType = SystemType.Update;
+  private var _actions: Array<ActionsComponent> = [];
+  var query: Query;
 
-  constructor(public world: World) {
+  public function new(world: World) {
     super();
     this.query = this.world.query([ActionsComponent]);
 
-    this.query.entityAdded$.subscribe((e) => this._actions.push(e.get(ActionsComponent)));
-    this.query.entityRemoved$.subscribe((e) => {
+    this.query.entityAdded.subscribe((e) -> this._actions.push(e.get(ActionsComponent)));
+    this.query.entityRemoved.subscribe((e) -> {
       var action = e.get(ActionsComponent);
       var index = this._actions.indexOf(action);
       if (index > -1) {
@@ -25,8 +24,8 @@ class ActionsSystem extends System {
     });
   }
   
-  update(elapsed: Float): void {
-    for (let i = 0; i < this._actions.length; i++) {
+  function update(elapsed: Int): Void {
+    for (i in 0...this._actions.length) {
       var action = this._actions[i];
       action.update(elapsed);
     }

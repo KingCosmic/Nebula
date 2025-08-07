@@ -1,63 +1,62 @@
-import { BoundingBox } from '../Collision/BoundingBox';
-import type { Engine } from '../Engine';
-import { Vector, vec } from '../Math/vector';
-import { Logger } from '../Util/Log';
-import type { EntityEvents } from '../EntityComponentSystem/Entity';
-import { Entity } from '../EntityComponentSystem/Entity';
-import { TransformComponent } from '../EntityComponentSystem/Components/TransformComponent';
-import { BodyComponent } from '../Collision/BodyComponent';
-import { CollisionType } from '../Collision/CollisionType';
-import { Shape } from '../Collision/Colliders/Shape';
-import type { ExcaliburGraphicsContext, Graphic } from '../Graphics';
-import { GraphicsComponent, hasGraphicsTick, ParallaxComponent } from '../Graphics';
-import { MotionComponent } from '../EntityComponentSystem/Components/MotionComponent';
-import { ColliderComponent } from '../Collision/ColliderComponent';
-import type { CompositeCollider } from '../Collision/Colliders/CompositeCollider';
-import { DebugGraphicsComponent } from '../Graphics/DebugGraphicsComponent';
-import type { Collider } from '../Collision/Colliders/Collider';
-import { PostDrawEvent, PostUpdateEvent, PreDrawEvent, PreUpdateEvent } from '../Events';
-import type { EventKey, Handler, Subscription } from '../EventEmitter';
-import { EventEmitter } from '../EventEmitter';
-import { CoordPlane } from '../Math/coord-plane';
-import type { DebugConfig } from '../Debug';
-import { clamp } from '../Math/util';
-import { PointerComponent } from '../Input/PointerComponent';
-import type { PointerEvent } from '../Input/PointerEvent';
-import type { PointerEventReceiver } from '../Input/PointerEventReceiver';
-import type { HasNestedPointerEvents } from '../Input/PointerEventsToObjectDispatcher';
-import { PointerEventsToObjectDispatcher } from '../Input/PointerEventsToObjectDispatcher';
-import type { GlobalCoordinates } from '../Math';
+package nebula.tilemap;
 
-export interface TileMapOptions {
+import nebula.collision.BoundingBox;
+import nebula.Engine;
+import nebula.math.Vector;
+import nebula.util.Log;
+import nebula.entitycomponentsystem.Entity;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.collision.BodyComponent;
+import nebula.collision.CollisionType;
+import nebula.collision.colliders.Shape;
+import nebula.graphics.Graphic;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.entitycomponentsystem.components.MotionComponent;
+import nebula.collision.ColliderComponent;
+import nebula.collision.colliders.CompositeCollider;
+import nebula.graphics.DebugGraphicsComponent;
+import nebula.collision.colliders.Collider;
+import nebula.Events;
+import nebula.EventEmitter;
+import nebula.math.CoordPlane;
+import nebula.debug.DebugConfig;
+import nebula.math.Util;
+import nebula.input.PointerComponent;
+import nebula.input.PointerEvent;
+import nebula.input.PointerEventReceiver;
+import nebula.input.PointerEventsToObjectDispatcher;
+import nebula.math.GlobalCoordinates;
+
+interface TileMapOptions {
   /**
    * Optionally name the tile map
    */
-  name?: string;
+  var name: Null<String>;
   /**
    * Optionally specify the position of the tile map
    */
-  pos?: Vector;
+  var pos: Null<Vector>;
   /**
    * Width of an individual tile in pixels
    */
-  tileWidth: number;
+  var tileWidth: Int;
   /**
    * Height of an individual tile in pixels
    */
-  tileHeight: number;
+  var tileHeight: Int;
   /**
    * The number of tile columns, or the number of tiles wide
    */
-  columns: number;
+  var columns: Int;
   /**
    * The number of tile  rows, or the number of tiles high
    */
-  rows: number;
+  var rows: Int;
 
   /**
    * Optionally render from the top of the graphic, by default tiles are rendered from the bottom
    */
-  renderFromTopOfGraphic?: boolean;
+  var renderFromTopOfGraphic: Null<Bool>;
 
   /**
    * Optionally configure the meshing lookbehind for Tilemap, Tilemaps combine solid tiles into optimal
@@ -67,27 +66,27 @@ export interface TileMapOptions {
    * Default is 10 slots, but if your Tilemap does not change positions or solid tiles often you can increase this to
    * Infinity.
    */
-  meshingLookBehind?: number;
+  var meshingLookBehind: Null<Int>;
 }
 
-export type TilePointerEvents = {
-  pointerup: PointerEvent;
-  pointerdown: PointerEvent;
-  pointermove: PointerEvent;
-  pointercancel: PointerEvent;
-  pointerenter: PointerEvent;
-  pointerleave: PointerEvent;
+typedef TTilePointerEvents = {
+  var pointerup: PointerEvent;
+  var pointerdown: PointerEvent;
+  var pointermove: PointerEvent;
+  var pointercancel: PointerEvent;
+  var pointerenter: PointerEvent;
+  var pointerleave: PointerEvent;
 };
 
-export type TileMapEvents = EntityEvents &
-  TilePointerEvents & {
-    preupdate: PreUpdateEvent<TileMap>;
-    postupdate: PostUpdateEvent<TileMap>;
-    predraw: PreDrawEvent;
-    postdraw: PostDrawEvent;
+typedef TTileMapEvents = TEntityEvents &
+  TTilePointerEvents & {
+    var preupdate: PreUpdateEvent<TileMap>;
+    var postupdate: PostUpdateEvent<TileMap>;
+    var predraw: PreDrawEvent;
+    var postdraw: PostDrawEvent;
   };
 
-export const TileMapEvents = {
+final TileMapEvents = {
   PreUpdate: 'preupdate',
   PostUpdate: 'postupdate',
   PreDraw: 'predraw',
@@ -103,83 +102,83 @@ export const TileMapEvents = {
  *
  * TileMaps are useful for top down or side scrolling grid oriented games.
  */
-export class TileMap extends Entity implements HasNestedPointerEvents {
-  public events = new EventEmitter<TileMapEvents>();
-  private _token = 0;
-  private _engine!: Engine;
+class TileMap extends Entity implements HasNestedPointerEvents {
+  public var events = new EventEmitter();
+  private var _token: Int = 0;
+  private var _engine: Engine;
 
-  public logger: Logger = Logger.getInstance();
-  public readonly tiles: Tile[] = [];
-  private _rows: Tile[][] = [];
-  private _cols: Tile[][] = [];
+  public var logger: Logger = Logger.getInstance();
+  public var tiles: Array<Tile> = [];
+  private var _rows: Array<Array<Tile>> = [];
+  private var _cols: Array<Array<Tile>> = [];
 
-  public readonly tileWidth: number;
-  public readonly tileHeight: number;
-  public readonly rows: number;
-  public readonly columns: number;
+  public var tileWidth: Int;
+  public var tileHeight: Int;
+  public var rows: Int;
+  public var columns: Int;
 
-  public renderFromTopOfGraphic = false;
-  public meshingLookBehind = 10;
+  public var renderFromTopOfGraphic = false;
+  public var meshingLookBehind = 10;
 
-  private _collidersDirty = true;
-  private _pointerEventDispatcher: PointerEventsToObjectDispatcher<Tile>;
-  public flagCollidersDirty() {
+  private var _collidersDirty = true;
+  private var _pointerEventDispatcher: PointerEventsToObjectDispatcher<Tile>;
+  public function flagCollidersDirty() {
     this._collidersDirty = true;
   }
 
-  public flagTilesDirty(): void {
-    for (let i = 0; i < this.tiles.length; i++) {
+  public function flagTilesDirty(): Void {
+    for (i in 0...this.tiles.length) {
       if (this.tiles[i]) {
         this.tiles[i].flagDirty();
       }
     }
   }
 
-  public pointer: PointerComponent;
-  public transform: TransformComponent;
-  private _motion: MotionComponent;
-  private _graphics: GraphicsComponent;
-  public collider: ColliderComponent;
-  private _composite: CompositeCollider;
+  public var pointer: PointerComponent;
+  public var transform: TransformComponent;
+  private var _motion: MotionComponent;
+  private var _graphics: GraphicsComponent;
+  public var collider: ColliderComponent;
+  private var _composite: CompositeCollider;
 
-  public get x(): number {
+  public var x(get, set): Int;
+  function get_x(): Int {
     return this.transform.pos.x ?? 0;
   }
-
-  public set x(val: number) {
+  function set_x(val: Int) {
     if (this.transform?.pos) {
       this.get(TransformComponent).pos = vec(val, this.y);
     }
   }
 
-  public get y(): number {
+  public var y(get, set): Int;
+  function get_y(): Int {
     return this.transform?.pos.y ?? 0;
   }
-
-  public set y(val: number) {
+  function set_y(val: Int) {
     if (this.transform?.pos) {
       this.transform.pos = vec(this.x, val);
     }
   }
 
-  public get z(): number {
+  public var z(get, set): Int;
+  function get_z(): Int {
     return this.transform.z ?? 0;
   }
-
-  public set z(val: number) {
+  function set_z(val: Int) {
     if (this.transform) {
       this.transform.z = val;
     }
   }
 
-  private _oldRotation: number = 0;
-  public get rotation(): number {
+  private var _oldRotation: Int = 0;
+  public var rotation(get, set): Int;
+  function get_rotation(): Int {
     return this.transform?.rotation ?? 0;
   }
-
-  public set rotation(val: number) {
+  function set_rotation(val: Int) {
     if (this.transform) {
-      if (val !== this.transform.rotation) {
+      if (val != this.transform.rotation) {
         this.flagCollidersDirty();
         this.flagTilesDirty();
       }
@@ -187,12 +186,12 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
     }
   }
 
-  private _oldScale: Vector;
-  public get scale(): Vector {
+  private var _oldScale: Vector;
+  public var scale(get, set): Vector;
+  function get_scale(): Vector {
     return this.transform?.scale ?? Vector.One;
   }
-
-  public set scale(val: Vector) {
+  function set_scale(val: Vector) {
     if (this.transform) {
       if (!val?.equals(this.transform.scale)) {
         this.flagCollidersDirty();
@@ -202,12 +201,12 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
     }
   }
 
-  private _oldPos: Vector;
-  public get pos(): Vector {
+  private var _oldPos: Vector;
+  public var pos(get, set): Vector;
+  function get_pos(): Vector {
     return this.transform.pos;
   }
-
-  public set pos(val: Vector) {
+  function set_pos(val: Vector) {
     if (this.transform) {
       if (!val?.equals(this.transform.pos)) {
         this.flagCollidersDirty();
@@ -217,57 +216,50 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
     }
   }
 
-  public get vel(): Vector {
+  public var vel(get, set): Vector;
+  function get_vel(): Vector {
     return this._motion.vel;
   }
-
-  public set vel(val: Vector) {
+  function set_vel(val: Vector) {
     this._motion.vel = val;
   }
 
   /**
    * Width of the whole tile map in pixels
    */
-  public get width(): number {
+  public var width(get, never): Int;
+  function get_width(): Int {
     return this.tileWidth * this.columns * this.scale.x;
   }
 
   /**
    * Height of the whole tilemap in pixels
    */
-  public get height(): number {
+  public var height(get, never): Int;
+  function get_height(): Int {
     return this.tileHeight * this.rows * this.scale.y;
   }
 
-  public emit<TEventName extends EventKey<TileMapEvents>>(eventName: TEventName, event: TileMapEvents[TEventName]): void;
-  public emit(eventName: string, event?: any): void;
-  public emit<TEventName extends EventKey<TileMapEvents> | string>(eventName: TEventName, event?: any): void {
+  public function emit(eventName: String, ?event: Any): Void {
     this.events.emit(eventName, event);
   }
 
-  public on<TEventName extends EventKey<TileMapEvents>>(eventName: TEventName, handler: Handler<TileMapEvents[TEventName]>): Subscription;
-  public on(eventName: string, handler: Handler<unknown>): Subscription;
-  public on<TEventName extends EventKey<TileMapEvents> | string>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function on(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.on(eventName, handler);
   }
 
-  public once<TEventName extends EventKey<TileMapEvents>>(eventName: TEventName, handler: Handler<TileMapEvents[TEventName]>): Subscription;
-  public once(eventName: string, handler: Handler<unknown>): Subscription;
-  public once<TEventName extends EventKey<TileMapEvents> | string>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function once(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.once(eventName, handler);
   }
 
-  public off<TEventName extends EventKey<TileMapEvents>>(eventName: TEventName, handler: Handler<TileMapEvents[TEventName]>): void;
-  public off(eventName: string, handler: Handler<unknown>): void;
-  public off(eventName: string): void;
-  public off<TEventName extends EventKey<TileMapEvents> | string>(eventName: TEventName, handler?: Handler<any>): void {
-    this.events.off(eventName, handler as any);
+  public function off(eventName: String, ?handler: Handler<Any>): Void {
+    this.events.off(eventName, handler);
   }
 
   /**
    * @param options
    */
-  constructor(options: TileMapOptions) {
+  public function new(options: TileMapOptions) {
     super([], options.name);
     this.meshingLookBehind = options.meshingLookBehind ?? this.meshingLookBehind;
     this.addComponent(new TransformComponent());
@@ -279,10 +271,10 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
     );
     this.addComponent(
       new GraphicsComponent({
-        onPostDraw: (ctx, elapsed) => this.draw(ctx, elapsed)
+        onPostDraw: (ctx, elapsed) -> this.draw(ctx, elapsed)
       })
     );
-    this.addComponent(new DebugGraphicsComponent((ctx, debugFlags) => this.debug(ctx, debugFlags), false));
+    this.addComponent(new DebugGraphicsComponent((ctx, debugFlags) -> this.debug(ctx, debugFlags), false));
     this.addComponent(new ColliderComponent());
     this.addComponent(new PointerComponent());
     this.pointer = this.get(PointerComponent);
@@ -306,10 +298,10 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
     this.tiles = new Array<Tile>(this.rows * this.columns);
     this._rows = new Array(this.rows);
     this._cols = new Array(this.columns);
-    let currentCol: Tile[] = [];
-    for (let i = 0; i < this.columns; i++) {
-      for (let j = 0; j < this.rows; j++) {
-        const tile = new Tile({
+    var currentCol: Array<Tile> = [];
+    for (i in 0...this.columns) {
+      for (j in 0...this.rows) {
+        final tile = new Tile({
           x: i,
           y: j,
           map: this
@@ -318,11 +310,11 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
         this.tiles[i + j * this.columns] = tile;
         this._pointerEventDispatcher.addObject(
           tile,
-          (vec: GlobalCoordinates) => {
+          (vec: GlobalCoordinates) -> {
             // TODO handle geometry/graphics
             return tile.bounds.contains(vec.worldPos);
           },
-          () => true
+          () -> true
         );
         currentCol.push(tile);
         if (!this._rows[j]) {
@@ -342,15 +334,15 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
     });
   }
 
-  public _initialize(engine: Engine) {
+  public function _initialize(engine: Engine) {
     super._initialize(engine);
     this._engine = engine;
   }
 
-  private _originalOffsets = new WeakMap<Collider, Vector>();
-  private _getOrSetColliderOriginalOffset(collider: Collider): Vector {
+  private var _originalOffsets = new WeakMap<Collider, Vector>();
+  private function _getOrSetColliderOriginalOffset(collider: Collider): Vector {
     if (!this._originalOffsets.has(collider)) {
-      const originalOffset = collider.offset;
+      final originalOffset = collider.offset;
       this._originalOffsets.set(collider, originalOffset);
       return originalOffset;
     } else {
@@ -361,12 +353,12 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
   /**
    * Tiles colliders based on the solid tiles in the tilemap.
    */
-  private _updateColliders(): void {
+  private function _updateColliders(): Void {
     this.collider.$colliderRemoved.notifyAll(this._composite);
     this._composite.clearColliders();
-    const colliders: BoundingBox[] = [];
+    final colliders: Array<BoundingBox> = [];
     this._composite = this.collider.useCompositeCollider([]);
-    let current: BoundingBox | null = null;
+    var current: Null<BoundingBox> = null;
 
     /**
      * Returns wether or not the 2 boxes share an edge and are the same height
@@ -374,14 +366,14 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
      * @param next
      * @returns true if they share and edge, false if not
      */
-    const shareEdges = (prev: BoundingBox, next: BoundingBox) => {
+    final shareEdges = (prev: BoundingBox, next: BoundingBox) -> {
       if (prev && next) {
         // same top/bottom
         return (
-          prev.top === next.top &&
-          prev.bottom === next.bottom &&
+          prev.top == next.top &&
+          prev.bottom == next.bottom &&
           // Shared right/left edge
-          prev.right === next.left
+          prev.right == next.left
         );
       }
       return false;
@@ -395,38 +387,41 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
      * @param maxLookBack The amount of colliders to look back for combination
      * @returns false when no combination found, true when successfully combined
      */
-    const checkAndCombine = (current: BoundingBox, colliders: BoundingBox[], maxLookBack = this.meshingLookBehind) => {
+    final checkAndCombine = (current: BoundingBox, colliders: Array<BoundingBox>, maxLookBack = this.meshingLookBehind) -> {
       if (!current) {
         return false;
       }
+
       // walk backwards through the list of colliders and combine with the first that shares an edge
-      for (let i = colliders.length - 1; i >= 0; i--) {
+      var i = colliders.length - 1;
+      while (i >= 0) {
         if (maxLookBack-- < 0) {
           // blunt the O(n^2) algorithm a bit
           return false;
         }
-        const prev = colliders[i];
+        final prev = colliders[i];
         if (shareEdges(prev, current)) {
           colliders[i] = prev.combine(current);
           return true;
         }
+        i--;
       }
       return false;
     };
 
     // ? configurable bias perhaps, horizontal strips vs. vertical ones
     // Bad tile collider packing algorithm
-    for (let i = 0; i < this.columns; i++) {
+    for (i in 0...this.columns) {
       // Scan column for colliders
-      for (let j = 0; j < this.rows; j++) {
-        const tile = this.tiles[i + j * this.columns];
+      for (j in 0...this.rows) {
+        final tile = this.tiles[i + j * this.columns];
         // Current tile in column is solid build up current collider
         if (tile.solid) {
           // Use custom collider otherwise bounding box
           if (tile.getColliders().length > 0) {
             // tile with custom collider interrupting the current run
-            for (const collider of tile.getColliders()) {
-              const originalOffset = this._getOrSetColliderOriginalOffset(collider);
+            for (collider in tile.getColliders()) {
+              final originalOffset = this._getOrSetColliderOriginalOffset(collider);
               collider.offset = vec(tile.x * this.tileWidth * this.scale.x, tile.y * this.tileHeight * this.scale.y).add(originalOffset);
               collider.owner = this;
               this._composite.addCollider(collider);
@@ -464,8 +459,8 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
       current = null;
     }
 
-    for (const c of colliders) {
-      const collider = Shape.Box(c.width, c.height, Vector.Zero, vec(c.left - this.pos.x, c.top - this.pos.y));
+    for (c in colliders) {
+      final collider = Shape.Box(c.width, c.height, Vector.Zero, vec(c.left - this.pos.x, c.top - this.pos.y));
       collider.owner = this;
       this._composite.addCollider(collider);
     }
@@ -479,7 +474,7 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
    *
    * Returns null if out of bounds
    */
-  public getTileByIndex(index: number): Tile | null {
+  public function getTileByIndex(index: Int): Null<Tile> {
     return this.tiles[index] ?? null;
   }
   /**
@@ -490,7 +485,7 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
    * For example, if I want the tile in fifth column (x), and second row (y):
    * `getTile(4, 1)` 0 based, so 0 is the first in row/column
    */
-  public getTile(x: number, y: number): Tile | null {
+  public function getTile(x: Int, y: Int): Null<Tile> {
     if (x < 0 || y < 0 || x >= this.columns || y >= this.rows) {
       return null;
     }
@@ -500,29 +495,32 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
    * Returns the {@apilink Tile} by testing a point in world coordinates,
    * returns `null` if no Tile was found.
    */
-  public getTileByPoint(point: Vector): Tile | null {
-    const { x, y } = this._getTileCoordinates(point);
-    const tile = this.getTile(x, y);
+  public function getTileByPoint(point: Vector): Null<Tile> {
+    final coords = this._getTileCoordinates(point);
+    final x = coords.x,
+          y = coords.y;
+
+    final tile = this.getTile(x, y);
     if (x >= 0 && y >= 0 && x < this.columns && y < this.rows && tile) {
       return tile;
     }
     return null;
   }
 
-  private _getTileCoordinates(point: Vector): { x: number; y: number } {
+  private function _getTileCoordinates(point: Vector): { x: Int, y: Int } {
     // Convert to Tile Space point
     point = this.transform.applyInverse(point);
 
-    const x = Math.floor(point.x / this.tileWidth);
-    const y = Math.floor(point.y / this.tileHeight);
-    return { x, y };
+    final x = Math.floor(point.x / this.tileWidth);
+    final y = Math.floor(point.y / this.tileHeight);
+    return { x: x, y: y };
   }
 
-  public getRows(): readonly Tile[][] {
+  public function getRows(): Array<Array<Tile>> {
     return this._rows;
   }
 
-  public getColumns(): readonly Tile[][] {
+  public function getColumns(): Array<Array<Tile>> {
     return this._cols;
   }
 
@@ -531,30 +529,30 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
    *
    * Useful if you need to perform specific logic on onscreen tiles
    */
-  public getOnScreenTiles(): readonly Tile[] {
-    const worldBounds = this._engine.screen.getWorldBounds();
-    let parallaxOffset = vec(0, 0);
-    let bounds = this.transform.coordPlane === CoordPlane.Screen ? this._engine.screen.getScreenBounds() : worldBounds;
-    const maybeParallax = this.get(ParallaxComponent);
+  public function getOnScreenTiles(): Array<Tile> {
+    final worldBounds = this._engine.screen.getWorldBounds();
+    var parallaxOffset = vec(0, 0);
+    var bounds = this.transform.coordPlane == CoordPlane.Screen ? this._engine.screen.getScreenBounds() : worldBounds;
+    final maybeParallax = this.get(ParallaxComponent);
     if (maybeParallax && this.isInitialized) {
-      const oneMinusFactor = Vector.One.sub(maybeParallax.parallaxFactor);
+      final oneMinusFactor = Vector.One.sub(maybeParallax.parallaxFactor);
       parallaxOffset = this._engine.currentScene.camera.pos.scale(oneMinusFactor);
       bounds = bounds.translate(parallaxOffset.negate());
     }
 
-    const topLeft = this._getTileCoordinates(bounds.topLeft);
-    const topRight = this._getTileCoordinates(bounds.topRight);
-    const bottomRight = this._getTileCoordinates(bounds.bottomRight);
-    const bottomLeft = this._getTileCoordinates(bounds.bottomLeft);
+    final topLeft = this._getTileCoordinates(bounds.topLeft);
+    final topRight = this._getTileCoordinates(bounds.topRight);
+    final bottomRight = this._getTileCoordinates(bounds.bottomRight);
+    final bottomLeft = this._getTileCoordinates(bounds.bottomLeft);
 
-    const tileStartX = Math.min(clamp(topLeft.x, 0, this.columns - 1), clamp(topRight.x, 0, this.columns - 1));
-    const tileStartY = Math.min(clamp(topLeft.y, 0, this.rows - 1), clamp(topRight.y, 0, this.rows - 1));
-    const tileEndX = Math.max(clamp(bottomRight.x, 0, this.columns - 1), clamp(bottomLeft.x, 0, this.columns - 1));
-    const tileEndY = Math.max(clamp(bottomRight.y, 0, this.rows - 1), clamp(bottomLeft.y, 0, this.rows - 1));
+    final tileStartX = Math.min(clamp(topLeft.x, 0, this.columns - 1), clamp(topRight.x, 0, this.columns - 1));
+    final tileStartY = Math.min(clamp(topLeft.y, 0, this.rows - 1), clamp(topRight.y, 0, this.rows - 1));
+    final tileEndX = Math.max(clamp(bottomRight.x, 0, this.columns - 1), clamp(bottomLeft.x, 0, this.columns - 1));
+    final tileEndY = Math.max(clamp(bottomRight.y, 0, this.rows - 1), clamp(bottomLeft.y, 0, this.rows - 1));
 
-    const tiles: Tile[] = [];
-    for (let x = tileStartX; x <= tileEndX; x++) {
-      for (let y = tileStartY; y <= tileEndY; y++) {
+    final tiles: Array<Tile> = [];
+    for (x in tileStartX...tileEndX + 1) {
+      for (y in tileStartY...tileEndY + 1) {
         tiles.push(this.getTile(x, y)!);
       }
     }
@@ -564,24 +562,24 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
   /**
    * @internal
    */
-  public _processPointerToObject(receiver: PointerEventReceiver) {
+  public function _processPointerToObject(receiver: PointerEventReceiver) {
     this._pointerEventDispatcher.processPointerToObject(receiver, this.tiles);
   }
 
   /**
    * @internal
    */
-  public _dispatchPointerEvents(receiver: PointerEventReceiver) {
+  public function _dispatchPointerEvents(receiver: PointerEventReceiver) {
     this._pointerEventDispatcher.dispatchEvents(receiver, this.tiles);
   }
 
-  public update(engine: Engine, elapsed: number) {
+  public function update(engine: Engine, elapsed: Int) {
     this._initialize(engine);
     this.onPreUpdate(engine, elapsed);
     this.emit('preupdate', new PreUpdateEvent(engine, elapsed, this));
 
     // Update colliders
-    if (!this._oldPos.equals(this.pos) || this._oldRotation !== this.rotation || !this._oldScale.equals(this.scale)) {
+    if (!this._oldPos.equals(this.pos) || this._oldRotation != this.rotation || !this._oldScale.equals(this.scale)) {
       this.flagCollidersDirty();
       this.flagTilesDirty();
     }
@@ -608,78 +606,79 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
    * @param ctx ExcaliburGraphicsContext
    * @param elapsed  The number of milliseconds since the last draw
    */
-  public draw(ctx: ExcaliburGraphicsContext, elapsed: number): void {
+  public function draw(ctx: ExcaliburGraphicsContext, elapsed: Int): Void {
     if (!this.isInitialized) {
       return;
     }
-    this.emit('predraw', new PreDrawEvent(ctx as any, elapsed, this)); // TODO fix event
+    this.emit('predraw', new PreDrawEvent(ctx, elapsed, this)); // TODO fix event
 
-    let graphics: readonly Graphic[], graphicsIndex: number, graphicsLen: number;
+    var graphics: Array<Graphic>, graphicsIndex: Int, graphicsLen: Int;
 
-    const tiles = this.getOnScreenTiles();
-    for (let i = 0; i < tiles.length; i++) {
-      const tile = tiles[i];
+    final tiles = this.getOnScreenTiles();
+    for (tile in tiles) {
       // get non-negative tile sprites
-      const offsets = tile.getGraphicsOffsets();
+      final offsets = tile.getGraphicsOffsets();
       graphics = tile.getGraphics();
 
-      for (graphicsIndex = 0, graphicsLen = graphics.length; graphicsIndex < graphicsLen; graphicsIndex++) {
+      for (graphicsIndex in 0...graphics.length) {
         // draw sprite, warning if sprite doesn't exist
-        const graphic = graphics[graphicsIndex];
-        const offset = offsets[graphicsIndex];
+        final graphic = graphics[graphicsIndex];
+        final offset = offsets[graphicsIndex];
         if (graphic) {
           if (hasGraphicsTick(graphic)) {
             graphic?.tick(elapsed, this._token);
           }
-          const offsetY = this.renderFromTopOfGraphic ? 0 : graphic.height - this.tileHeight;
+          final offsetY = this.renderFromTopOfGraphic ? 0 : graphic.height - this.tileHeight;
           graphic.draw(ctx, tile.x * this.tileWidth + offset.x, tile.y * this.tileHeight - offsetY + offset.y);
         }
       }
     }
-    this.emit('postdraw', new PostDrawEvent(ctx as any, elapsed, this));
+    this.emit('postdraw', new PostDrawEvent(ctx, elapsed, this));
   }
 
-  public debug(gfx: ExcaliburGraphicsContext, debugFlags: DebugConfig) {
-    const {
-      showAll,
-      showGrid,
-      gridColor,
-      gridWidth,
-      showSolidBounds: showColliderBounds,
-      solidBoundsColor: colliderBoundsColor,
-      showColliderGeometry
-    } = debugFlags.tilemap;
-    const { geometryColor, geometryLineWidth, geometryPointSize } = debugFlags.collider;
-    const width = this.tileWidth * this.columns * this.scale.x;
-    const height = this.tileHeight * this.rows * this.scale.y;
-    const pos = this.pos;
+  public function debug(gfx: ExcaliburGraphicsContext, debugFlags: DebugConfig) {
+    final showAll = debugFlags.tilemap.showAll,
+          showGrid = debugFlags.tilemap.showGrid,
+          gridColor = debugFlags.tilemap.gridColor,
+          gridwidth = debugFlags.tilemap.gridwidth,
+          showColliderBounds = debugFlags.tilemap.showSolidBounds,
+          colliderBoundsColor = debugFlags.tilemap.colliderBoundsColor,
+          showColliderGeometry = debugFlags.tilemap.showColliderGeometry;
+
+    final geometryColor = debugFlags.collider.geometryColor,
+          geometryLineWidth = debugFlags.collider.geometryLineWidth,
+          geometryPointSize = debugFlags.collider.geometryPointSize;
+
+    final width = this.tileWidth * this.columns * this.scale.x;
+    final height = this.tileHeight * this.rows * this.scale.y;
+    final pos = this.pos;
     if (showGrid || showAll) {
-      for (let r = 0; r < this.rows + 1; r++) {
-        const yOffset = vec(0, r * this.tileHeight * this.scale.y);
+      for (r in 0...this.rows + 1) {
+        final yOffset = vec(0, r * this.tileHeight * this.scale.y);
         gfx.drawLine(pos.add(yOffset), pos.add(vec(width, yOffset.y)), gridColor, gridWidth);
       }
 
-      for (let c = 0; c < this.columns + 1; c++) {
-        const xOffset = vec(c * this.tileWidth * this.scale.x, 0);
+      for (c in 0...this.columns + 1) {
+        final xOffset = vec(c * this.tileWidth * this.scale.x, 0);
         gfx.drawLine(pos.add(xOffset), pos.add(vec(xOffset.x, height)), gridColor, gridWidth);
       }
     }
 
     if (showAll || showColliderBounds || showColliderGeometry) {
-      const colliders = this._composite.getColliders();
+      final colliders = this._composite.getColliders();
       gfx.save();
       gfx.translate(this.pos.x, this.pos.y);
       gfx.scale(this.scale.x, this.scale.y);
-      for (const collider of colliders) {
-        const bounds = collider.localBounds;
-        const pos = collider.worldPos.sub(this.pos);
+      for (collider in colliders) {
+        final bounds = collider.localBounds;
+        final pos = collider.worldPos.sub(this.pos);
         if (showColliderBounds) {
           gfx.drawRectangle(pos, bounds.width, bounds.height, colliderBoundsColor);
         }
       }
       gfx.restore();
       if (showColliderGeometry) {
-        for (const collider of colliders) {
+        for (collider in colliders) {
           collider.debug(gfx, geometryColor, { lineWidth: geometryLineWidth, pointSize: geometryPointSize });
         }
       }
@@ -689,8 +688,8 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
       gfx.save();
       gfx.z = 999;
       if (showColliderBounds) {
-        for (let i = 0; i < this.tiles.length; i++) {
-          this.tiles[i].bounds.draw(gfx);
+        for (tile in this.tiles) {
+          tile.bounds.draw(gfx);
         }
       }
       gfx.restore();
@@ -698,18 +697,18 @@ export class TileMap extends Entity implements HasNestedPointerEvents {
   }
 }
 
-export interface TileOptions {
+interface TileOptions {
   /**
    * Integer tile x coordinate
    */
-  x: number;
+  var x: Int;
   /**
    * Integer tile y coordinate
    */
-  y: number;
-  map: TileMap;
-  solid?: boolean;
-  graphics?: Graphic[];
+  var y: Int;
+  var map: TileMap;
+  var solid: Null<Bool>;
+  var graphics: Array<Graphic>;
 }
 
 /**
@@ -722,18 +721,19 @@ export interface TileOptions {
  * of the sprites in the array so the last one will be drawn on top. You can
  * use transparency to create layers this way.
  */
-export class Tile {
-  private _bounds!: BoundingBox;
-  private _geometry!: BoundingBox;
-  private _pos!: Vector;
-  private _posDirty = false;
+class Tile {
+  private var _bounds: BoundingBox;
+  private var _geometry: BoundingBox;
+  private var _pos: Vector;
+  private var _posDirty = false;
 
-  public events = new EventEmitter<TilePointerEvents>();
+  public var events = new EventEmitter<TilePointerEvents>();
 
   /**
    * Return the world position of the top left corner of the tile
    */
-  public get pos() {
+  public var pos(get, never): Int;
+  function get_pos() {
     if (this._posDirty) {
       this._recalculate();
       this._posDirty = false;
@@ -744,63 +744,66 @@ export class Tile {
   /**
    * Integer x coordinate of the tile
    */
-  public readonly x: number;
+  public var x: Int;
 
   /**
    * Integer y coordinate of the tile
    */
-  public readonly y: number;
+  public var y: Int;
 
-  private _width: number;
+  private var _width: Int;
   /**
    * Width of the tile in pixels
    */
-  public get width(): number {
+  public var width(get, never): Int;
+  function get_width(): Int {
     return this._width;
   }
 
-  private _height: number;
+  private var _height: Int;
   /**
    * Height of the tile in pixels
    */
-  public get height(): number {
+  public var height(get, never): Int;
+  function get_height(): Int {
     return this._height;
   }
 
   /**
    * Reference to the TileMap this tile is associated with
    */
-  public map: TileMap;
+  public var map: TileMap;
 
-  private _solid = false;
+  private var _solid = false;
   /**
    * Wether this tile should be treated as solid by the tilemap
    */
-  public get solid(): boolean {
+  public var solid(get, set): Bool;
+  function get_solid(): Bool {
     return this._solid;
   }
   /**
    * Wether this tile should be treated as solid by the tilemap
    */
-  public set solid(val: boolean) {
+  function set_solid(val: Bool) {
     this.map?.flagCollidersDirty();
     this._solid = val;
   }
 
-  private _graphics: Graphic[] = [];
-  private _offsets: Vector[] = [];
+  private var _graphics: Array<Graphic> = [];
+  private var _offsets: Array<Vector> = [];
 
   /**
    * Current list of graphics for this tile
    */
-  public getGraphics(): readonly Graphic[] {
+  public function getGraphics(): Array<Graphic> {
     return this._graphics;
   }
 
   /**
    * Current list of offsets for this tile's graphics
    */
-  public getGraphicsOffsets(): readonly Vector[] {
+  public function getGraphicsOffsets(): Array<Vector> {
     return this._offsets;
   }
 
@@ -808,9 +811,9 @@ export class Tile {
    * Add another {@apilink Graphic} to this TileMap tile
    * @param graphic
    */
-  public addGraphic(graphic: Graphic, options?: { offset?: Vector }) {
+  public function addGraphic(graphic: Graphic, ?options: { offset: Null<Vector> }) {
     this._graphics.push(graphic);
-    if (options?.offset) {
+    if (options.offset != null) {
       this._offsets.push(options.offset);
     } else {
       this._offsets.push(Vector.Zero);
@@ -820,8 +823,8 @@ export class Tile {
   /**
    * Remove an instance of a {@apilink Graphic} from this tile
    */
-  public removeGraphic(graphic: Graphic) {
-    const index = this._graphics.indexOf(graphic);
+  public function removeGraphic(graphic: Graphic) {
+    final index = this._graphics.indexOf(graphic);
     if (index > -1) {
       this._graphics.splice(index, 1);
       this._offsets.splice(index, 1);
@@ -831,7 +834,7 @@ export class Tile {
   /**
    * Clear all graphics from this tile
    */
-  public clearGraphics() {
+  public function clearGraphics() {
     this._graphics.length = 0;
     this._offsets.length = 0;
   }
@@ -839,12 +842,12 @@ export class Tile {
   /**
    * Current list of colliders for this tile
    */
-  private _colliders: Collider[] = [];
+  private var _colliders: Array<Collider> = [];
 
   /**
    * Returns the list of colliders
    */
-  public getColliders(): readonly Collider[] {
+  public function getColliders(): Array<Collider> {
     return this._colliders;
   }
 
@@ -856,7 +859,7 @@ export class Tile {
    * **Note!** the {@apilink Tile.solid} must be set to true for it to act as a "fixed" collider
    * @param collider
    */
-  public addCollider(collider: Collider) {
+  public function addCollider(collider: Collider) {
     this._colliders.push(collider);
     this.map.flagCollidersDirty();
   }
@@ -865,8 +868,8 @@ export class Tile {
    * Removes a collider from the {@apilink Tile}
    * @param collider
    */
-  public removeCollider(collider: Collider) {
-    const index = this._colliders.indexOf(collider);
+  public function removeCollider(collider: Collider) {
+    final index = this._colliders.indexOf(collider);
     if (index > -1) {
       this._colliders.splice(index, 1);
     }
@@ -876,7 +879,7 @@ export class Tile {
   /**
    * Clears all colliders from the {@apilink Tile}
    */
-  public clearColliders() {
+  public function clearColliders() {
     this._colliders.length = 0;
     this.map.flagCollidersDirty();
   }
@@ -884,9 +887,9 @@ export class Tile {
   /**
    * Arbitrary data storage per tile, useful for any game specific data
    */
-  public data = new Map<string, any>();
+  public var data = new Map<String, Any>();
 
-  constructor(options: TileOptions) {
+  public function new(options: TileOptions) {
     this.x = options.x;
     this.y = options.y;
     this.map = options.map;
@@ -897,12 +900,12 @@ export class Tile {
     this._recalculate();
   }
 
-  public flagDirty(): void {
+  public function flagDirty(): Void {
     this._posDirty = true;
   }
 
-  private _recalculate(): void {
-    const geometryPos = this.map.pos.add(vec(this.x * this.map.tileWidth, this.y * this.map.tileHeight));
+  private function _recalculate(): Void {
+    final geometryPos = this.map.pos.add(vec(this.x * this.map.tileWidth, this.y * this.map.tileHeight));
     this._geometry = new BoundingBox(geometryPos.x, geometryPos.y, geometryPos.x + this.map.tileWidth, geometryPos.y + this.map.tileHeight);
 
     this._width = this.map.tileWidth * this.map.scale.x;
@@ -920,55 +923,43 @@ export class Tile {
   /**
    * Tile bounds in world space
    */
-  public get bounds(): BoundingBox {
+  public var bounds(get, never): BoundingBox;
+  function get_bounds(): BoundingBox {
     if (this._posDirty) {
       this._recalculate();
     }
     return this._bounds;
   }
 
-  public get defaultGeometry(): BoundingBox {
+  public var defaultGeometry(get, never): BoundingBox;
+  function get_defaultGeometry(): BoundingBox {
     return this._geometry;
   }
 
   /**
    * Tile position in world space
    */
-  public get center(): Vector {
+  public var center(get, never): Vector;
+  function get_center(): Vector {
     if (this._posDirty) {
       this._recalculate();
     }
     return new Vector(this._pos.x + this._width / 2, this._pos.y + this._height / 2);
   }
 
-  public emit<TEventName extends EventKey<TilePointerEvents>>(eventName: TEventName, event: TilePointerEvents[TEventName]): void;
-  public emit(eventName: string, event?: any): void;
-  public emit<TEventName extends EventKey<TilePointerEvents> | string>(eventName: TEventName, event?: any): void {
+  public function emit(eventName: String, ?event: Any): Void {
     this.events.emit(eventName, event);
   }
 
-  public on<TEventName extends EventKey<TilePointerEvents>>(
-    eventName: TEventName,
-    handler: Handler<TilePointerEvents[TEventName]>
-  ): Subscription;
-  public on(eventName: string, handler: Handler<unknown>): Subscription;
-  public on<TEventName extends EventKey<TilePointerEvents> | string>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function on(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.on(eventName, handler);
   }
 
-  public once<TEventName extends EventKey<TilePointerEvents>>(
-    eventName: TEventName,
-    handler: Handler<TilePointerEvents[TEventName]>
-  ): Subscription;
-  public once(eventName: string, handler: Handler<unknown>): Subscription;
-  public once<TEventName extends EventKey<TilePointerEvents> | string>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function once(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.once(eventName, handler);
   }
 
-  public off<TEventName extends EventKey<TilePointerEvents>>(eventName: TEventName, handler: Handler<TilePointerEvents[TEventName]>): void;
-  public off(eventName: string, handler: Handler<unknown>): void;
-  public off(eventName: string): void;
-  public off<TEventName extends EventKey<TilePointerEvents> | string>(eventName: TEventName, handler?: Handler<any>): void {
+  public function off(eventName: String, ?handler: Handler<Any>): Void {
     if (handler) {
       this.events.off(eventName, handler);
     } else {

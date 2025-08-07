@@ -1,28 +1,28 @@
-package nebula.Collision;
+package nebula.collision;
 
-import nebula.Math.Vector;
-import nebula.Math.Ray;
+import nebula.math.Vector;
+import nebula.math.Ray;
 import nebula.Color;
-import nebula.Collision.Side;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Math.AffineMatrix;
-import nebula.Util.Util;
+import nebula.collision.Side;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.math.AffineMatrix;
+import nebula.util.Util;
 
 interface BoundingBoxOptions {
-  left: Int;
-  right: Int;
-  top: Int;
-  bottom: Int;
+  var left: Int;
+  var right: Int;
+  var top: Int;
+  var bottom: Int;
 }
 
 /**
  * Axis Aligned collision primitive for Excalibur.
  */
 class BoundingBox {
-  public top: Int;
-  public right: Int;
-  public bottom: Int;
-  public left: Int;
+  public var top: Int;
+  public var right: Int;
+  public var bottom: Int;
+  public var left: Int;
 
   /**
    * Constructor allows passing of either an object with all coordinate components,
@@ -33,36 +33,35 @@ class BoundingBox {
    * @param right   x coordinate of the right edge
    * @param bottom  y coordinate of the bottom edge
    */
-  public function new(leftOrOptions: Int | BoundingBoxOptions = 0, top: Int = 0, right: Int = 0, bottom: Int = 0) {
-    if (typeof leftOrOptions === 'object') {
-      this.left = leftOrOptions.left;
-      this.top = leftOrOptions.top;
-      this.right = leftOrOptions.right;
-      this.bottom = leftOrOptions.bottom;
-    } else if (typeof leftOrOptions === 'number') {
+  public function new(leftOrOptions: Any = 0, top: Int = 0, right: Int = 0, bottom: Int = 0) {
+    if (Std.isOfType(leftOrOptions, Int)) {
       this.left = leftOrOptions;
       this.top = top;
       this.right = right;
       this.bottom = bottom;
+    } else {
+      this.left = leftOrOptions.left;
+      this.top = leftOrOptions.top;
+      this.right = leftOrOptions.right;
+      this.bottom = leftOrOptions.bottom;
     }
   }
 
   /**
    * Returns a new instance of {@apilink BoundingBox} that is a copy of the current instance
    */
-  public clone(dest?: BoundingBox): BoundingBox {
-    const result = dest || new BoundingBox(0, 0, 0, 0);
-    result.left = this.left;
-    result.right = this.right;
-    result.top = this.top;
-    result.bottom = this.bottom;
-    return result;
+  public function clone(?dest: BoundingBox = new BoundingBox(0, 0, 0, 0)): BoundingBox {
+    dest.left = this.left;
+    dest.right = this.right;
+    dest.top = this.top;
+    dest.bottom = this.bottom;
+    return dest;
   }
 
   /**
    * Resets the bounds to a zero width/height box
    */
-  public reset() {
+  public function reset() {
     this.left = 0;
     this.top = 0;
     this.bottom = 0;
@@ -73,7 +72,7 @@ class BoundingBox {
    * Given bounding box A & B, returns the side relative to A when intersection is performed.
    * @param intersection Intersection vector between 2 bounding boxes
    */
-  public static getSideFromIntersection(intersection: Vector): Side {
+  public static function getSideFromIntersection(intersection: Vector): Side {
     if (!intersection) {
       return Side.None;
     }
@@ -93,12 +92,12 @@ class BoundingBox {
     return Side.None;
   }
 
-  public static fromPoints(points: Vector[]): BoundingBox {
+  public static function fromPoints(points: Array<Vector>): BoundingBox {
     var minX = Infinity;
     var minY = Infinity;
     var maxX = -Infinity;
     var maxY = -Infinity;
-    for (var i = 0; i < points.length; i++) {
+    for (i in 0...points.length) {
       if (points[i].x < minX) {
         minX = points[i].x;
       }
@@ -122,7 +121,7 @@ class BoundingBox {
    * @param anchor Default Vector.Half
    * @param pos Default Vector.Zero
    */
-  public static fromDimension(width: Int, height: Int, anchor: Vector = Vector.Half, pos: Vector = Vector.Zero) {
+  public static function fromDimension(width: Int, height: Int, anchor: Vector = Vector.Half, pos: Vector = Vector.Zero) {
     return new BoundingBox(
       -width * anchor.x + pos.x,
       -height * anchor.y + pos.y,
@@ -134,48 +133,55 @@ class BoundingBox {
   /**
    * Returns the calculated width of the bounding box
    */
-  public get width() {
+  public var width(get, never): Int;
+  function get_width() {
     return this.right - this.left;
   }
 
   /**
    * Returns the calculated height of the bounding box
    */
-  public get height() {
+  public var height(get, never): Int;
+  function get_height() {
     return this.bottom - this.top;
   }
 
   /**
    * Return whether the bounding box has zero dimensions in height,width or both
    */
-  public hasZeroDimensions() {
-    return this.width === 0 || this.height === 0;
+  public function hasZeroDimensions() {
+    return this.width == 0 || this.height == 0;
   }
 
   /**
    * Returns the center of the bounding box
    */
-  public get center(): Vector {
+  public var center(get, never): Vector;
+  function get_center(): Vector {
     return new Vector((this.left + this.right) / 2, (this.top + this.bottom) / 2);
   }
 
-  public get topLeft(): Vector {
+  public var topLeft(get, never): Vector;
+  function get_topLeft(): Vector {
     return new Vector(this.left, this.top);
   }
 
-  public get bottomRight(): Vector {
+  public var bottomRight(get, never): Vector;
+  function get_bottomRight(): Vector {
     return new Vector(this.right, this.bottom);
   }
 
-  public get topRight(): Vector {
+  public var topRight(get, never): Vector;
+  function get_topRight(): Vector {
     return new Vector(this.right, this.top);
   }
 
-  public get bottomLeft(): Vector {
+  public var bottomLeft(get, never): Vector;
+  function get_bottomLeft(): Vector {
     return new Vector(this.left, this.bottom);
   }
 
-  public translate(pos: Vector): BoundingBox {
+  public function translate(pos: Vector): BoundingBox {
     return new BoundingBox(this.left + pos.x, this.top + pos.y, this.right + pos.x, this.bottom + pos.y);
   }
 
@@ -183,8 +189,8 @@ class BoundingBox {
    * Rotates a bounding box by and angle and around a point, if no point is specified (0, 0) is used by default. The resulting bounding
    * box is also axis-align. This is useful when a new axis-aligned bounding box is needed for rotated geometry.
    */
-  public rotate(angle: Float, point: Vector = Vector.Zero): BoundingBox {
-    final points = this.getPoints().map((p) => p.rotate(angle, point));
+  public function rotate(angle: Float, point: Vector = Vector.Zero): BoundingBox {
+    final points = this.getPoints().map((p) -> p.rotate(angle, point));
     return BoundingBox.fromPoints(points);
   }
 
@@ -193,7 +199,7 @@ class BoundingBox {
    * @param scale
    * @param point
    */
-  public scale(scale: Vector, point: Vector = Vector.Zero): BoundingBox {
+  public function scale(scale: Vector, point: Vector = Vector.Zero): BoundingBox {
     final shifted = this.translate(point);
     return new BoundingBox(shifted.left * scale.x, shifted.top * scale.y, shifted.right * scale.x, shifted.bottom * scale.y);
   }
@@ -202,7 +208,7 @@ class BoundingBox {
    * Transform the axis aligned bounding box by a {@apilink Matrix}, producing a new axis aligned bounding box
    * @param matrix
    */
-  public transform(matrix: AffineMatrix) {
+  public function transform(matrix: AffineMatrix) {
     // inlined these calculations to not use vectors would speed it up slightly
     // const matFirstColumn = vec(matrix.data[0], matrix.data[1]);
     // const xa = matFirstColumn.scale(this.left);
@@ -231,34 +237,34 @@ class BoundingBox {
     final bottom = Math.max(xa2, xb2) + Math.max(ya2, yb2) + matrixPos.y;
 
     return new BoundingBox({
-      left, //: topLeft.x,
-      top, //: topLeft.y,
-      right, //: bottomRight.x,
-      bottom //: bottomRight.y
+      left: left, //: topLeft.x,
+      top: top, //: topLeft.y,
+      right: right, //: bottomRight.x,
+      bottom: bottom //: bottomRight.y
     });
   }
 
   /**
    * Returns the perimeter of the bounding box
    */
-  public getPerimeter(): Int {
+  public function getPerimeter(): Int {
     final wx = this.width;
     final wy = this.height;
     return 2 * (wx + wy);
   }
 
   // Cache bounding box point returns
-  private _points: Vector[] = [];
-  private _left?: Int;
-  private _right?: Int;
-  private _top?: Int;
-  private _bottom?: Int;
+  private var _points: Array<Vector> = [];
+  private var _left: Null<Int>;
+  private var _right: Null<Int>;
+  private var _top: Null<Int>;
+  private var _bottom: Null<Int>;
 
   /**
    * Returns the world space points that make up the corners of the bounding box as a polygon
    */
-  public getPoints(): readonly Vector[] {
-    if (this._left !== this.left || this._right !== this.right || this._top !== this.top || this._bottom !== this.bottom) {
+  public function getPoints(): Array<Vector> {
+    if (this._left != this.left || this._right != this.right || this._top != this.top || this._bottom != this.bottom) {
       this._points.length = 0;
       this._points.push(new Vector(this.left, this.top));
       this._points.push(new Vector(this.right, this.top));
@@ -275,13 +281,13 @@ class BoundingBox {
   /**
    * Determines whether a ray intersects with a bounding box
    */
-  public rayCast(ray: Ray, farClipDistance = Infinity): Bool {
+  public function rayCast(ray: Ray, farClipDistance = Infinity): Bool {
     // algorithm from https://tavianator.com/fast-branchless-raybounding-box-intersections/
     // principle visualisation: https://youtu.be/GqwUHXvQ7oA
     var tMinMax: Int, tMaxMin: Int;
 
-    final xInv = ray.dir.x === 0 ? Number.MAX_VALUE : 1 / ray.dir.x;
-    final yInv = ray.dir.y === 0 ? Number.MAX_VALUE : 1 / ray.dir.y;
+    final xInv = ray.dir.x == 0 ? Number.MAX_VALUE : 1 / ray.dir.x;
+    final yInv = ray.dir.y == 0 ? Number.MAX_VALUE : 1 / ray.dir.y;
 
     final tx1 = (this.left - ray.pos.x) * xInv;
     final tx2 = (this.right - ray.pos.x) * xInv;
@@ -299,13 +305,13 @@ class BoundingBox {
   /**
    * Returns the time along the ray where a raycast hits
    */
-  public rayCastTime(ray: Ray, farClipDistance = Infinity): Float {
+  public function rayCastTime(ray: Ray, farClipDistance = Infinity): Float {
     // algorithm from https://tavianator.com/fast-branchless-raybounding-box-intersections/
     // principle visualisation: https://youtu.be/GqwUHXvQ7oA
 
-    var tMinMax: number, tMaxMin: Float;
-    final xInv = ray.dir.x === 0 ? Number.MAX_VALUE : 1 / ray.dir.x;
-    final yInv = ray.dir.y === 0 ? Number.MAX_VALUE : 1 / ray.dir.y;
+    var tMinMax: Float, tMaxMin: Float;
+    final xInv = ray.dir.x == 0 ? Number.MAX_VALUE : 1 / ray.dir.x;
+    final yInv = ray.dir.y == 0 ? Number.MAX_VALUE : 1 / ray.dir.y;
 
     final tx1 = (this.left - ray.pos.x) * xInv;
     final tx2 = (this.right - ray.pos.x) * xInv;
@@ -325,20 +331,13 @@ class BoundingBox {
   }
 
   /**
-   * Tests whether a point is contained within the bounding box
-   * @param p  The point to test
-   */
-  public contains(p: Vector): Bool;
-
-  /**
    * Tests whether another bounding box is totally contained in this one
    * @param bb  The bounding box to test
    */
-  public contains(bb: BoundingBox): Bool;
-  public contains(val: any): Bool {
-    if (val instanceof Vector) {
+  public function contains(val: Any): Bool {
+    if (Std.isOfType(val, Vector)) {
       return this.left <= val.x && this.top <= val.y && val.y <= this.bottom && val.x <= this.right;
-    } else if (val instanceof BoundingBox) {
+    } else if (Std.isOfType(val, BoundingBox)) {
       return this.left <= val.left && this.top <= val.top && val.bottom <= this.bottom && val.right <= this.right;
     }
     return false;
@@ -348,7 +347,7 @@ class BoundingBox {
    * Combines this bounding box and another together returning a new bounding box
    * @param other  The bounding box to combine
    */
-  public combine(other: BoundingBox, dest?: BoundingBox): BoundingBox {
+  public function combine(other: BoundingBox, ?dest: BoundingBox): BoundingBox {
     final compositeBB = dest || new BoundingBox(0, 0, 0, 0);
     final left = Math.min(this.left, other.left);
     final top = Math.min(this.top, other.top);
@@ -361,7 +360,8 @@ class BoundingBox {
     return compositeBB;
   }
 
-  public get dimensions(): Vector {
+  public var dimensions(get, never): Vector;
+  function get_dimensions(): Vector {
     return new Vector(this.width, this.height);
   }
 
@@ -371,7 +371,7 @@ class BoundingBox {
    * @param epsilon Optionally specify a small epsilon (default 0) as amount of overlap to ignore as overlap.
    * This epsilon is useful in stable collision simulations.
    */
-  public overlaps(other: BoundingBox, epsilon?: Float): Bool {
+  public function overlaps(other: BoundingBox, ?epsilon: Float): Bool {
     final e = epsilon || 0;
     if (other.hasZeroDimensions()) {
       return this.contains(other);
@@ -383,7 +383,7 @@ class BoundingBox {
     return totalBoundingBox.width + e < other.width + this.width && totalBoundingBox.height + e < other.height + this.height;
   }
 
-  private static _SCRATCH_INTERSECT = [0, 0, 0, 0];
+  private static var _SCRATCH_INTERSECT = [0, 0, 0, 0];
   /**
    * Test wether this bounding box intersects with another returning
    * the intersection vector that can be used to resolve the collision. If there
@@ -391,7 +391,7 @@ class BoundingBox {
    * @param other  Other {@apilink BoundingBox} to test intersection with
    * @returns A Vector in the direction of the current BoundingBox, this <- other
    */
-  public intersect(other: BoundingBox): Vector {
+  public function intersect(other: BoundingBox): Vector {
     // early exit
     if (this.bottom <= other.top || other.bottom <= this.top || this.right <= other.left || other.right <= this.left) {
       return null;
@@ -411,7 +411,7 @@ class BoundingBox {
     final rightPath = other.right - this.left;
     BoundingBox._SCRATCH_INTERSECT[3] = rightPath;
 
-    final minIndex = getMinIndex(BoundingBox._SCRATCH_INTERSECT) as 0 | 1 | 2 | 3;
+    final minIndex = getMinIndex(BoundingBox._SCRATCH_INTERSECT);
 
     switch (minIndex) {
       case 0:
@@ -432,7 +432,7 @@ class BoundingBox {
    * Test whether the bounding box has intersected with another bounding box, returns the side of the current bb that intersected.
    * @param bb The other actor to test
    */
-  public intersectWithSide(bb: BoundingBox): Side {
+  public function intersectWithSide(bb: BoundingBox): Side {
     final intersect = this.intersect(bb);
     return BoundingBox.getSideFromIntersection(intersect);
   }
@@ -442,7 +442,7 @@ class BoundingBox {
    * @param ex
    * @param color
    */
-  public draw(ex: ExcaliburGraphicsContext, color: Color = Color.Yellow) {
-    ex.debug.drawRect(this.left, this.top, this.width, this.height, { color });
+  public function draw(ex: ExcaliburGraphicsContext, color: Color = Color.Yellow) {
+    ex.debug.drawRect(this.left, this.top, this.width, this.height, { color: color });
   }
 }

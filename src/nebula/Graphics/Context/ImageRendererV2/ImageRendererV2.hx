@@ -1,62 +1,62 @@
-package nebula.Graphics.Context.ImageRendererV2;
+package nebula.graphics.context.imagerendererv2;
 
 import nebula.Color;
-import nebula.Graphics.Filtering;
+import nebula.graphics.Filtering;
 
-import nebula.Graphics.GraphicsDiagnostics;
-import nebula.Graphics.ImageSource;
-import nebula.Graphics.Wrapping;
+import nebula.graphics.GraphicsDiagnostics;
+import nebula.graphics.ImageSource;
+import nebula.graphics.Wrapping;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
 
-import nebula.Graphics.Context.Renderer;
-import nebula.Graphics.Context.Shader;
-import nebula.Graphics.Context.VertexBuffer;
-import nebula.Graphics.Context.WebglUtil;
+import nebula.graphics.context.Renderer;
+import nebula.graphics.context.Shader;
+import nebula.graphics.context.VertexBuffer;
+import nebula.graphics.context.WebglUtil;
 
 // import frag from './image-renderer-v2.frag.glsl?raw';
 // import vert from './image-renderer-v2.vert.glsl?raw';
 
 interface ImageRendererOptions {
-  pixelArtSampler: Bool;
-  uvPadding: Int;
+  var pixelArtSampler: Bool;
+  var uvPadding: Int;
 }
 
 class ImageRendererV2 implements RendererPlugin {
-  public readonly type = 'ex.image-v2';
-  public priority: Int = 0;
+  public var type = 'ex.image-v2';
+  public var priority: Int = 0;
 
-  public readonly pixelArtSampler: Bool;
-  public readonly uvPadding: Int;
+  public var pixelArtSampler: Bool;
+  public var uvPadding: Int;
 
   // TODO this could be bigger probably
-  private _maxImages: Int = 20_000; // max(uint16) / 6 verts
-  private _maxTextures: Int = 0;
-  private _components = 2 + 2 + 2 + 2 + 1 + 2 + 2 + 1 + 2 + 2 + 4;
+  private var _maxImages: Int = 20_000; // max(uint16) / 6 verts
+  private var _maxTextures: Int = 0;
+  private var _components = 2 + 2 + 2 + 2 + 1 + 2 + 2 + 1 + 2 + 2 + 4;
 
-  private _context!: ExcaliburGraphicsContextWebGL;
-  private _gl!: WebGL2RenderingContext;
-  private _shader!: Shader;
-  private _transformData!: VertexBuffer;
+  private var _context: ExcaliburGraphicsContextWebGL;
+  private var _gl: WebGL2RenderingContext;
+  private var _shader: Shader;
+  private var _transformData: VertexBuffer;
 
   // Per flush vars
-  private _imageCount: Int = 0;
-  private _textures: WebGLTexture[] = [];
-  private _textureIndex = 0;
-  private _textureToIndex = new Map<WebGLTexture, Int>();
-  private _images = new Set<HTMLImageSource>();
-  private _vertexIndex: Int = 0;
-  private _quadMesh!: Float32Array;
-  private _meshBuffer!: WebGLBuffer;
-  private _vao!: WebGLVertexArrayObject;
+  private var _imageCount: Int = 0;
+  private var _textures: Array<WebGLTexture> = [];
+  private var _textureIndex = 0;
+  private var _textureToIndex = new Map<WebGLTexture, Int>();
+  private var _images = new Map<Any, Bool>();
+  private var _vertexIndex: Int = 0;
+  private var _quadMesh: Float32Array;
+  private var _meshBuffer: WebGLBuffer;
+  private var _vao: WebGLVertexArrayObject;
 
   public function new(options: ImageRendererOptions) {
     this.pixelArtSampler = options.pixelArtSampler;
     this.uvPadding = options.uvPadding;
   }
 
-  initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
+  function initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
     this._gl = gl;
     this._context = context;
     // Transform shader source
@@ -78,7 +78,7 @@ class ImageRendererV2 implements RendererPlugin {
     // Initialize texture slots to [0, 1, 2, 3, 4, .... maxGPUTextures]
     this._shader.setUniformIntArray(
       'u_textures',
-      [...Array(this._maxTextures)].map((_, i) => i)
+      [...Array(this._maxTextures)].map((_, i) -> i)
     );
 
     this._vao = gl.createVertexArray()!;
@@ -101,7 +101,7 @@ class ImageRendererV2 implements RendererPlugin {
     // Setup memory layout
     final components = this._components;
     this._transformData = new VertexBuffer({
-      gl,
+      gl: gl,
       size: components * this._maxImages, // components * images
       type: 'dynamic'
     });
@@ -184,7 +184,7 @@ class ImageRendererV2 implements RendererPlugin {
     gl.bindVertexArray(null);
   }
 
-  private _bindData(gl: WebGL2RenderingContext) {
+  private function _bindData(gl: WebGL2RenderingContext) {
     // Setup memory layout
     final components = this._components;
     this._transformData.bind();
@@ -193,19 +193,19 @@ class ImageRendererV2 implements RendererPlugin {
     gl.bindVertexArray(this._vao);
   }
 
-  public dispose() {
+  public function dispose() {
     this._transformData.dispose();
     this._shader.dispose();
     this._textures.length = 0;
-    this._context = null as any;
-    this._gl = null as any;
+    this._context = null;
+    this._gl = null;
   }
 
-  private _transformFragmentSource(source: String, maxTextures: Int): String {
+  private function _transformFragmentSource(source: String, maxTextures: Int): String {
     var newSource = source.replace('%%count%%', maxTextures.toString());
     var texturePickerBuilder = '';
-    for (var i = 0; i < maxTextures; i++) {
-      if (i === 0) {
+    for (i in 0...maxTextures) {
+      if (i == 0) {
         texturePickerBuilder += 'if (v_texture_index <= ${i}.5) {\n';
       } else {
         texturePickerBuilder += '   else if (v_texture_index <= ${i}.5) {\n';
@@ -217,7 +217,7 @@ class ImageRendererV2 implements RendererPlugin {
     return newSource;
   }
 
-  private _addImageAsTexture(image: HTMLImageSource) {
+  private function _addImageAsTexture(image: HTMLImageSource) {
     if (this._images.has(image)) {
       return;
     }
@@ -226,34 +226,34 @@ class ImageRendererV2 implements RendererPlugin {
     final wrapX = parseImageWrapping(image.getAttribute(ImageSourceAttributeConstants.WrappingX));
     final wrapY = parseImageWrapping(image.getAttribute(ImageSourceAttributeConstants.WrappingY));
 
-    final force = image.getAttribute('forceUpload') === 'true' ? true : false;
+    final force = image.getAttribute('forceUpload') == 'true' ? true : false;
     final texture = this._context.textureLoader.load(
       image,
       {
-        filtering,
+        filtering: filtering,
         wrapping: { x: wrapX, y: wrapY }
       },
       force
     )!;
     // remove force attribute after upload
     image.removeAttribute('forceUpload');
-    if (this._textures.indexOf(texture) === -1) {
+    if (this._textures.indexOf(texture) == -1) {
       this._textures.push(texture);
       this._textureToIndex.set(texture, this._textureIndex++);
       this._images.add(image);
     }
   }
 
-  private _bindTextures(gl: WebGLRenderingContext) {
+  private function _bindTextures(gl: WebGLRenderingContext) {
     // Bind textures in the correct order
     final max = Math.min(this._textureIndex, this._maxTextures);
-    for (var i = 0; i < max; i++) {
+    for (i in 0...max) {
       gl.activeTexture(gl.TEXTURE0 + i);
       gl.bindTexture(gl.TEXTURE_2D, this._textures[i] || this._textures[0]);
     }
   }
 
-  private _getTextureIdForImage(image: HTMLImageSource) {
+  private function _getTextureIdForImage(image: HTMLImageSource) {
     if (image) {
       final maybeTexture = this._context.textureLoader.get(image);
       return this._textureToIndex.get(maybeTexture) ?? -1; //this._textures.indexOf(maybeTexture);
@@ -261,7 +261,7 @@ class ImageRendererV2 implements RendererPlugin {
     return -1;
   }
 
-  private _isFull() {
+  private function _isFull() {
     if (this._imageCount >= this._maxImages) {
       return true;
     }
@@ -271,39 +271,39 @@ class ImageRendererV2 implements RendererPlugin {
     return false;
   }
 
-  private _imageToWidth = new Map<HTMLImageSource, Int>();
-  private _getImageWidth(image: HTMLImageSource) {
+  private var _imageToWidth = new Map<HTMLImageSource, Int>();
+  private function _getImageWidth(image: HTMLImageSource) {
     var maybeWidth = this._imageToWidth.get(image);
-    if (maybeWidth === undefined) {
+    if (maybeWidth == undefined) {
       maybeWidth = image.width;
       this._imageToWidth.set(image, maybeWidth);
     }
     return maybeWidth;
   }
 
-  private _imageToHeight = new Map<HTMLImageSource, Int>();
-  private _getImageHeight(image: HTMLImageSource) {
+  private var _imageToHeight = new Map<HTMLImageSource, Int>();
+  private function _getImageHeight(image: HTMLImageSource) {
     var maybeHeight = this._imageToHeight.get(image);
-    if (maybeHeight === undefined) {
+    if (maybeHeight == undefined) {
       maybeHeight = image.height;
       this._imageToHeight.set(image, maybeHeight);
     }
     return maybeHeight;
   }
 
-  private _view = [0, 0, 0, 0];
-  private _dest = [0, 0];
-  private _defaultTint = Color.White;
-  draw(
+  private var _view = [0, 0, 0, 0];
+  private var _dest = [0, 0];
+  private var _defaultTint = Color.White;
+  function draw(
     image: HTMLImageSource,
     sx: Int,
     sy: Int,
-    swidth?: Int,
-    sheight?: Int,
-    dx?: Int,
-    dy?: Int,
-    dwidth?: Int,
-    dheight?: Int
+    ?swidth: Int,
+    ?sheight: Int,
+    ?dx: Int,
+    ?dy: Int,
+    ?dwidth: Int,
+    ?dheight: Int
   ): Void {
     // Force a render if the batch is full
     if (this._isFull()) {
@@ -325,7 +325,7 @@ class ImageRendererV2 implements RendererPlugin {
     this._dest[0] = sx ?? 1;
     this._dest[1] = sy ?? 1;
     // If destination is specified, update view and dest
-    if (dx !== undefined && dy !== undefined && dwidth !== undefined && dheight !== undefined) {
+    if (dx != null && dy != null && dwidth != null && dheight != null) {
       this._view[0] = sx ?? 1;
       this._view[1] = sy ?? 1;
       this._view[2] = swidth ?? maybeImageWidth ?? 0;
@@ -390,13 +390,13 @@ class ImageRendererV2 implements RendererPlugin {
     vertexBuffer[this._vertexIndex++] = tint.a;
   }
 
-  hasPendingDraws(): Bool {
-    return this._imageCount !== 0;
+  function hasPendingDraws(): Bool {
+    return this._imageCount != 0;
   }
 
-  flush(): Void {
+  function flush(): Void {
     // nothing to draw early exit
-    if (this._imageCount === 0) {
+    if (this._imageCount == 0) {
       return;
     }
 

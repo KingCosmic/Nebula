@@ -1,43 +1,43 @@
-package nebula.Graphics.Context.MaterialRenderer;
+package nebula.graphics.context.materialrenderer;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
-import nebula.Graphics.Filtering;
-import nebula.Graphics.GraphicsDiagnostics;
-import nebula.Graphics.Imagesource;
-import nebula.Graphics.Wrapping;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.Filtering;
+import nebula.graphics.GraphicsDiagnostics;
+import nebula.graphics.ImageSource;
+import nebula.graphics.Wrapping;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
 
-import nebula.Graphics.Context.QuadIndexBuffer;
-import nebula.Graphics.Context.Renderer;
-import nebula.Graphics.Context.VertexBuffer;
-import nebula.Graphics.Context.VertexLayout;
+import nebula.graphics.context.QuadIndexBuffer;
+import nebula.graphics.context.Renderer;
+import nebula.graphics.context.VertexBuffer;
+import nebula.graphics.context.VertexLayout;
 
 class MaterialRenderer implements RendererPlugin {
-  public readonly type: String = 'ex.material';
-  public priority: Int = 0;
+  public var type: String = 'ex.material';
+  public var priority: Int = 0;
   // private _maxTextures = 8;
-  private _context!: ExcaliburGraphicsContextWebGL;
-  private _gl!: WebGL2RenderingContext;
-  private _textures: WebGLTexture[] = [];
-  private _quads: any;
-  private _buffer!: VertexBuffer;
-  private _layout!: VertexLayout;
-  initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
+  private var _context: ExcaliburGraphicsContextWebGL;
+  private var _gl: WebGL2RenderingContext;
+  private var _textures: Array<WebGLTexture> = [];
+  private var _quads: Any;
+  private var _buffer: VertexBuffer;
+  private var _layout: VertexLayout;
+  function initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
     this._gl = gl;
     this._context = context;
 
     // Setup memory layout
     this._buffer = new VertexBuffer({
-      gl,
+      gl: gl,
       size: 6 * 4, // 6 components * 4 verts
       type: 'dynamic'
     });
 
     // Setup a vertex layout/buffer to the material
     this._layout = new VertexLayout({
-      gl,
+      gl: gl,
       vertexBuffer: this._buffer,
       attributes: [
         ['a_position', 2],
@@ -51,7 +51,7 @@ class MaterialRenderer implements RendererPlugin {
     this._quads = new QuadIndexBuffer(gl, 1, true);
   }
 
-  public dispose() {
+  public function dispose() {
     this._buffer.dispose();
     this._quads.dispose();
     this._textures.length = 0;
@@ -59,16 +59,16 @@ class MaterialRenderer implements RendererPlugin {
     this._gl = null;
   }
 
-  draw(
+  function draw(
     image: HTMLImageSource,
     sx: Int,
     sy: Int,
-    swidth?: Int,
-    sheight?: Int,
-    dx?: Int,
-    dy?: Int,
-    dwidth?: Int,
-    dheight?: Int
+    ?swidth: Int,
+    ?sheight: Int,
+    ?dx: Int,
+    ?dy: Int,
+    ?dwidth: Int,
+    ?dheight: Int
   ): Void {
     final gl = this._gl;
 
@@ -95,7 +95,7 @@ class MaterialRenderer implements RendererPlugin {
     var view = [0, 0, swidth ?? image?.width ?? 0, sheight ?? image?.height ?? 0];
     var dest = [sx ?? 1, sy ?? 1];
     // If destination is specified, update view and dest
-    if (dx !== undefined && dy !== undefined && dwidth !== undefined && dheight !== undefined) {
+    if (dx != null && dy != null && dwidth != null && dheight != null) {
       view = [sx ?? 1, sy ?? 1, swidth ?? image?.width ?? 0, sheight ?? image?.height ?? 0];
       dest = [dx, dy];
       width = dwidth;
@@ -212,34 +212,34 @@ class MaterialRenderer implements RendererPlugin {
     GraphicsDiagnostics.DrawCallCount++;
   }
 
-  private _addImageAsTexture(image: HTMLImageSource) {
+  private function _addImageAsTexture(image: HTMLImageSource) {
     final maybeFiltering = image.getAttribute(ImageSourceAttributeConstants.Filtering);
     final filtering = maybeFiltering ? parseImageFiltering(maybeFiltering) : undefined;
     final wrapX = parseImageWrapping(image.getAttribute(ImageSourceAttributeConstants.WrappingX));
     final wrapY = parseImageWrapping(image.getAttribute(ImageSourceAttributeConstants.WrappingY));
 
-    final force = image.getAttribute('forceUpload') === 'true' ? true : false;
+    final force = image.getAttribute('forceUpload') == 'true' ? true : false;
     final texture = this._context.textureLoader.load(
       image,
       {
-        filtering,
+        filtering: filtering,
         wrapping: { x: wrapX, y: wrapY }
       },
       force
     )!;
     // remove force attribute after upload
     image.removeAttribute('forceUpload');
-    if (this._textures.indexOf(texture) === -1) {
+    if (this._textures.indexOf(texture) == -1) {
       this._textures.push(texture);
     }
 
     return texture;
   }
 
-  hasPendingDraws(): Bool {
+  function hasPendingDraws(): Bool {
     return false;
   }
-  flush(): Void {
+  function flush(): Void {
     // flush does not do anything, material renderer renders immediately per draw
   }
 }

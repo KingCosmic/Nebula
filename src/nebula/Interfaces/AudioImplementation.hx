@@ -1,6 +1,6 @@
-package nebula.Interfaces;
+package nebula.interfaces;
 
-import nebula.Interfaces.Audio;
+import nebula.interfaces.Audio;
 
 interface ExResponseType {
   Any;

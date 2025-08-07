@@ -1,6 +1,6 @@
-package nebula.Util;
+package nebula.util;
 
-import nebula.Util.Log;
+import nebula.util.Log;
 
 class Pool<Type> {
   public var totalAllocations = 0;
@@ -20,7 +20,7 @@ class Pool<Type> {
   }
 
   function preallocate() {
-    for (var i = 0; i < this.maxObjects; i++) {
+    for (i in 0...this.maxObjects) {
       this.objects[i] = this.builder();
     }
   }
@@ -31,7 +31,7 @@ class Pool<Type> {
    * By returning values out of the context they will be un-hooked from the pool and are free to be passed to consumers
    * @param context
    */
-  function using(context: (pool: Pool<Type>) -> Null<Array<Type>>) {
+  function use(context: (pool: Pool<Type>) -> Null<Array<Type>>) {
     final result = context(this);
     if (result) {
       return this.done(...result);
@@ -87,7 +87,7 @@ class Pool<Type> {
     for (object in objects) {
       final poolIndex = this.objects.indexOf(object);
       // Build a new object to take the pool place
-      this.objects[poolIndex] = (this as any).builder();
+      this.objects[poolIndex] = this.builder();
       this.totalAllocations++;
     }
     return objects;

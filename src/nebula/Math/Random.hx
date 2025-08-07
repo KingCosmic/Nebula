@@ -1,4 +1,4 @@
-package nebula.Math;
+package nebula.math;
 
 /**
  * @module
@@ -26,45 +26,45 @@ var seedOffset = 0;
  */
 class Random {
   // Separation point of one one word, the number of bits in the lower bitmask 0 <= r <= w-1
-  private _lowerMask: Int = 0x7fffffff; // 31 bits same as _r
-  private _upperMask: Int = 0x80000000; // 34 high bits
+  private var _lowerMask: Int = 0x7fffffff; // 31 bits same as _r
+  private var _upperMask: Int = 0x80000000; // 34 high bits
 
   // Word size, 64 bits
-  private _w: Int = 32;
+  private var _w: Int = 32;
 
   // Degree of recurrence
-  private _n: Int = 624;
+  private var _n: Int = 624;
 
   // Middle word, an offset used in the recurrence defining the series x, 1<=m<n
-  private _m: Int = 397;
+  private var _m: Int = 397;
   // coefficients of teh rational normal form twist matrix
-  private _a: Int = 0x9908b0df;
+  private var _a: Int = 0x9908b0df;
 
   // tempering bit shifts and masks
-  private _u: Int = 11;
-  private _s: Int = 7;
-  private _b: Int = 0x9d2c5680;
-  private _t: Int = 15;
-  private _c: Int = 0xefc60000;
-  private _l: Int = 18;
-  private _f: Int = 1812433253;
+  private var _u: Int = 11;
+  private var _s: Int = 7;
+  private var _b: Int = 0x9d2c5680;
+  private var _t: Int = 15;
+  private var _c: Int = 0xefc60000;
+  private var _l: Int = 18;
+  private var _f: Int = 1812433253;
 
-  private _mt: Int[];
+  private var _mt: Array<Int>;
 
-  private _index: Int;
-  private _seed: Int;
+  private var _index: Int;
+  private var _seed: Int;
 
   /**
    * If no seed is specified, the Date.now() is used
    */
-  public function new(seed?: Int) {
+  public function new(?seed: Int) {
     this._mt = new Array<Int>(this._n);
     // need to mask to support higher bit machines
 
     this._mt[0] = (seed || initialSeed + seedOffset++) >>> 0;
     this._seed = this._mt[0];
 
-    for (var i = 1; i < this._n; i++) {
+    for (i in 1...this._n) {
       final s = this._mt[i - 1] ^ (this._mt[i - 1] >>> (this._w - 2));
       // numbers are bigger than the JS max safe int, add in 16-bit chunks to prevent IEEE rounding errors on high bits
       this._mt[i] = (((this._f * ((s & 0xffff0000) >>> 16)) << 16) + this._f * (s & 0xffff) + i) >>> 0;
@@ -75,18 +75,23 @@ class Random {
   /**
    * Apply the twist
    */
-  private _twist(): Void {
+  private function _twist():Void {
     final mag01 = [0x0, this._a];
-    var y = 0,
-      i = 0;
-    for (; i < this._n - this._m; i++) {
+    var y:Int = 0;
+    var i:Int = 0;
+
+    while (i < this._n - this._m) {
       y = (this._mt[i] & this._upperMask) | (this._mt[i + 1] & this._lowerMask);
       this._mt[i] = this._mt[i + this._m] ^ (y >>> 1) ^ (mag01[y & 0x1] & BITMASK32);
+      i++;
     }
-    for (; i < this._n - 1; i++) {
+
+    while (i < this._n - 1) {
       y = (this._mt[i] & this._upperMask) | (this._mt[i + 1] & this._lowerMask);
       this._mt[i] = this._mt[i + (this._m - this._n)] ^ (y >>> 1) ^ (mag01[y & 0x1] & BITMASK32);
+      i++;
     }
+
     y = (this._mt[this._n - 1] & this._upperMask) | (this._mt[0] & this._lowerMask);
     this._mt[this._n - 1] = this._mt[this._m - 1] ^ (y >>> 1) ^ (mag01[y & 0x1] & BITMASK32);
 
@@ -96,7 +101,7 @@ class Random {
   /**
    * Return next 32 bit integer number in sequence
    */
-  public nextInt(): Int {
+  public function nextInt(): Int {
     if (this._index >= this._n) {
       this._twist();
     }
@@ -114,14 +119,14 @@ class Random {
   /**
    * Return a random floating point number between [0, 1)
    */
-  public next(): Float {
+  public function next(): Float {
     return this.nextInt() * (1.0 / 4294967296.0); // divided by 2^32
   }
 
   /**
    * Return a random floating point in range [min, max) min is included, max is not included
    */
-  public floating(min: Float, max: Float): Float {
+  public function floating(min: Float, max: Float): Float {
     return (max - min) * this.next() + min;
   }
 
@@ -129,7 +134,7 @@ class Random {
    * Return a random integer in range [min, max] min is included, max is included.
    * Implemented with rejection sampling, see https://medium.com/@betable/tifu-by-using-math-random-f1c308c4fd9d#.i13tdiu5a
    */
-  public integer(min: Int, max: Int): Int {
+  public function integer(min: Int, max: Int): Int {
     return Math.floor((max - min + 1) * this.next() + min);
   }
 
@@ -138,7 +143,7 @@ class Random {
    * By default the likelihood of returning a true is .5 (50%).
    * @param likelihood takes values between [0, 1]
    */
-  public bool(likelihood: Float = 0.5): Bool {
+  public function bool(likelihood: Float = 0.5): Bool {
     return this.next() <= likelihood;
   }
 
@@ -173,7 +178,7 @@ class Random {
     if (numPicks > array.length || numPicks < 0) {
       throw new Error('Invalid number of elements to pick, must pick a value 0 < n <= length');
     }
-    if (numPicks === array.length) {
+    if (numPicks == array.length) {
       return array;
     }
 
@@ -200,7 +205,7 @@ class Random {
       throw new Error('Invalid number of elements to pick, must pick a value 0 <= n < MAX_INT');
     }
     final result = new Array<T>(numPicks);
-    for (let i = 0; i < numPicks; i++) {
+    for (i in 0...numPicks) {
       result[i] = this.pickOne(array);
     }
     return result;
@@ -213,7 +218,7 @@ class Random {
   public function shuffle<T>(array: Array<T>): Array<T> {
     final tempArray = array.slice(0);
     var swap: T;
-    for (var i = 0; i < tempArray.length - 2; i++) {
+    for (i in 0...tempArray.length) {
       final randomIndex = this.integer(i, tempArray.length - 1);
       swap = tempArray[i];
       tempArray[i] = tempArray[randomIndex];
@@ -229,9 +234,9 @@ class Random {
    * @param min the minimum integer number to generate inclusive
    * @param max the maximum integer number to generate inclusive
    */
-  public range(length: Int, min: Int, max: Int): Array<Int> {
+  public function range(length: Int, min: Int, max: Int): Array<Int> {
     final result: Array<Int> = new Array(length);
-    for (var i = 0; i < length; i++) {
+    for (i in 0...length) {
       result[i] = this.integer(min, max);
     }
     return result;
@@ -240,46 +245,47 @@ class Random {
   /**
    * Returns the result of a d4 dice roll
    */
-  public d4() {
+  public function d4() {
     return this.integer(1, 4);
   }
 
   /**
    * Returns the result of a d6 dice roll
    */
-  public d6() {
+  public function d6() {
     return this.integer(1, 6);
   }
 
   /**
    * Returns the result of a d8 dice roll
    */
-  public d8() {
+  public function d8() {
     return this.integer(1, 8);
   }
 
   /**
    * Returns the result of a d10 dice roll
    */
-  public d10() {
+  public function d10() {
     return this.integer(1, 10);
   }
 
   /**
    * Returns the result of a d12 dice roll
    */
-  public d12() {
+  public function d12() {
     return this.integer(1, 12);
   }
 
   /**
    * Returns the result of a d20 dice roll
    */
-  public d20() {
+  public function d20() {
     return this.integer(1, 20);
   }
 
-  get seed() {
+  public var seed(get, never): Int;
+  function get_seed() {
     return this._seed;
   }
 }

@@ -1,29 +1,29 @@
-package nebula.Particles;
+package nebula.particles;
 
-import nebula.Math.Util;
+import nebula.math.Util;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
 
-import nebula.Particles.GpuParticleEmitter;
-import nebula.Particles.Particles;
-import nebula.Particles.EmitterType;
+import nebula.particles.GpuParticleEmitter;
+import nebula.particles.Particles;
+import nebula.particles.EmitterType;
 
-import nebula.Util.Assert;
+import nebula.util.Assert;
 
-import nebula.Math.Random;
-import nebula.Math.Vector;
+import nebula.math.Random;
+import nebula.math.Vector;
 
-import nebula.Graphics.Sprite;
+import nebula.graphics.Sprite;
 
 interface GpuParticleConfig extends ParticleConfig {
   /**
    * Only Sprite graphics are supported in GPU particles at the moment
    */
-  graphic?: Sprite;
+  var graphic: Null<Sprite>;
   /**
    * Set the maximum particles to use for this emitter
    */
-  maxParticles?: Int;
+  var maxParticles: Null<Int>;
 }
 
 /**
@@ -31,28 +31,28 @@ interface GpuParticleConfig extends ParticleConfig {
  * to render particles and maintain state.
  */
 class GpuParticleRenderer {
-  static readonly GPU_MAX_PARTICLES: Int = 100_000;
-  emitter: GpuParticleEmitter;
-  emitRate: Int = 1;
-  particle: GpuParticleConfig;
+  static var GPU_MAX_PARTICLES: Int = 100_000;
+  var emitter: GpuParticleEmitter;
+  var emitRate: Int = 1;
+  var particle: GpuParticleConfig;
 
-  private _initialized: boolean = false;
-  private _vaos: WebGLVertexArrayObject[] = [];
-  private _buffers: WebGLBuffer[] = [];
-  private _random: Random;
+  private var _initialized: Bool = false;
+  private var _vaos: Array<WebGLVertexArrayObject> = [];
+  private var _buffers: Array<WebGLBuffer> = [];
+  private var _random: Random;
 
-  private _drawIndex = 0;
-  private _currentVao!: WebGLVertexArrayObject;
-  private _currentBuffer!: WebGLBuffer;
+  private var _drawIndex = 0;
+  private var _currentVao: WebGLVertexArrayObject;
+  private var _currentBuffer: WebGLBuffer;
 
-  private _numInputFloats = 2 + 2 + 1 + 1 + 1;
-  private _particleData: Float32Array;
-  private _particleIndex = 0;
-  private _uploadIndex: Int = 0;
+  private var _numInputFloats = 2 + 2 + 1 + 1 + 1;
+  private var _particleData: Float32Array;
+  private var _particleIndex = 0;
+  private var _uploadIndex: Int = 0;
 
-  private _wrappedLife = 0;
-  private _wrappedParticles = 0;
-  private _particleLife = 0;
+  private var _wrappedLife = 0;
+  private var _wrappedParticles = 0;
+  private var _particleLife = 0;
 
   public function new(emitter: GpuParticleEmitter, random: Random, options: GpuParticleConfig) {
     this.emitter = emitter;
@@ -62,15 +62,17 @@ class GpuParticleRenderer {
     this._particleLife = this.particle.life ?? 2000;
   }
 
-  public get isInitialized() {
+  public var isInitialized(get, never): Bool;
+  function get_isInitialized() {
     return this._initialized;
   }
 
-  public get maxParticles(): Int {
+  public var maxParticles(get, never): Int;
+  function get_maxParticles(): Int {
     return this.emitter.maxParticles;
   }
 
-  initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL) {
+  function initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL) {
     if (this._initialized) {
       return;
     }
@@ -158,29 +160,30 @@ class GpuParticleRenderer {
     this._initialized = true;
   }
 
-  private _clearRequested = false;
-  clearParticles() {
+  private var _clearRequested = false;
+  function clearParticles() {
     this._particleData.fill(0);
     this._clearRequested = true;
   }
 
-  private _emitted: [life: Float, index: Int][] = [];
-  emitParticles(particleCount: number) {
+  private var _emitted: Array<{ life: Float, index: Int }> = [];
+  function emitParticles(particleCount: Int) {
     final startIndex = this._particleIndex;
     final maxSize = this.maxParticles * this._numInputFloats;
     final endIndex = particleCount * this._numInputFloats + startIndex;
     var countParticle = 0;
-    for (var i = startIndex; i < endIndex; i += this._numInputFloats) {
+    var i = startIndex;
+    while (i < endIndex) {
       var angle = this._random.floating(this.particle.minAngle || 0, this.particle.maxAngle || TwoPI);
       angle +=
-        this.particle.transform === ParticleTransform.Local ? this.emitter.transform.rotation : this.emitter.transform.globalRotation;
+        this.particle.transform == ParticleTransform.Local ? this.emitter.transform.rotation : this.emitter.transform.globalRotation;
       final speedX = this._random.floating(this.particle.minSpeed || 0, this.particle.maxSpeed || 0);
       final speedY = this._random.floating(this.particle.minSpeed || 0, this.particle.maxSpeed || 0);
       final dx = speedX * Math.cos(angle);
       final dy = speedY * Math.sin(angle);
-      var ranX: number = 0;
-      var ranY: number = 0;
-      if (this.emitter.emitterType === EmitterType.Rectangle) {
+      var ranX: Int = 0;
+      var ranY: Int = 0;
+      if (this.emitter.emitterType == EmitterType.Rectangle) {
         ranX = this._random.floating(-0.5, 0.5) * this.emitter.width;
         ranY = this._random.floating(-0.5, 0.5) * this.emitter.height;
       } else {
@@ -190,8 +193,8 @@ class GpuParticleRenderer {
       }
       final tx = this.emitter.transform.apply(vec(ranX, ranY));
       final data = [
-        this.particle.transform === ParticleTransform.Local ? ranX : tx.x,
-        this.particle.transform === ParticleTransform.Local ? ranY : tx.y, // pos in world space
+        this.particle.transform == ParticleTransform.Local ? ranX : tx.x,
+        this.particle.transform == ParticleTransform.Local ? ranY : tx.y, // pos in world space
         dx,
         dy, // velocity
         this.particle.randomRotation ? randomInRange(0, TwoPI, this._random) : this.particle.rotation || 0, // rotation
@@ -201,6 +204,7 @@ class GpuParticleRenderer {
 
       countParticle++;
       this._particleData.set(data, i % this._particleData.length);
+      i += this._numInputFloats;
     }
 
     if (endIndex >= maxSize) {
@@ -214,10 +218,10 @@ class GpuParticleRenderer {
     this._emitted.push([this._particleLife, startIndex]);
   }
 
-  private _uploadEmitted(gl: WebGL2RenderingContext) {
+  private function _uploadEmitted(gl: WebGL2RenderingContext) {
     // upload index is the index of the previous upload
     // particle index is the current index of modification
-    if (this._particleIndex !== this._uploadIndex) {
+    if (this._particleIndex != this._uploadIndex) {
       // Bind one buffer to ARRAY_BUFFER and the other to TFB
       gl.bindBuffer(gl.ARRAY_BUFFER, this._buffers[(this._drawIndex + 1) % 2]);
       if (this._particleIndex >= this._uploadIndex) {
@@ -256,7 +260,7 @@ class GpuParticleRenderer {
     this._uploadIndex = this._particleIndex % (this.maxParticles * this._numInputFloats);
   }
 
-  update(elapsed: Int) {
+  function update(elapsed: Int) {
     this._particleLife = this.particle.life ?? this._particleLife;
     if (this._wrappedLife > 0) {
       this._wrappedLife -= elapsed;
@@ -267,19 +271,21 @@ class GpuParticleRenderer {
     if (!this._emitted.length) {
       return;
     }
-    for (var i = this._emitted.length - 1; i >= 0; i--) {
+    var i = this._emitted.length;
+    while (i >= 0) {
       final particle = this._emitted[i];
       particle[0] -= elapsed;
       final life = particle[0];
       if (life <= 0) {
         this._emitted.splice(i, 1);
       }
+      i--;
     }
 
-    this._emitted.sort((a, b) => a[0] - b[0]);
+    this._emitted.sort((a, b) -> a[0] - b[0]);
   }
 
-  draw(gl: WebGL2RenderingContext) {
+  function draw(gl: WebGL2RenderingContext) {
     if (this._initialized) {
       // Emit
       if (this._clearRequested) {
@@ -299,8 +305,8 @@ class GpuParticleRenderer {
       if (this._wrappedLife && this._emitted[0] && this._emitted[0][1] > 0) {
         final midpoint = this._emitted[0][1] / this._numInputFloats;
         // draw oldest first (maybe make configurable)
-        assert(`midpoint greater than 0, actual: ${midpoint}`, () => midpoint > 0);
-        assert(`midpoint is less than max, actual: ${midpoint}`, () => midpoint < this.maxParticles);
+        assert('midpoint greater than 0, actual: ${midpoint}', () -> midpoint > 0);
+        assert('midpoint is less than max, actual: ${midpoint}', () -> midpoint < this.maxParticles);
         gl.bindBufferRange(
           gl.TRANSFORM_FEEDBACK_BUFFER,
           0,

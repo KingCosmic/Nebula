@@ -1,8 +1,8 @@
-package nebula.Math;
+package nebula.math;
 
-import nebula.Math.Matrix;
-import nebula.Math.Util;
-import nebula.Math.Vector;
+import nebula.math.Matrix;
+import nebula.math.Util;
+import nebula.math.Vector;
 
 class AffineMatrix {
   /**
@@ -12,7 +12,7 @@ class AffineMatrix {
    * | data[1] | data[3] | data[5]  |
    * |   0     |    0    |    1     |
    */
-  public data = new Float64Array(6);
+  public var data = new Float64Array(6);
 
   /**
    * Converts the current matrix into a DOMMatrix
@@ -20,11 +20,11 @@ class AffineMatrix {
    * This is useful when working with the browser Canvas context
    * @returns {DOMMatrix} DOMMatrix
    */
-  public toDOMMatrix(): DOMMatrix {
+  public function toDOMMatrix(): DOMMatrix {
     return new DOMMatrix([...this.data]);
   }
 
-  public static identity(): AffineMatrix {
+  public static function identity(): AffineMatrix {
     final mat = new AffineMatrix();
     mat.data[0] = 1;
     mat.data[1] = 0;
@@ -42,7 +42,7 @@ class AffineMatrix {
    * @param x
    * @param y
    */
-  public static translation(x: Int, y: Int): AffineMatrix {
+  public static function translation(x: Int, y: Int): AffineMatrix {
     final mat = AffineMatrix.identity();
     mat.data[4] = x;
     mat.data[5] = y;
@@ -54,7 +54,7 @@ class AffineMatrix {
    * @param sx
    * @param sy
    */
-  public static scale(sx: Float, sy: Float): AffineMatrix {
+  public static function scale(sx: Float, sy: Float): AffineMatrix {
     final mat = AffineMatrix.identity();
     mat.data[0] = sx;
     mat.data[3] = sy;
@@ -67,7 +67,7 @@ class AffineMatrix {
    * Creates a brand new rotation matrix with the specified angle in radians
    * @param angle
    */
-  public static rotation(angle: Float): AffineMatrix {
+  public static function rotation(angle: Float): AffineMatrix {
     final mat = AffineMatrix.identity();
     mat.data[0] = Math.cos(angle);
     mat.data[1] = Math.sin(angle);
@@ -76,12 +76,12 @@ class AffineMatrix {
     return mat;
   }
 
-  public setPosition(x: Int, y: Int) {
+  public function setPosition(x: Int, y: Int) {
     this.data[4] = x;
     this.data[5] = y;
   }
 
-  public getPosition(): Vector {
+  public function getPosition(): Vector {
     return vec(this.data[4], this.data[5]);
   }
 
@@ -89,7 +89,7 @@ class AffineMatrix {
    * Applies rotation to the current matrix mutating it
    * @param angle in Radians
    */
-  rotate(angle: Float) {
+  function rotate(angle: Float) {
     final a11 = this.data[0];
     final a21 = this.data[1];
 
@@ -113,7 +113,7 @@ class AffineMatrix {
    * @param x
    * @param y
    */
-  translate(x: Int, y: Int) {
+  function translate(x: Int, y: Int) {
     final a11 = this.data[0];
     final a21 = this.data[1];
     // const a31 = 0;
@@ -138,7 +138,7 @@ class AffineMatrix {
    * @param x
    * @param y
    */
-  scale(x: Float, y: Float) {
+  function scale(x: Float, y: Float) {
     final a11 = this.data[0];
     final a21 = this.data[1];
 
@@ -158,7 +158,7 @@ class AffineMatrix {
     return this;
   }
 
-  public determinant() {
+  public function determinant() {
     return this.data[0] * this.data[3] - this.data[1] * this.data[2];
   }
 
@@ -168,7 +168,7 @@ class AffineMatrix {
    * It's recommended you call .reset() the target unless you know what you're doing
    * @param target
    */
-  public inverse(target?: AffineMatrix): AffineMatrix {
+  public function inverse(?target: AffineMatrix): AffineMatrix {
     // See http://negativeprobability.blogspot.com/2011/11/affine-transformations-and-their.html
     // See https://www.mathsisfun.com/algebra/matrix-inverse.html
     // Since we are actually only doing 2D transformations we can use this hack
@@ -176,7 +176,7 @@ class AffineMatrix {
 
     final det = this.determinant();
     var inverseDet = det; // default to a zero matrix if we have a singular matrix
-    if (det !== 0) {
+    if (det != 0) {
       inverseDet = 1 / det;
     }
     final a = this.data[0];
@@ -202,20 +202,14 @@ class AffineMatrix {
   }
 
   /**
-   * Multiply the current matrix by a vector producing a new vector
-   * @param vector
-   * @param dest
-   */
-  multiply(vector: Vector, dest?: Vector): Vector;
-  /**
    * Multiply the current matrix by another matrix producing a new matrix
    * @param matrix
    * @param dest
    */
-  multiply(matrix: AffineMatrix, dest?: AffineMatrix): AffineMatrix;
-  multiply(vectorOrMatrix: Vector | AffineMatrix, dest?: Vector | AffineMatrix): Vector | AffineMatrix {
-    if (vectorOrMatrix instanceof Vector) {
-      final result = (dest as Vector) || new Vector(0, 0);
+  function multiply<T>(vectorOrMatrix: T, ?dest: T): T {
+
+    if (Std.isTypeOf(vectorOrMatrix, Vector)) {
+      final result: Vector = dest || new Vector(0, 0);
       final vector = vectorOrMatrix;
       // these shenanigans are to allow dest and vector to be the same instance
       final resultX = vector.x * this.data[0] + vector.y * this.data[2] + this.data[4];
@@ -224,8 +218,8 @@ class AffineMatrix {
       result.x = resultX;
       result.y = resultY;
       return result;
-    } else {
-      final result = (dest as AffineMatrix) || new AffineMatrix();
+    } else if (Std.isTypeOf(vectorOrMatrix, AffineMatrix)) {
+      final result: AffineMatrix = dest || new AffineMatrix();
       final other = vectorOrMatrix;
       final a11 = this.data[0];
       final a21 = this.data[1];
@@ -274,7 +268,7 @@ class AffineMatrix {
    * So: [x0, y0, x1, y1, x2, y2, x3, y3]
    * @param quad
    */
-  multiplyQuadInPlace(quad: Int[]) {
+  function multiplyQuadInPlace(quad: Array<Int>) {
     final resultTopLeftX = quad[0] * this.data[0] + quad[1] * this.data[2] + this.data[4];
     final resultTopLeftY = quad[0] * this.data[1] + quad[1] * this.data[3] + this.data[5];
     quad[0] = resultTopLeftX;
@@ -296,7 +290,7 @@ class AffineMatrix {
     quad[7] = resultBottomRightY;
   }
 
-  to4x4() {
+  function to4x4() {
     final mat = new Matrix();
     mat.data[0] = this.data[0];
     mat.data[1] = this.data[1];
@@ -320,7 +314,7 @@ class AffineMatrix {
     return mat;
   }
 
-  public setRotation(angle: Float) {
+  public function setRotation(angle: Float) {
     final currentScale = this.getScale();
     final sine = Math.sin(angle);
     final cosine = Math.cos(angle);
@@ -331,25 +325,25 @@ class AffineMatrix {
     this.data[3] = cosine * currentScale.y;
   }
 
-  public getRotation(): Float {
+  public function getRotation(): Float {
     final angle = Math.atan2(this.data[1] / this.getScaleY(), this.data[0] / this.getScaleX());
     return canonicalizeAngle(angle);
   }
 
-  public getScaleX(): Float {
+  public function getScaleX(): Float {
     // absolute scale of the matrix (we lose sign so need to add it back)
     final xScaleSq = this.data[0] * this.data[0] + this.data[2] * this.data[2];
-    if (xScaleSq === 1.0) {
+    if (xScaleSq == 1.0) {
       // usually there isn't scale so we can avoid a sqrt
       return this._scaleSignX;
     }
     return this._scaleSignX * Math.sqrt(xScaleSq);
   }
 
-  public getScaleY(): Float {
+  public function getScaleY(): Float {
     // absolute scale of the matrix (we lose sign so need to add it back)
     final yScaleSq = this.data[1] * this.data[1] + this.data[3] * this.data[3];
-    if (yScaleSq === 1.0) {
+    if (yScaleSq == 1.0) {
       // usually there isn't scale so we can avoid a sqrt
       return this._scaleSignY;
     }
@@ -359,14 +353,14 @@ class AffineMatrix {
   /**
    * Get the scale of the matrix
    */
-  public getScale(): Vector {
+  public function getScale(): Vector {
     return vec(this.getScaleX(), this.getScaleY());
   }
 
-  private _scale = new Float64Array([1, 1]);
-  private _scaleSignX = 1;
-  public setScaleX(val: Float) {
-    if (val === this._scale[0]) {
+  private var _scale = new Float64Array([1, 1]);
+  private var _scaleSignX = 1;
+  public function setScaleX(val: Float) {
+    if (val == this._scale[0]) {
       return;
     }
     this._scaleSignX = sign(val);
@@ -377,9 +371,9 @@ class AffineMatrix {
     this._scale[0] = val;
   }
 
-  private _scaleSignY = 1;
-  public setScaleY(val: Float) {
-    if (val === this._scale[1]) {
+  private var _scaleSignY = 1;
+  public function setScaleY(val: Float) {
+    if (val == this._scale[1]) {
       return;
     }
     this._scaleSignY = sign(val);
@@ -390,20 +384,20 @@ class AffineMatrix {
     this._scale[1] = val;
   }
 
-  public setScale(scale: Vector) {
+  public function setScale(scale: Vector) {
     this.setScaleX(scale.x);
     this.setScaleY(scale.y);
   }
 
-  public isIdentity(): Bool {
-    return this.data[0] === 1 && this.data[1] === 0 && this.data[2] === 0 && this.data[3] === 1 && this.data[4] === 0 && this.data[5] === 0;
+  public function isIdentity(): Bool {
+    return this.data[0] == 1 && this.data[1] == 0 && this.data[2] == 0 && this.data[3] == 1 && this.data[4] == 0 && this.data[5] == 0;
   }
 
   /**
    * Resets the current matrix to the identity matrix, mutating it
    * @returns {AffineMatrix} Current matrix as identity
    */
-  public reset(): AffineMatrix {
+  public function reset(): AffineMatrix {
     final mat = this;
     mat.data[0] = 1;
     mat.data[1] = 0;
@@ -419,7 +413,7 @@ class AffineMatrix {
   /**
    * Creates a new Matrix with the same data as the current {@apilink AffineMatrix}
    */
-  public clone(dest?: AffineMatrix): AffineMatrix {
+  public function clone(?dest: AffineMatrix): AffineMatrix {
     final mat = dest || new AffineMatrix();
     mat.data[0] = this.data[0];
     mat.data[1] = this.data[1];
@@ -432,7 +426,7 @@ class AffineMatrix {
     return mat;
   }
 
-  public toString() {
+  public function toString() {
     return '
       [${this.data[0]} ${this.data[2]} ${this.data[4]}]
       [${this.data[1]} ${this.data[3]} ${this.data[5]}]

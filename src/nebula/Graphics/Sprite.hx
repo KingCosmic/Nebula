@@ -1,80 +1,86 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Graphic;
-import nebula.Graphics.ImageSource;
+import nebula.graphics.Graphic;
+import nebula.graphics.ImageSource;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Util.Log;
+import nebula.util.Log;
 
-type SourceView = { x: Int; y: Int; width: Int; height: Int };
-type DestinationSize = { width: Int; height: Int };
+typedef SourceView = {
+  var x: Int; var y: Int; var width: Int; var height: Int;
+};
+typedef DestinationSize = { var width: Int; var height: Int; };
 
 interface SpriteOptions {
   /**
    * Image to create a sprite from
    */
-  image: ImageSource;
+  var image: ImageSource;
   /**
    * By default the source is the entire dimension of the {@apilink ImageSource}
    */
-  sourceView?: { x: Int; y: Int; width: Int; height: Int };
+  var sourceView: Null<{ x: Int, y: Int, width: Int, height: Int }>;
   /**
    * By default the size of the final sprite is the size of the {@apilink ImageSource}
    */
-  destSize?: { width: Int; height: Int };
+  var destSize: Null<{ width: Int, height: Int }>;
 }
 
 class Sprite extends Graphic {
-  private _logger = Logger.getInstance();
-  public image: ImageSource;
-  public sourceView: SourceView;
-  public destSize: DestinationSize;
-  private _dirty = true;
+  private var _logger = Logger.getInstance();
+  public var image: ImageSource;
+  public var sourceView: SourceView;
+  public var destSize: DestinationSize;
+  private var _dirty = true;
 
-  public static from(image: ImageSource, options?: Omit<GraphicOptions & SpriteOptions, 'image'>): Sprite {
-    return new Sprite({
-      image,
-      ...options
-    });
+  public static function from(image: ImageSource, ?options: Omit<GraphicOptions & SpriteOptions, 'image'>): Sprite {
+    return new Sprite(
+      Object.spreadWith({
+        image: image,
+      },
+      options
+    ));
   }
 
   public function new(options: GraphicOptions & SpriteOptions) {
     super(options);
     this.image = options.image;
-    final { width, height } = options;
+    final width = options.width,
+          height = options.height;
     this.sourceView = options.sourceView ?? { x: 0, y: 0, width: width ?? 0, height: height ?? 0 };
     this.destSize = options.destSize ?? { width: width ?? 0, height: height ?? 0 };
     this._updateSpriteDimensions();
     // Fire when loaded
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.image.ready.then(() => {
+    this.image.ready.then(() -> {
       this._updateSpriteDimensions();
     });
   }
 
-  public override get width(): Int {
+  override function get_width(): Int {
     return Math.abs(this.destSize.width * this.scale.x);
   }
 
-  public override get height(): Int {
+  override function get_height(): Int {
     return Math.abs(this.destSize.height * this.scale.y);
   }
 
-  public override set width(newWidth: Int) {
+  override function set_width(newWidth: Int) {
     newWidth /= Math.abs(this.scale.x);
     this.destSize.width = newWidth;
     super.width = Math.ceil(this.destSize.width);
   }
 
-  public override set height(newHeight: Int) {
+  override function set_height(newHeight: Int) {
     newHeight /= Math.abs(this.scale.y);
     this.destSize.height = newHeight;
     super.height = Math.ceil(this.destSize.height);
   }
 
-  private _updateSpriteDimensions() {
-    final { width: nativeWidth, height: nativeHeight } = this.image;
+  private function _updateSpriteDimensions() {
+    final nativeWidth = this.image.width,
+          nativeHeight = this.image.height;
+
     // This code uses || to avoid 0's
     // If the source is not specified, use the native dimension
     this.sourceView.width = this.sourceView?.width || nativeWidth;
@@ -119,11 +125,12 @@ class Sprite extends Graphic {
   }
 
   public function clone(): Sprite {
-    return new Sprite({
+    var config = Object.spreadWith({
       image: this.image,
-      sourceView: { ...this.sourceView },
-      destSize: { ...this.destSize },
-      ...this.cloneGraphicOptions()
-    });
+      sourceView: Object.spreadWith(this.sourceView, {}),
+      destSize: Object.spreadWith(this.destSize, {}),
+    }, this.cloneGraphicOptions());
+    
+    return new Sprite(config);
   }
 }

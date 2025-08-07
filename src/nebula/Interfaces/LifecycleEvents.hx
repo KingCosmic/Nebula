@@ -1,17 +1,17 @@
-package nebula.Interfaces;
+package nebula.interfaces;
 
 import nebula.Engine;
 import nebula.Events;
 import nebula.Scene;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-interface _initialize {
+interface Initialize {
   function _initialize(engine: Engine): Void;
 }
-interface _add {
+interface Add {
   function onAdd(scene: Scene): Void;
 }
-interface _remove {
+interface Remove {
   function onRemove(engine: Engine): Void;
 }
 
@@ -39,7 +39,7 @@ function has_remove(a: Any) {
 }
 
 interface OnInitialize {
-  onInitialize(engine: Engine): Void;
+  function onInitialize(engine: Engine): Void;
 }
 
 /**
@@ -50,7 +50,7 @@ function hasOnInitialize(a: Any) {
 }
 
 
-interface _preupdate {
+interface Preupdate {
   function _preupdate(engine: Engine, elapsed: Int): Void;
 }
 
@@ -73,7 +73,7 @@ function hasOnPreUpdate(a: Any) {
 }
 
 
-interface _postupdate {
+interface Postupdate {
   function _postupdate(engine: Engine, elapsed: Int): Void;
 }
 
@@ -129,13 +129,13 @@ function hasOnRemove(a: Any) {
 }
 
 interface CanRemove {
-  function onRemove(engine: Engine): Void
+  function onRemove(engine: Engine): Void;
 }
 
 interface SceneActivationContext<TData, TPreviousSceneData> {
   var data: Null<TData>;
   var previousScene: Scene;
-  var previousSceneData?: TPreviousSceneData;
+  var previousSceneData: Null<TPreviousSceneData>;
   var nextScene: Scene;
   var engine: Engine;
 }

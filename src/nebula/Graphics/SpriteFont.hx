@@ -1,60 +1,66 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Math.Vector;
-import nebula.Util.Log;
+import nebula.math.Vector;
+import nebula.util.Log;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Graphics.FontCommon;
-import nebula.Graphics.Graphic;
-import nebula.Graphics.Sprite;
-import nebula.Graphics.SpriteSheet;
+import nebula.graphics.FontCommon;
+import nebula.graphics.Graphic;
+import nebula.graphics.Sprite;
+import nebula.graphics.SpriteSheet;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
 interface SpriteFontOptions {
   /**
    * Alphabet string in spritesheet order (default is row column order)
    * example: 'abcdefghijklmnopqrstuvwxyz'
    */
-  alphabet: String;
+  var alphabet: String;
   /**
    * {@apilink SpriteSheet} to source character sprites from
    */
-  spriteSheet: SpriteSheet;
+  var spriteSheet: SpriteSheet;
   /**
    * Optionally ignore case in the supplied text;
    */
-  caseInsensitive?: Bool;
+  var caseInsensitive: Null<Bool>;
   /**
    * Optionally override the text line height, useful for multiline text. If unset will use default.
    */
-  lineHeight?: Null<Int>;
+  var lineHeight: Null<Int>;
   /**
    * Optionally adjust the spacing between character sprites
    */
-  spacing?: Int;
+  var spacing: Null<Int>;
   /**
    * Optionally specify a "shadow"
    */
-  shadow?: { offset: Vector };
+  var shadow: Null<{ offset: Vector }>;
 }
 
 class SpriteFont extends Graphic implements FontRenderer {
-  private _text: String = '';
-  public alphabet: String = '';
-  public spriteSheet: SpriteSheet;
+  private var _text: String = '';
+  public var alphabet: String = '';
+  public var spriteSheet: SpriteSheet;
 
-  public shadow?: { offset: Vector } = undefined;
-  public caseInsensitive: Bool = false;
-  public spacing: Int = 0;
-  public lineHeight?: Int = undefined;
+  public var shadow: Null<{ offset: Vector }> = null;
+  public var caseInsensitive: Bool = false;
+  public var spacing: Int = 0;
+  public var lineHeight: Null<Int> = null;
 
-  private _logger = Logger.getInstance();
+  private var _logger = Logger.getInstance();
 
   public function new(options: SpriteFontOptions & GraphicOptions) {
     super(options);
-    final { alphabet, spriteSheet, caseInsensitive, spacing, shadow, lineHeight } = options;
+    final alphabet = options.alphabet,
+          spriteSheet = options.spriteSheet,
+          caseInsensitive = options.caseInsensitive,
+          spacing = options.spacing,
+          shadow = options.shadow,
+          lineHeight = options.lineHeight;
+
     this.alphabet = alphabet;
     this.spriteSheet = spriteSheet;
     this.caseInsensitive = caseInsensitive ?? this.caseInsensitive;
@@ -63,20 +69,19 @@ class SpriteFont extends Graphic implements FontRenderer {
     this.lineHeight = lineHeight ?? this.lineHeight;
   }
 
-  private _getCharacterSprites(text: String): Sprite[] {
-    final results: Sprite[] = [];
+  private function _getCharacterSprites(text: String): Array<Sprite> {
+    final results: Array<Sprite> = [];
     // handle case insensitive
     final textToRender = this.caseInsensitive ? text.toLocaleLowerCase() : text;
     final alphabet = this.caseInsensitive ? this.alphabet.toLocaleLowerCase() : this.alphabet;
 
     // for each letter in text
-    for (var letterIndex = 0; letterIndex < textToRender.length; letterIndex++) {
+    for (letter in textToRender) {
       // find the sprite index in alphabet , if there is an error pick the first
-      final letter = textToRender[letterIndex];
       var spriteIndex = alphabet.indexOf(letter);
-      if (spriteIndex === -1) {
+      if (spriteIndex == -1) {
         spriteIndex = 0;
-        this._logger.warnOnce(`SpriteFont - Cannot find letter '${letter}' in configured alphabet '${alphabet}'.`);
+        this._logger.warnOnce('SpriteFont - Cannot find letter \'${letter}\' in configured alphabet \'${alphabet}\'.');
         this._logger.warnOnce('There maybe be more issues in the SpriteFont configuration. No additional warnings will be logged.');
       }
 
@@ -91,28 +96,28 @@ class SpriteFont extends Graphic implements FontRenderer {
     return results;
   }
 
-  public measureText(text: String, maxWidth?: Int): BoundingBox {
+  public function measureText(text: String, ?maxWidth: Int): BoundingBox {
     final lines = this._getLinesFromText(text, maxWidth);
-    final maxWidthLine = lines.reduce((a, b) => {
+    final maxWidthLine = lines.reduce((a, b) -> {
       return a.length > b.length ? a : b;
     });
     final sprites = this._getCharacterSprites(maxWidthLine);
     var width = 0;
     var height = 0;
-    for (final sprite of sprites) {
+    for (sprite in sprites) {
       width += sprite.width + this.spacing;
       height = Math.max(height, sprite.height);
     }
     return BoundingBox.fromDimension(width * this.scale.x, height * lines.length * this.scale.y, Vector.Zero);
   }
 
-  protected _drawImage(ex: ExcaliburGraphicsContext, x: Int, y: Int, maxWidth?: Int): Void {
+  function _drawImage(ex: ExcaliburGraphicsContext, x: Int, y: Int, ?maxWidth: Int): Void {
     var xCursor = 0;
     var yCursor = 0;
     var height = 0;
     final lines = this._getLinesFromText(this._text, maxWidth);
-    for (final line of lines) {
-      for (final sprite of this._getCharacterSprites(line)) {
+    for (line in lines) {
+      for (sprite in this._getCharacterSprites(line)) {
         // draw it in the right spot and increase the cursor by sprite width
         sprite.draw(ex, x + xCursor, y + yCursor);
         xCursor += sprite.width + this.spacing;
@@ -123,7 +128,7 @@ class SpriteFont extends Graphic implements FontRenderer {
     }
   }
 
-  render(ex: ExcaliburGraphicsContext, text: String, _color: dynamic, x: Int, y: Int, maxWidth?: Int) {
+  function render(ex: ExcaliburGraphicsContext, text: String, _color: Color, x: Int, y: Int, ?maxWidth: Int) {
     // SpriteFont doesn't support _color, yet...
     this._text = text;
     final bounds = this.measureText(text, maxWidth);
@@ -143,7 +148,7 @@ class SpriteFont extends Graphic implements FontRenderer {
     this._postDraw(ex);
   }
 
-  clone(): SpriteFont {
+  function clone(): SpriteFont {
     return new SpriteFont({
       alphabet: this.alphabet,
       spriteSheet: this.spriteSheet,
@@ -156,11 +161,11 @@ class SpriteFont extends Graphic implements FontRenderer {
    * @param text
    * @param maxWidth
    */
-  private _cachedText?: String;
-  private _cachedLines?: String[];
-  private _cachedRenderWidth?: Int;
-  private _getLinesFromText(text: String, maxWidth?: Int) {
-    if (this._cachedText === text && this._cachedRenderWidth === maxWidth && this._cachedLines?.length) {
+  private var _cachedText: Null<String>;
+  private var _cachedLines: Null<Array<String>>;
+  private var _cachedRenderWidth: Null<Int>;
+  private function _getLinesFromText(text: String, ?maxWidth: Int) {
+    if (this._cachedText == text && this._cachedRenderWidth == maxWidth && this._cachedLines.length) {
       return this._cachedLines;
     }
 
@@ -171,7 +176,7 @@ class SpriteFont extends Graphic implements FontRenderer {
     }
 
     // If the current line goes past the maxWidth, append a new line without modifying the underlying text.
-    for (var i = 0; i < lines.length; i++) {
+    for (i in 0...lines.length) {
       var line = lines[i];
       var newLine = '';
       // Note: we subtract the spacing to counter the initial padding on the left side.

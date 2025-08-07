@@ -1,17 +1,13 @@
-package nebula.EntityComponentSystem;
+package nebula.entitycomponentsystem;
 
-import nebula.EntityComponentSystem.System;
-import nebula.EntityComponentSystem.World;
+import nebula.entitycomponentsystem.System;
+import nebula.entitycomponentsystem.World;
 
-import nebula.Util.Util;
+import nebula.util.Util;
 
 import nebula.Scene;
 
-interface SystemCtor<T extends System> {
-  new (...args: any[]): T;
-}
-
-function isSystemConstructor(x: dynamic): x is SystemCtor<System> {
+function isSystemConstructor(x: Any) {
   return !!x?.prototype && !!x?.prototype?.constructor?.name;
 }
 
@@ -23,32 +19,25 @@ class SystemManager {
   /**
    * List of systems, to add a new system call {@apilink SystemManager.addSystem}
    */
-  public systems: System[] = [];
-  public initialized = false;
-  public function new(private _world: World) {}
+  public var systems: Array<System> = [];
+  public var initialized = false;
+  public function new(_world: World) {}
 
   /**
    * Get a system registered in the manager by type
    * @param systemType
    */
-  public get<T extends System>(systemType: SystemCtor<T>): T | null {
-    return this.systems.find((s) => s instanceof systemType) as unknown as T;
+  public function get<T:System>(SystemType: SystemCtor<T>): Null<T> {
+    return this.systems.find((s) -> Std.isOfType(s, SystemType));
   }
 
   /**
    * Adds a system to the manager, it will now be updated every frame
    * @param systemOrCtor
    */
-  public addSystem(systemOrCtor: SystemCtor<System> | System) {
-    var system: System;
-    if (systemOrCtor instanceof System) {
-      system = systemOrCtor;
-    } else {
-      system = new systemOrCtor(this._world);
-    }
-
+  public function addSystem(system: System) {
     this.systems.push(system);
-    this.systems.sort((a, b) => (a.constructor as typeof System).priority - (b.constructor as typeof System).priority);
+    this.systems.sort((a, b) -> a.priority - b.priority);
     // If systems are added and the manager has already been init'd
     // then immediately init the system
     if (this.initialized && system.initialize) {
@@ -60,7 +49,7 @@ class SystemManager {
    * Removes a system from the manager, it will no longer be updated
    * @param system
    */
-  public removeSystem(system: System) {
+  public function removeSystem(system: System) {
     removeItemFromArray(system, this.systems);
   }
 
@@ -69,10 +58,10 @@ class SystemManager {
    *
    * Systems added after initialize() will be initialized on add
    */
-  public initialize() {
+  public function initialize() {
     if (!this.initialized) {
       this.initialized = true;
-      for (final s of this.systems) {
+      for (s in this.systems) {
         if (s.initialize) {
           s.initialize(this._world, this._world.scene);
         }
@@ -86,28 +75,30 @@ class SystemManager {
    * @param scene context reference
    * @param elapsed time in milliseconds
    */
-  public updateSystems(type: SystemType, scene: Scene, elapsed: Float) {
-    final systems = this.systems.filter((s) => s.systemType === type);
-    for (final s of systems) {
+  public function updateSystems(type: SystemType, scene: Scene, elapsed: Float) {
+    final systems = this.systems.filter((s) -> s.systemType == type);
+    for (s in systems) {
       if (s.preupdate) {
         s.preupdate(scene, elapsed);
       }
     }
 
-    for (final s of systems) {
+    for (s in systems) {
       s.update(elapsed);
     }
 
-    for (final s of systems) {
+    for (s in systems) {
       if (s.postupdate) {
         s.postupdate(scene, elapsed);
       }
     }
   }
 
-  public clear() {
-    for (var i = this.systems.length - 1; i >= 0; i--) {
+  public function clear() {
+    var i = this.systems.length - 1;
+    while(i >= 0) {
       this.removeSystem(this.systems[i]);
+      i--;
     }
   }
 }

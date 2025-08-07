@@ -1,27 +1,27 @@
-package nebula.Graphics.Context;
+package nebula.graphics.context;
 
 import nebula.Color;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
 
-import nebula.Graphics.Context.Shader;
+import nebula.graphics.context.Shader;
 
-import nebula.Util.Log;
+import nebula.util.Log;
 
-import nebula.Graphics.ImageSource;
-import nebula.Graphics.Filtering;
+import nebula.graphics.ImageSource;
+import nebula.graphics.Filtering;
 
 interface MaterialOptions {
   /**
    * Name the material for debugging
    */
-  name?: String;
+  var name: Null<String>;
 
   /**
    * Excalibur graphics context to create the material (only WebGL is supported at the moment)
    */
-  graphicsContext?: ExcaliburGraphicsContext;
+  var graphicsContext: Null<ExcaliburGraphicsContext>;
 
   /**
    * Optionally specify a vertex shader
@@ -46,7 +46,7 @@ interface MaterialOptions {
    *  }
    * ```
    */
-  vertexSource?: String;
+  var vertexSource: Null<String>;
 
   /**
    * Add custom fragment shader
@@ -67,24 +67,24 @@ interface MaterialOptions {
    * * `uniform float u_opacity` - The current opacity of the graphics context
    *
    */
-  fragmentSource: String;
+  var fragmentSource: String;
 
   /**
    * Add custom color, by default ex.Color.Transparent
    */
-  color?: Color;
+  var color: Null<Color>;
 
   /**
    * Add additional images to the material, you are limited by the GPU's maximum texture slots
    *
    * Specify a dictionary of uniform sampler names to ImageSource
    */
-  images?: Record<String, ImageSource>;
+  var images: Null<Record<String, ImageSource>>;
 
   /**
    * Optionally set starting uniforms on a shader
    */
-  uniforms?: UniformDictionary;
+  var uniforms: Null<UniformDictionary>;
 }
 
 final defaultVertexSource = '#version 300 es
@@ -110,23 +110,29 @@ void main() {
 ';
 
 interface MaterialImageOptions {
-  filtering?: ImageFiltering;
+  var filtering: Null<ImageFiltering>;
 }
 
 class Material {
-  private _logger = Logger.getInstance();
-  private _name: String;
-  private _shader!: Shader;
-  private _color: Color = Color.Transparent;
-  private _initialized = false;
-  private _fragmentSource: String;
-  private _vertexSource: String;
+  private var _logger = Logger.getInstance();
+  private var _name: String;
+  private var _shader: Shader;
+  private var _color: Color = Color.Transparent;
+  private var _initialized = false;
+  private var _fragmentSource: String;
+  private var _vertexSource: String;
 
-  private _images: Record<String, ImageSource> = {};
-  private _uniforms: UniformDictionary = {};
+  private var _images: Record<String, ImageSource> = {};
+  private var _uniforms: UniformDictionary = {};
 
   public function new(options: MaterialOptions) {
-    final { color, name, vertexSource, fragmentSource, graphicsContext, images, uniforms } = options;
+    final color = options.color,
+          name = options.name,
+          vertexSource = options.vertexSource,
+          fragmentSource = options.fragmentSource,
+          graphicsContext = options.graphicsContext,
+          images = options.images,
+          uniforms = options.uniforms;
 
     this._name = name ?? 'anonymous material';
     this._vertexSource = vertexSource ?? defaultVertexSource;
@@ -139,14 +145,14 @@ class Material {
       throw Error('Material ${name} must be provided an excalibur webgl graphics context');
     }
 
-    if (graphicsContext instanceof ExcaliburGraphicsContextWebGL) {
+    if (Std.isTypeOf(graphicsContext, ExcaliburGraphicsContextWebGL)) {
       this._initialize(graphicsContext);
     } else {
       this._logger.warn('Material ${name} was created in 2D Canvas mode, currently only WebGL is supported');
     }
   }
 
-  private _initialize(graphicsContextWebGL: ExcaliburGraphicsContextWebGL) {
+  private function _initialize(graphicsContextWebGL: ExcaliburGraphicsContextWebGL) {
     if (this._initialized) {
       return;
     }
@@ -165,50 +171,54 @@ class Material {
     this._initialized = true;
   }
 
-  public get uniforms(): UniformDictionary {
+  public var uniforms(get, never): UniformDictionary;
+  function get_uniforms(): UniformDictionary {
     return this._shader.uniforms;
   }
 
-  public get images(): Record<String, ImageSource> {
+  public var images(get, never): Record<String, ImageSource>;
+  function get_images(): Record<String, ImageSource> {
     return this._shader.images;
   }
 
-  get color(): Color {
+  public var color(get, set): Color;
+  function get_color(): Color {
     return this._color;
   }
-
-  set color(c: Color) {
+  function set_color(c: Color) {
     this._color = c;
   }
 
-  get name() {
+  public var name(get, never): String;
+  function get_name() {
     return this._name;
   }
 
-  get isUsingScreenTexture() {
+  public var isUsingScreenTexture(get, never): Bool;
+  function get_isUsingScreenTexture() {
     return this._fragmentSource.includes('u_screen_texture');
   }
 
-  update(callback: (shader: Shader) => dynamic) {
+  function update(callback: (shader: Shader) -> Any) {
     if (this._shader) {
       this._shader.use();
       callback(this._shader);
     }
   }
 
-  getShader(): Null<Shader> {
+  function getShader(): Null<Shader> {
     return this._shader;
   }
 
-  addImageSource(samplerName: String, image: ImageSource) {
+  function addImageSource(samplerName: String, image: ImageSource) {
     this._shader.addImageSource(samplerName, image);
   }
 
-  removeImageSource(samplerName: String) {
+  function removeImageSource(samplerName: String) {
     this._shader.removeImageSource(samplerName);
   }
 
-  use() {
+  function use() {
     if (this._initialized) {
       // bind the shader
       this._shader.use();

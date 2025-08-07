@@ -1,23 +1,23 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.EntityComponentSystem.Entity;
+import nebula.entitycomponentsystem.Entity;
 
-import nebula.Actions.ActionContext;
-import nebula.Actions.ActionQueue;
+import nebula.actions.ActionContext;
+import nebula.actions.ActionQueue;
 
-import nebula.Actions.Action;
+import nebula.actions.Action;
 
 /**
  * RepeatForever Action implementation, it is recommended you use the fluent action
  * context API.
  */
 class RepeatForever implements Action {
-  id = nextActionId();
-  private _actionQueue: ActionQueue;
-  private _stopped: boolean = false;
-  private _repeatContext: ActionContext;
-  private _repeatBuilder: (repeatContext: ActionContext) => any;
-  public function new(entity: Entity, repeatBuilder: (repeatContext: ActionContext) => any) {
+  var id = nextActionId();
+  private var _actionQueue: ActionQueue;
+  private var _stopped: Bool = false;
+  private var _repeatContext: ActionContext;
+  private var _repeatBuilder: (repeatContext: ActionContext) -> Any;
+  public function new(entity: Entity, repeatBuilder: (repeatContext: ActionContext) -> Any) {
     this._repeatBuilder = repeatBuilder;
     this._repeatContext = new ActionContext(entity);
     this._actionQueue = this._repeatContext.getQueue();
@@ -25,7 +25,7 @@ class RepeatForever implements Action {
     this._repeatBuilder(this._repeatContext);
   }
 
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     if (this._stopped) {
       return;
     }
@@ -38,16 +38,16 @@ class RepeatForever implements Action {
     this._actionQueue.update(elapsed);
   }
 
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     return this._stopped;
   }
 
-  public stop() {
+  public function stop() {
     this._stopped = true;
     this._actionQueue.clearActions();
   }
 
-  public reset() {
+  public function reset() {
     return;
   }
 }

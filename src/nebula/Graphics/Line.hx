@@ -1,47 +1,53 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
 import nebula.Color;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Graphics.Graphic;
+import nebula.graphics.Graphic;
 
 interface LineOptions {
-  start: Vector;
-  end: Vector;
-  color?: Color;
-  thickness?: Int;
+  var start: Vector;
+  var end: Vector;
+  var color: Null<Color>;
+  var thickness: Null<Int>;
 }
 
 class Line extends Graphic {
-  readonly start: Vector;
-  readonly end: Vector;
-  color: Color = Color.Black;
-  thickness: Int = 1;
-  private _localBounds: BoundingBox;
+  var start: Vector;
+  var end: Vector;
+  var color: Color = Color.Black;
+  var thickness: Int = 1;
+  private var _localBounds: BoundingBox;
   public function new(options: LineOptions) {
     super();
-    final { start, end, color, thickness } = options;
+    final start = options.start,
+          end = options.end,
+          color = options.color,
+          thickness = options.thickness;
+
     this.start = start;
     this.end = end;
     this.color = color ?? this.color;
     this.thickness = thickness ?? this.thickness;
     this._localBounds = this._calculateBounds();
-    final { width, height } = this._localBounds;
+    final width = this._localBounds.width,
+          height = this._localBounds.height;
 
     this.width = width;
     this.height = height;
   }
 
-  public get localBounds() {
+  public var localBounds(get, never): BoundingBox;
+  function get_localBounds() {
     return this._localBounds;
   }
 
-  private _calculateBounds(): BoundingBox {
+  private function _calculateBounds(): BoundingBox {
     final lineNormal = this.end.sub(this.start).normal();
 
     final halfThickness = this.thickness / 2;
@@ -56,11 +62,11 @@ class Line extends Graphic {
     return BoundingBox.fromPoints(points);
   }
 
-  private _drawImage(ctx: ExcaliburGraphicsContext, _x: Int, _y: Int): Void {
+  private function _drawImage(ctx: ExcaliburGraphicsContext, _x: Int, _y: Int): Void {
     ctx.drawLine(this.start, this.end, this.color, this.thickness);
   }
 
-  clone(): Line {
+  function clone(): Line {
     return new Line({
       start: this.start,
       end: this.end,

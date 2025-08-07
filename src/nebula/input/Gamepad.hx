@@ -1,15 +1,16 @@
-import { GamepadConnectEvent, GamepadDisconnectEvent, GamepadButtonEvent, GamepadAxisEvent } from '../Events';
-import type { EventKey, Handler, Subscription } from '../EventEmitter';
-import { EventEmitter } from '../EventEmitter';
+package nebula.input;
 
-export type GamepadEvents = {
-  connect: GamepadConnectEvent;
-  disconnect: GamepadDisconnectEvent;
-  button: GamepadButtonEvent;
-  axis: GamepadAxisEvent;
+import nebula.Events;
+import nebula.EventEmitter;
+
+typedef TGamepadEvents = {
+  var connect: GamepadConnectEvent;
+  var disconnect: GamepadDisconnectEvent;
+  var button: GamepadButtonEvent;
+  var axis: GamepadAxisEvent;
 };
 
-export const GamepadEvents = {
+final GamepadEvents = {
   GamepadConnect: 'connect',
   GamepadDisconnect: 'disconnect',
   GamepadButton: 'button',
@@ -20,32 +21,32 @@ export const GamepadEvents = {
  * Excalibur leverages the HTML5 Gamepad API [where it is supported](http://caniuse.com/#feat=gamepad)
  * to provide controller support for your games.
  */
-export class Gamepads {
-  public events = new EventEmitter<GamepadEvents>();
+class Gamepads {
+  public var events = new EventEmitter<GamepadEvents>();
   /**
    * Whether or not to poll for Gamepad input (default: `false`)
    */
-  public enabled = false;
+  public var enabled = false;
 
   /**
    * Whether or not Gamepad API is supported
    */
-  public supported = !!(<any>navigator).getGamepads;
+  public var supported = !!(navigator).getGamepads;
 
   /**
    * The minimum value an axis has to move before considering it a change
    */
-  public static MinAxisMoveThreshold = 0.05;
+  public static var MinAxisMoveThreshold = 0.05;
 
-  private _gamePadTimeStamps = [0, 0, 0, 0];
-  private _oldPads: Gamepad[] = [];
-  private _pads: Gamepad[] = [];
-  private _initSuccess: boolean = false;
-  private _navigator: NavigatorGamepads = <any>navigator;
-  private _minimumConfiguration: GamepadConfiguration = null;
-  private _enabled = true;
+  private var _gamePadTimeStamps = [0, 0, 0, 0];
+  private var _oldPads: Array<Gamepad> = [];
+  private var _pads: Array<Gamepad> = [];
+  private var _initSuccess: Bool = false;
+  private var _navigator: NavigatorGamepads = navigator;
+  private var _minimumConfiguration: Null<GamepadConfiguration> = null;
+  private var _enabled = true;
 
-  public init() {
+  public function init() {
     if (!this.supported) {
       return;
     }
@@ -61,7 +62,7 @@ export class Gamepads {
     }
   }
 
-  public toggleEnabled(enabled: boolean) {
+  public function toggleEnabled(enabled: Bool) {
     this._enabled = enabled;
   }
 
@@ -71,7 +72,7 @@ export class Gamepads {
    * all other controllers with more axis or buttons are valid as well. If no minimum
    * configuration is set all pads are valid.
    */
-  public setMinimumGamepadConfiguration(config: GamepadConfiguration): void {
+  public function setMinimumGamepadConfiguration(config: GamepadConfiguration): Void {
     this._enableAndUpdate(); // if config is used, implicitly enable
     this._minimumConfiguration = config;
   }
@@ -79,7 +80,7 @@ export class Gamepads {
   /**
    * When implicitly enabled, set the enabled flag and run an update so information is updated
    */
-  private _enableAndUpdate() {
+  private function _enableAndUpdate() {
     if (!this.enabled) {
       this.enabled = true;
       this.update();
@@ -89,47 +90,38 @@ export class Gamepads {
   /**
    * Checks a navigator gamepad against the minimum configuration if present.
    */
-  private _isGamepadValid(pad: NavigatorGamepad): boolean {
+  private function _isGamepadValid(pad: NavigatorGamepad): Bool {
     if (!this._minimumConfiguration) {
       return true;
     }
     if (!pad) {
       return false;
     }
-    const axesLength = pad.axes.filter((value) => {
-      return typeof value !== undefined;
+    final axesLength = pad.axes.filter((value) -> {
+      return value != null;
     }).length;
 
-    const buttonLength = pad.buttons.filter((value) => {
-      return typeof value !== undefined;
+    final buttonLength = pad.buttons.filter((value) -> {
+      return value != null;
     }).length;
     return axesLength >= this._minimumConfiguration.axis && buttonLength >= this._minimumConfiguration.buttons && pad.connected;
   }
 
-  public emit<TEventName extends EventKey<GamepadEvents>>(eventName: TEventName, event: GamepadEvents[TEventName]): void;
-  public emit(eventName: string, event?: any): void;
-  public emit<TEventName extends EventKey<GamepadEvents> | string>(eventName: TEventName, event?: any): void {
+  public function emit(eventName: String, ?event: Any): Void {
     this.events.emit(eventName, event);
   }
 
-  public on<TEventName extends EventKey<GamepadEvents>>(eventName: TEventName, handler: Handler<GamepadEvents[TEventName]>): Subscription;
-  public on(eventName: string, handler: Handler<unknown>): Subscription;
-  public on<TEventName extends EventKey<GamepadEvents> | string>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function on(eventName: String, handler: Handler<Any>): Subscription {
     this._enableAndUpdate(); // implicitly enable
     return this.events.on(eventName, handler);
   }
 
-  public once<TEventName extends EventKey<GamepadEvents>>(eventName: TEventName, handler: Handler<GamepadEvents[TEventName]>): Subscription;
-  public once(eventName: string, handler: Handler<unknown>): Subscription;
-  public once<TEventName extends EventKey<GamepadEvents> | string>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function once(eventName: String, handler: Handler<Any>): Subscription {
     this._enableAndUpdate(); // implicitly enable
     return this.events.once(eventName, handler);
   }
 
-  public off<TEventName extends EventKey<GamepadEvents>>(eventName: TEventName, handler: Handler<GamepadEvents[TEventName]>): void;
-  public off(eventName: string, handler: Handler<unknown>): void;
-  public off(eventName: string): void;
-  public off<TEventName extends EventKey<GamepadEvents> | string>(eventName: TEventName, handler?: Handler<any>): void {
+  public function off(eventName: String, ?handler: Handler<Any>): Void {
     this._enableAndUpdate(); // implicitly enable
     this.events.off(eventName, handler);
   }
@@ -137,7 +129,7 @@ export class Gamepads {
   /**
    * Updates Gamepad state and publishes Gamepad events
    */
-  public update() {
+  public function update() {
     if (!this.enabled || !this.supported) {
       return;
     }
@@ -146,10 +138,10 @@ export class Gamepads {
     }
     this.init();
 
-    const gamepads = this._navigator.getGamepads();
-    for (let i = 0; i < gamepads.length; i++) {
+    final gamepads = this._navigator.getGamepads();
+    for (i in 0...gamepads.length) {
       if (!gamepads[i]) {
-        const gamepad = this.at(i);
+        final gamepad = this.at(i);
         // If was connected, but now isn't emit the disconnect event
         if (gamepad.connected) {
           this.events.emit('disconnect', new GamepadDisconnectEvent(i, gamepad));
@@ -159,7 +151,7 @@ export class Gamepads {
         gamepad.connected = false;
         continue;
       } else {
-        const gamepad = this.at(i);
+        final gamepad = this.at(i);
         if (!this.at(i).connected && this._isGamepadValid(gamepads[i])) {
           gamepad.events.pipe(this.events);
           this.events.emit('connect', new GamepadConnectEvent(i, this.at(i)));
@@ -171,7 +163,7 @@ export class Gamepads {
       this.at(i).update();
 
       // Only supported in Chrome
-      if (gamepads[i].timestamp && gamepads[i].timestamp === this._gamePadTimeStamps[i]) {
+      if (gamepads[i].timestamp && gamepads[i].timestamp == this._gamePadTimeStamps[i]) {
         continue;
       }
 
@@ -182,19 +174,19 @@ export class Gamepads {
 
       // Buttons
 
-      const gamepad = gamepads[i];
+      final gamepad = gamepads[i];
       // gamepads are a list that might be null
       if (gamepad) {
-        for (let buttonIndex = 0; buttonIndex < gamepad.buttons.length; buttonIndex++) {
-          const button = gamepad.buttons[buttonIndex];
-          const value = button?.value;
-          if (value !== this._oldPads[i]?.getButton(buttonIndex)) {
+        for (buttonIndex in 0...gamepad.buttons.length) {
+          final button = gamepad.buttons[buttonIndex];
+          final value = button?.value;
+          if (value != this._oldPads[i]?.getButton(buttonIndex)) {
             if (button?.pressed) {
               this.at(i).updateButton(buttonIndex, value);
               // Fallback to unknown if not mapped
               // prettier-ignore
               this.at(i).events.emit('button', new GamepadButtonEvent(
-                buttonIndex in Buttons ? buttonIndex as Buttons : Buttons.Unknown,
+                buttonIndex in Buttons ? buttonIndex : Buttons.Unknown,
                 buttonIndex,
                 value,
                 this.at(i))
@@ -205,9 +197,9 @@ export class Gamepads {
           }
         }
 
-        for (let axesIndex = 0; axesIndex < gamepad.axes.length; axesIndex++) {
-          const axis = gamepad.axes[axesIndex];
-          if (axis !== this._oldPads[i]?.getAxes(axesIndex)) {
+        for (axesIndex in 0...gamepad.axes.length) {
+          final axis = gamepad.axes[axesIndex];
+          if (axis != this._oldPads[i]?.getAxes(axesIndex)) {
             this.at(i).updateAxes(axesIndex, axis);
             this.at(i).events.emit('axis', new GamepadAxisEvent(axesIndex, axis, this.at(i)));
           }
@@ -220,11 +212,11 @@ export class Gamepads {
   /**
    * Safely retrieves a Gamepad at a specific index and creates one if it doesn't yet exist
    */
-  public at(index: number): Gamepad {
+  public function at(index: Int): Gamepad {
     this._enableAndUpdate(); // implicitly enable gamepads when at() is called
     if (index >= this._pads.length) {
       // Ensure there is a pad to retrieve
-      for (let i = this._pads.length - 1, max = index; i < max; i++) {
+      for (i in this._pads.length - 1...index) {
         this._pads.push(new Gamepad());
         this._oldPads.push(new Gamepad());
       }
@@ -236,10 +228,10 @@ export class Gamepads {
   /**
    * Returns a list of all valid gamepads that meet the minimum configuration requirement.
    */
-  public getValidGamepads(): Gamepad[] {
+  public function getValidGamepads(): Array<Gamepad> {
     this._enableAndUpdate();
-    const result: Gamepad[] = [];
-    for (let i = 0; i < this._pads.length; i++) {
+    final result: Array<Gamepad> = [];
+    for (i in 0...this._pads.length) {
       if (this._isGamepadValid(this.at(i).navigatorGamepad) && this.at(i).connected) {
         result.push(this.at(i));
       }
@@ -250,13 +242,13 @@ export class Gamepads {
   /**
    * Gets the number of connected gamepads
    */
-  public count() {
-    return this._pads.filter((p) => p.connected).length;
+  public function count() {
+    return this._pads.filter((p) -> p.connected).length;
   }
 
-  private _clonePads(pads: NavigatorGamepad[]): Gamepad[] {
-    const arr = [];
-    for (let i = 0, len = pads.length; i < len; i++) {
+  private function _clonePads(pads: Array<NavigatorGamepad>): Array<Gamepad> {
+    final arr = [];
+    for (i in 0...pads.length) {
       arr.push(this._clonePad(pads[i]));
     }
     return arr;
@@ -265,20 +257,20 @@ export class Gamepads {
   /**
    * Fastest way to clone a known object is to do it yourself
    */
-  private _clonePad(pad: NavigatorGamepad): Gamepad {
-    let i, len;
-    const clonedPad = new Gamepad();
+  private function _clonePad(pad: NavigatorGamepad): Gamepad {
+    var i, len;
+    final clonedPad = new Gamepad();
 
     if (!pad) {
       return clonedPad;
     }
 
-    for (i = 0, len = pad.buttons.length; i < len; i++) {
+    for (i in 0...pad.buttons.length) {
       if (pad.buttons[i]) {
         clonedPad.updateButton(i, pad.buttons[i].value);
       }
     }
-    for (i = 0, len = pad.axes.length; i < len; i++) {
+    for (i in 0...pad.axes.length) {
       clonedPad.updateAxes(i, pad.axes[i]);
     }
 
@@ -290,25 +282,25 @@ export class Gamepads {
  * Gamepad holds state information for a connected controller. See {@apilink Gamepads}
  * for more information on handling controller input.
  */
-export class Gamepad {
-  public events = new EventEmitter<GamepadEvents>();
-  public connected = false;
-  public navigatorGamepad: NavigatorGamepad;
-  private _axes: number[] = new Array(4);
-  private _buttons: number[] = new Array(16);
-  private _buttonsUp: number[] = new Array(16);
-  private _buttonsDown: number[] = new Array(16);
+class Gamepad {
+  public var events = new EventEmitter<GamepadEvents>();
+  public var connected = false;
+  public var navigatorGamepad: NavigatorGamepad;
+  private var _axes: Array<Int> = new Array(4);
+  private var _buttons: Array<Int> = new Array(16);
+  private var _buttonsUp: Array<Int> = new Array(16);
+  private var _buttonsDown: Array<Int> = new Array(16);
 
-  constructor() {
-    for (let i = 0; i < this._buttons.length; i++) {
+  public function new() {
+    for (i in 0...this._buttons.length) {
       this._buttons[i] = 0;
     }
-    for (let i = 0; i < this._axes.length; i++) {
+    for (i in 0...this._axes.length) {
       this._axes[i] = 0;
     }
   }
 
-  public update() {
+  public function update() {
     // Reset buttonsDown and buttonsUp after update is complete
     this._buttonsDown = new Array(16);
     this._buttonsUp = new Array(16);
@@ -320,7 +312,7 @@ export class Gamepad {
    * @param button     The button to query
    * @param threshold  The threshold over which the button is considered to be pressed
    */
-  public isButtonPressed(button: Buttons | number, threshold: number = 1) {
+  public function isButtonPressed(button: Int, threshold: Float = 1) {
     return this._buttons[button] >= threshold;
   }
 
@@ -329,7 +321,7 @@ export class Gamepad {
    * @param button     The button to query
    * @param threshold  The threshold over which the button is considered to be pressed
    */
-  public isButtonHeld(button: Buttons | number, threshold: number = 1) {
+  public function isButtonHeld(button: Int, threshold: Float = 1) {
     return this._buttons[button] >= threshold;
   }
 
@@ -338,7 +330,7 @@ export class Gamepad {
    * @param button Test whether a button was just pressed
    * @param threshold  The threshold over which the button is considered to be pressed
    */
-  public wasButtonPressed(button: Buttons | number, threshold: number = 1) {
+  public function wasButtonPressed(button: Int, threshold: Float = 1) {
     return this._buttonsDown[button] >= threshold;
   }
 
@@ -346,14 +338,14 @@ export class Gamepad {
    * Tests if a certain button was just released this frame. This is cleared at the end of the update frame.
    * @param button  Test whether a button was just released
    */
-  public wasButtonReleased(button: Buttons | number) {
+  public function wasButtonReleased(button: Int) {
     return Boolean(this._buttonsUp[button]);
   }
 
   /**
    * Gets the given button value between 0 and 1
    */
-  public getButton(button: Buttons | number) {
+  public function getButton(button: Int) {
     return this._buttons[button];
   }
 
@@ -361,8 +353,8 @@ export class Gamepad {
    * Gets the given axis value between -1 and 1. Values below
    * {@apilink MinAxisMoveThreshold} are considered 0.
    */
-  public getAxes(axes: Axes | number) {
-    const value = this._axes[axes];
+  public function getAxes(axes: Int) {
+    final value = this._axes[axes];
 
     if (Math.abs(value) < Gamepads.MinAxisMoveThreshold) {
       return 0;
@@ -371,9 +363,9 @@ export class Gamepad {
     }
   }
 
-  public updateButton(buttonIndex: number, value: number) {
+  public function updateButton(buttonIndex: Int, value: Float) {
     // button was just released
-    if (value === 0 && this._buttons[buttonIndex]) {
+    if (value == 0 && this._buttons[buttonIndex]) {
       this._buttonsUp[buttonIndex] = 1;
 
       // button was just pressed
@@ -384,32 +376,23 @@ export class Gamepad {
     this._buttons[buttonIndex] = value;
   }
 
-  public updateAxes(axesIndex: number, value: number) {
+  public function updateAxes(axesIndex: Int, value: Float) {
     this._axes[axesIndex] = value;
   }
 
-  public emit<TEventName extends EventKey<GamepadEvents>>(eventName: TEventName, event: GamepadEvents[TEventName]): void;
-  public emit(eventName: string, event?: any): void;
-  public emit<TEventName extends EventKey<GamepadEvents> | string>(eventName: TEventName, event?: any): void {
+  public function emit(eventName: String, ?event: Any): Void {
     this.events.emit(eventName, event);
   }
 
-  public on<TEventName extends EventKey<GamepadEvents>>(eventName: TEventName, handler: Handler<GamepadEvents[TEventName]>): Subscription;
-  public on(eventName: string, handler: Handler<unknown>): Subscription;
-  public on<TEventName extends EventKey<GamepadEvents> | string>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function on(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.on(eventName, handler);
   }
 
-  public once<TEventName extends EventKey<GamepadEvents>>(eventName: TEventName, handler: Handler<GamepadEvents[TEventName]>): Subscription;
-  public once(eventName: string, handler: Handler<unknown>): Subscription;
-  public once<TEventName extends EventKey<GamepadEvents> | string>(eventName: TEventName, handler: Handler<any>): Subscription {
+  public function once(eventName: String, handler: Handler<Any>): Subscription {
     return this.events.once(eventName, handler);
   }
 
-  public off<TEventName extends EventKey<GamepadEvents>>(eventName: TEventName, handler: Handler<GamepadEvents[TEventName]>): void;
-  public off(eventName: string, handler: Handler<unknown>): void;
-  public off(eventName: string): void;
-  public off<TEventName extends EventKey<GamepadEvents> | string>(eventName: TEventName, handler?: Handler<any>): void {
+  public function off(eventName: String, ?handler: Handler<Any>): Void {
     this.events.off(eventName, handler);
   }
 }
@@ -417,147 +400,147 @@ export class Gamepad {
 /**
  * Gamepad Buttons enumeration
  */
-export enum Buttons {
+enum abstract Buttons(Int) from Int to Int {
   /**
    * Any button that isn't explicity known by excalibur
    */
-  Unknown = -1,
+  public static inline var Unknown       = -1;
   /**
    * Face 1 button (e.g. A)
    */
-  Face1 = 0,
+  public static inline var Face1         = 0;
   /**
    * Face 2 button (e.g. B)
    */
-  Face2 = 1,
+  public static inline var Face2         = 1;
   /**
    * Face 3 button (e.g. X)
    */
-  Face3 = 2,
+  public static inline var Face3         = 2;
   /**
    * Face 4 button (e.g. Y)
    */
-  Face4 = 3,
+  public static inline var Face4         = 3;
   /**
    * Left bumper button
    */
-  LeftBumper = 4,
+  public static inline var LeftBumper    = 4;
   /**
    * Right bumper button
    */
-  RightBumper = 5,
+  public static inline var RightBumper   = 5;
   /**
    * Left trigger button
    */
-  LeftTrigger = 6,
+  public static inline var LeftTrigger   = 6;
   /**
    * Right trigger button
    */
-  RightTrigger = 7,
+  public static inline var RightTrigger  = 7;
   /**
    * Select button
    */
-  Select = 8,
+  public static inline var Select        = 8;
   /**
    * Start button
    */
-  Start = 9,
+  public static inline var Start         = 9;
   /**
    * Left analog stick press (e.g. L3)
    */
-  LeftStick = 10,
+  public static inline var LeftStick     = 10;
   /**
    * Right analog stick press (e.g. R3)
    */
-  RightStick = 11,
+  public static inline var RightStick    = 11;
   /**
    * D-pad up
    */
-  DpadUp = 12,
+  public static inline var DpadUp        = 12;
   /**
    * D-pad down
    */
-  DpadDown = 13,
+  public static inline var DpadDown      = 13;
   /**
    * D-pad left
    */
-  DpadLeft = 14,
+  public static inline var DpadLeft      = 14;
   /**
    * D-pad right
    */
-  DpadRight = 15,
+  public static inline var DpadRight     = 15;
   /**
    * Center button (e.g. the Nintendo Home Button)
    */
-  CenterButton = 16,
+  public static inline var CenterButton  = 16;
   /**
    * Misc button 1 (e.g. Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button)
    * defacto standard not listed on the w3c spec for a standard gamepad https://w3c.github.io/gamepad/#dfn-standard-gamepad
    */
-  MiscButton1 = 17
+  public static inline var MiscButton1   = 17;
 }
 
 /**
  * Gamepad Axes enumeration
  */
-export enum Axes {
+enum abstract Axes(Int) from Int to Int {
   /**
    * Left analogue stick X direction
    */
-  LeftStickX = 0,
+  public static inline var LeftStickX    = 0;
   /**
    * Left analogue stick Y direction
    */
-  LeftStickY = 1,
+  public static inline var LeftStickY    = 1;
   /**
    * Right analogue stick X direction
    */
-  RightStickX = 2,
+  public static inline var RightStickX   = 2;
   /**
    * Right analogue stick Y direction
    */
-  RightStickY = 3
+  public static inline var RightStickY   = 3;
 }
 
 /**
  * @internal
  */
-export interface NavigatorGamepads {
-  getGamepads(): (NavigatorGamepad | undefined)[];
+interface NavigatorGamepads {
+  function getGamepads(): Array<Null<NavigatorGamepad>>;
 }
 
 /**
  * @internal
  */
-export interface NavigatorGamepad {
-  axes: number[];
-  buttons: NavigatorGamepadButton[];
-  connected: boolean;
-  id: string;
-  index: number;
-  mapping: string;
-  timestamp: number;
+interface NavigatorGamepad {
+  var axes: Array<Int>;
+  var buttons: Array<NavigatorGamepadButton>;
+  var connected: Bool;
+  var id: String;
+  var index: Int;
+  var mapping: String;
+  var timestamp: Int;
 }
 
 /**
  * @internal
  */
-export interface NavigatorGamepadButton {
-  pressed: boolean;
-  value: number;
+interface NavigatorGamepadButton {
+  var pressed: Bool;
+  var value: Float;
 }
 
 /**
  * @internal
  */
-export interface NavigatorGamepadEvent {
-  gamepad: NavigatorGamepad;
+interface NavigatorGamepadEvent {
+  var gamepad: NavigatorGamepad;
 }
 
 /**
  * @internal
  */
-export interface GamepadConfiguration {
-  axis: number;
-  buttons: number;
+interface GamepadConfiguration {
+  var axis: Int;
+  var buttons: Int;
 }

@@ -1,11 +1,11 @@
 package nebula;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 import nebula.Engine;
 import nebula.Actor;
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.Collision.CollisionType;
-import nebula.Math.CoordPlane;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.collision.CollisionType;
+import nebula.math.CoordPlane;
 
 /**
  * Type guard to detect a screen element

@@ -1,26 +1,25 @@
-package nebula.Director;
+package nebula.director;
 
 import nebula.Engine;
 import nebula.Scene;
 
-import nebula.Util.Future;
+import nebula.util.Future;
 
-import nebula.EntityComponentSystem;
-import nebula.Graphics;
+import nebula.math.CoordPlane;
 
-import nebula.Math.CoordPlane;
+import nebula.math.Vector;
+import nebula.math.Util;
+import nebula.util.EasingFunctions;
+import nebula.util.Coroutine;
+import nebula.util.Log;
 
-import nebula.Math.Vector;
-import nebula.Math.Util;
-import nebula.Util.EasingFunctions;
-import nebula.Util.Coroutine;
-import nebula.Util.Log;
+import nebula.entitycomponentsystem.Entity;
 
 interface TransitionOptions {
   /**
    * Transition duration in milliseconds
    */
-  duration: Float;
+  var duration: Float;
 
   /**
    * Optionally hides the loader during the transition
@@ -29,50 +28,50 @@ interface TransitionOptions {
    *
    * Default false
    */
-  hideLoader?: Bool;
+  var hideLoader: Null<Bool>;
 
   /**
    * Optionally blocks user input during a transition
    *
    * Default false
    */
-  blockInput?: Bool;
+  var blockInput: Null<Bool>;
 
   /**
    * Optionally specify a easing function, by default linear
    */
-  easing?: EasingFunction;
+  var easing: Null<EasingFunction<Int>>;
   /**
    * Optionally specify a transition direction, by default 'out'
    *
    * * For 'in' direction transitions start at 1 and complete is at 0
    * * For 'out' direction transitions start at 0 and complete is at 1
    */
-  direction?: 'out' | 'in';
+  var direction: Null<String>;
 }
 
 /**
  * Base Transition that can be extended to provide custom scene transitions in Excalibur.
  */
 class Transition extends Entity {
-  private _logger: Logger = Logger.getInstance();
-  transform = new TransformComponent();
-  graphics = new GraphicsComponent();
-  readonly hideLoader: Bool;
-  readonly blockInput: Bool;
-  readonly duration: Float;
-  readonly easing: EasingFunction;
-  readonly direction: 'out' | 'in';
-  private _completeFuture = new Future<void>();
-  protected _engine?: Engine;
-  private _co?: CoroutineInstance;
+  private var _logger: Logger = Logger.getInstance();
+  var transform = new TransformComponent();
+  var graphics = new GraphicsComponent();
+  var hideLoader: Bool;
+  var blockInput: Bool;
+  var duration: Float;
+  var easing: EasingFunction<Int>;
+  var direction: String;
+  private var _completeFuture = new Future<Void>();
+  var _engine: Null<Engine>;
+  private var _co: Null<Any>;
 
   // State needs to be reset between uses
-  public started = false;
-  private _currentDistance: Float = 0;
-  private _currentProgress: Float = 0;
+  public var started = false;
+  private var _currentDistance: Float = 0;
+  private var _currentProgress: Float = 0;
 
-  public done = this._completeFuture.promise;
+  public var done = this._completeFuture.promise;
 
   /**
    * Returns a number between [0, 1] indicating what state the transition is in.
@@ -80,19 +79,21 @@ class Transition extends Entity {
    * * For 'out' direction transitions start at 0 and end at 1
    * * For 'in' direction transitions start at 1 and end at 0
    */
-  get progress(): Float {
+  public var progress(get, never): Float;
+  function get_progress(): Float {
     return this._currentProgress;
   }
 
-  get complete(): Bool {
-    if (this.direction === 'out') {
+  public var complete(get, never): Float;
+  function get_complete(): Bool {
+    if (this.direction == 'out') {
       return this.progress >= 1;
     } else {
       return this.progress <= 0;
     }
   }
 
-  constructor(options: TransitionOptions) {
+  public function new(options: TransitionOptions) {
     super();
     this.name = 'Transition#${this.id}';
     this.duration = options.duration;
@@ -107,7 +108,7 @@ class Transition extends Entity {
     this.addComponent(this.transform);
     this.addComponent(this.graphics);
 
-    if (this.direction === 'out') {
+    if (this.direction == 'out') {
       this._currentProgress = 0;
     } else {
       this._currentProgress = 1;
@@ -121,7 +122,7 @@ class Transition extends Entity {
    * @param engine
    * @param elapsed
    */
-  public updateTransition(engine: Engine, elapsed: Float) {
+  public function updateTransition(engine: Engine, elapsed: Int) {
     if (this.complete) {
       return;
     }
@@ -131,7 +132,7 @@ class Transition extends Entity {
       this._currentDistance = 1;
     }
 
-    if (this.direction === 'out') {
+    if (this.direction == 'out') {
       this._currentProgress = clamp(this.easing(this._currentDistance, 0, 1, 1), 0, 1);
     } else {
       this._currentProgress = clamp(this.easing(this._currentDistance, 1, 0, 1), 0, 1);
@@ -144,7 +145,7 @@ class Transition extends Entity {
    * This gives incoming transition a chance to grab info from previous scene if desired
    * @param scene
    */
-  async onPreviousSceneDeactivate(scene: Scene) {
+  function onPreviousSceneDeactivate(scene: Scene) {
     // override me
   }
 
@@ -154,7 +155,7 @@ class Transition extends Entity {
    * `progress` is given between 0 and 1
    * @param progress
    */
-  onStart(progress: Float) {
+  function onStart(progress: Float) {
     // override me
   }
 
@@ -164,7 +165,7 @@ class Transition extends Entity {
    * `progress` is given between 0 and 1
    * @param progress
    */
-  onUpdate(progress: Float) {
+  function onUpdate(progress: Float) {
     // override me
   }
 
@@ -174,7 +175,7 @@ class Transition extends Entity {
    * `progress` is given between 0 and 1
    * @param progress
    */
-  onEnd(progress: Float) {
+  function onEnd(progress: Float) {
     // override me
   }
 
@@ -183,19 +184,19 @@ class Transition extends Entity {
    *
    * Use this to override and provide your own reset logic for internal state in custom transition implementations
    */
-  onReset() {
+  function onReset() {
     // override me
   }
 
   /**
    * reset() is called by the engine to reset transitions
    */
-  reset() {
+  function reset() {
     this.started = false;
-    this._completeFuture = new Future<void>();
+    this._completeFuture = new Future<Void>();
     this.done = this._completeFuture.promise;
     this._currentDistance = 0;
-    if (this.direction === 'out') {
+    if (this.direction == 'out') {
       this._currentProgress = 0;
     } else {
       this._currentProgress = 1;
@@ -206,7 +207,7 @@ class Transition extends Entity {
   /**
    * @internal
    */
-  _addToTargetScene(engine: Engine, targetScene: Scene): CoroutineInstance {
+  function _addToTargetScene(engine: Engine, targetScene: Scene): CoroutineInstance {
     var currentScene = targetScene;
     if (this.started) {
       this._logger.warn('Attempted to add a transition ${this.name} that is already playing.');
@@ -220,7 +221,7 @@ class Transition extends Entity {
     var self = this;
     this._co = coroutine(
       engine,
-      function* () {
+      function () {
         while (!self.complete) {
           var elapsed = yield; // per frame
           self.updateTransition(self._engine!, elapsed);
@@ -238,7 +239,7 @@ class Transition extends Entity {
    * Called internally by excalibur to swap scenes with transition
    * @internal
    */
-  async _play() {
+  function _play() {
     if (this.started) {
       this.reset();
       this._logger.warn('Attempted to play a transition ${this.name} that is already playing, reset transition.');
@@ -250,7 +251,7 @@ class Transition extends Entity {
     }
 
     if (this._co) {
-      await this._co.start();
+      this._co.start();
     }
   }
 
@@ -258,7 +259,7 @@ class Transition extends Entity {
    * execute() is called by the engine every frame to update the Transition lifecycle onStart/onUpdate/onEnd
    * @internal
    */
-  _execute() {
+  function _execute() {
     if (!this.isInitialized) {
       return;
     }

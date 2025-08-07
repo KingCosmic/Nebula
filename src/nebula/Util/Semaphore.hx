@@ -1,16 +1,17 @@
-package nebula.Util;
+package nebula.util;
 
-import nebula.Util.Future;
+import nebula.util.Future;
 
 class AsyncWaitQueue<T> {
   // Code from StephenCleary https://gist.github.com/StephenCleary/ba50b2da419c03b9cba1d20cb4654d5e
-  private _queue: Future<T>[] = [];
+  private var _queue: Array<Future<T>> = [];
 
-  public get length(): Int {
+  public var length(get, never): Int;
+  function get_length(): Int {
     return this._queue.length;
   }
 
-  public enqueue(): Promise<T> {
+  public function enqueue(): Promise<T> {
     final future = new Future<T>();
     this._queue.push(future);
     return future.promise;
@@ -29,19 +30,20 @@ class AsyncWaitQueue<T> {
  * around browser limitations like max Image.decode() calls in chromium being 256.
  */
 class Semaphore {
-  private _waitQueue = new AsyncWaitQueue();
-  public function new(private _count: Int) {}
+  private var _waitQueue = new AsyncWaitQueue();
+  public function new(_count: Int) {}
 
-  public get count() {
+  public var count(get, never): Int;
+  function get_count() {
     return this._count;
   }
 
-  public get waiting() {
+  public var waiting(get, never): Int;
+  function get_waiting() {
     return this._waitQueue.length;
   }
 
-  // eslint-disable-next-line require-await
-  public async enter() {
+  public function enter() {
     if (this._count !== 0) {
       this._count--;
       return Promise.resolve();
@@ -49,11 +51,11 @@ class Semaphore {
     return this._waitQueue.enqueue();
   }
 
-  public exit(count: Int = 1) {
-    if (count === 0) {
+  public function exit(count: Int = 1) {
+    if (count == 0) {
       return;
     }
-    while (count !== 0 && this._waitQueue.length !== 0) {
+    while (count != 0 && this._waitQueue.length != 0) {
       this._waitQueue.dequeue(null);
       count--;
     }

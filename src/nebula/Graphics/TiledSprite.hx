@@ -1,40 +1,40 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Util.Future;
-import nebula.Graphics.Filtering;
-import nebula.Graphics.Graphic;
-import nebula.Graphics.ImageSource;
-import nebula.Graphics.Sprite;
-import nebula.Graphics.Wrapping;
+import nebula.util.Future;
+import nebula.graphics.Filtering;
+import nebula.graphics.Graphic;
+import nebula.graphics.ImageSource;
+import nebula.graphics.Sprite;
+import nebula.graphics.Wrapping;
 
 interface TiledSpriteOptions {
-  image: ImageSource;
+  var image: ImageSource;
   /**
    * Source view into the {@link ImageSource image}
    */
-  sourceView?: SourceView;
+  var sourceView: Null<SourceView>;
   /**
    * Optionally override {@link ImageFiltering filtering}
    */
-  filtering?: ImageFiltering;
+  var filtering: Null<ImageFiltering>;
   /**
    * Optionally override {@link ImageWrapping wrapping} , default wrapping is Repeat for TiledSprite
    */
-  wrapping?: ImageWrapConfiguration | ImageWrapping;
+  var wrapping: Null<ImageWrapConfiguration>;
   /**
    * Total width in pixels for the tiling to take place over
    */
-  width: Int;
+  var width: Int;
   /**
    * Total height in pixels for the tiling to take place over
    */
-  height: Int;
+  var height: Int;
 }
 
 class TiledSprite extends Sprite {
-  private _ready = new Future<void>();
-  public ready = this._ready.promise;
-  private _options: TiledSpriteOptions & GraphicOptions;
+  private var _ready = new Future<Void>();
+  public var ready = this._ready.promise;
+  private var _options: TiledSpriteOptions & GraphicOptions;
   public function new(options: TiledSpriteOptions & GraphicOptions) {
     super({
       image: options.image,
@@ -53,28 +53,35 @@ class TiledSprite extends Sprite {
     if (this.image.isLoaded()) {
       this._applyTiling();
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.image.ready.then(() => this._applyTiling());
+      this.image.ready.then(() -> this._applyTiling());
     }
   }
 
-  public static fromSprite(sprite: Sprite, options?: Partial<Omit<TiledSpriteOptions & GraphicOptions, 'image'>>): TiledSprite {
-    return new TiledSprite({
-      sourceView: { ...sprite.sourceView },
-      width: sprite.width,
-      height: sprite.height,
-      ...options,
-      image: sprite.image
-    });
+  public static function fromSprite(sprite: Sprite, ?options: Partial<Omit<TiledSpriteOptions & GraphicOptions, 'image'>>): TiledSprite {
+    var config = Object.spreadWith(
+      {
+        sourceView: Object.spreadWith(sprite.sourceView, {}),
+        width: sprite.width,
+        height: sprite.height,
+        image: sprite.image
+      },
+      options
+    );
+
+    return new TiledSprite(config);
   }
 
-  private _applyTiling() {
-    final { width, height, filtering, wrapping } = { ...this._options };
+  private function _applyTiling() {
+    final width = this._options.width,
+          height = this._options.height,
+          filtering = this._options.filtering,
+          wrapping = this._options.wrapping;
+
     final spriteCanvas = document.createElement('canvas')!;
     spriteCanvas.width = this.sourceView.width;
     spriteCanvas.height = this.sourceView.height;
     final spriteCtx = spriteCanvas.getContext('2d')!;
-    // prettier-ignore
+
     spriteCtx.drawImage(
         this.image.image,
         this.sourceView.x, this.sourceView.y,
@@ -82,10 +89,9 @@ class TiledSprite extends Sprite {
         0, 0,
         this.sourceView.width, this.sourceView.height);
 
-    // prettier-ignore
     final tiledImageSource = ImageSource.fromHtmlCanvasElement(spriteCanvas, {
         wrapping: wrapping ?? ImageWrapping.Repeat,
-        filtering
+        filtering: filtering
       });
     if (width) {
       this.destSize.width = width;
@@ -99,7 +105,6 @@ class TiledSprite extends Sprite {
     this.sourceView.y = 0;
     this.image = tiledImageSource;
     // this._ready.resolve();
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.image.ready.then(() => this._ready.resolve());
+    this.image.ready.then(() -> this._ready.resolve());
   }
 }

@@ -1,11 +1,11 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Graphic;
-import nebula.Graphics.Raster
+import nebula.graphics.Graphic;
+import nebula.graphics.Raster;
 
 interface CanvasOptions {
-  draw?: (ctx: CanvasRenderingContext2D) => Void;
-  cache?: Bool;
+  var draw: Null<(ctx: CanvasRenderingContext2D) -> Void>;
+  var cache: Null<Bool>;
 }
 
 /**
@@ -20,25 +20,29 @@ class Canvas extends Raster {
   /**
    * Return the 2D graphics context of this canvas
    */
-  public get ctx() {
+  public var ctx(get, never): CanvasRenderingContext2D;
+  function get_ctx() {
     return this._ctx;
   }
 
-  public function new(private _options: GraphicOptions & RasterOptions & CanvasOptions = {}) {
+  public function new(_options: GraphicOptions & RasterOptions & CanvasOptions = {}) {
     super(_options);
   }
 
-  public clone(): Canvas {
-    return new Canvas({
-      ...this._options,
-      ...this.cloneGraphicOptions(),
-      ...this.cloneRasterOptions()
-    });
+  public function clone(): Canvas {
+    final options = Object.spreadWith(
+      this._options,
+      Object.spreadWith(
+        this.cloneGraphicOptions(),
+        this.cloneRasterOptions()
+      )
+    );
+    return new Canvas(options);
   }
 
-  execute(ctx: CanvasRenderingContext2D): Void {
-    if (this._options?.draw) {
-      this._options?.draw(ctx);
+  function execute(ctx: CanvasRenderingContext2D): Void {
+    if (this._options.draw) {
+      this._options.draw(ctx);
     }
     if (!this._options.cache) {
       this.flagDirty();

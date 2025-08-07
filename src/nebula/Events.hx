@@ -1,20 +1,19 @@
 package nebula;
 
 import nebula.Scene;
-import nebula.Math.Vector;
+import nebula.math.Vector;
 import nebula.Actor;
 import nebula.Trigger;
-import nebula.Debug;
+import nebula.debug.DebugSystem;
 import nebula.Engine;
-import nebula.TileMap;
-import nebula.Collision.Side;
-import nebula.Collision.Detection.CollisionContact;
-import nebula.Collision.Colliders.Collider;
-import nebula.EntityComponentSystem.Entity;
-import nebula.Interfaces.LifecycleEvents;
-import nebula.Graphics;
-import nebula.Input.Gamepad;
-import nebula.Actions.Action;
+import nebula.tilemap.TileMap;
+import nebula.collision.Side;
+import nebula.collision.detection.CollisionContact;
+import nebula.collision.colliders.Collider;
+import nebula.entityComponentSystem.Entity;
+import nebula.interfaces.LifecycleEvents;
+import nebula.input.Gamepad;
+import nebula.actions.Action;
 
 enum EventTypes {
   Kill;
@@ -445,7 +444,7 @@ class HiddenEvent extends GameEvent<Engine> {
 /**
  * Event thrown on an {@apilink Actor | `actor`} when a collision will occur this frame if it resolves
  */
-class PreCollisionEvent<Collider> extends GameEvent<Collider> {
+class PreCollisionEvent extends GameEvent {
   /**
    * @param self          The actor the event was thrown on
    * @param other         The actor that will collided with the current actor
@@ -467,7 +466,7 @@ class PreCollisionEvent<Collider> extends GameEvent<Collider> {
 /**
  * Event thrown on an {@apilink Actor | `actor`} when a collision has been resolved (body reacted) this frame
  */
-class PostCollisionEvent<Collider> extends GameEvent<Collider> {
+class PostCollisionEvent extends GameEvent {
   /**
    * @param self          The actor the event was thrown on
    * @param other         The actor that did collide with the current actor
@@ -527,7 +526,7 @@ class CollisionPostSolveEvent<Collider> {
 /**
  * Event thrown the first time an {@apilink Actor | `actor`} collides with another, after an actor is in contact normal collision events are fired.
  */
-class CollisionStartEvent<Collider> extends GameEvent<Collider> {
+class CollisionStartEvent extends GameEvent {
   /**
    *
    * @param self
@@ -549,7 +548,7 @@ class CollisionStartEvent<Collider> extends GameEvent<Collider> {
 /**
  * Event thrown when the {@apilink Actor | `actor`} is no longer colliding with another
  */
-class CollisionEndEvent<Collider> extends GameEvent<Collider> {
+class CollisionEndEvent extends GameEvent {
   /**
    *
    */
@@ -567,7 +566,7 @@ class CollisionEndEvent<Collider> extends GameEvent<Collider> {
 /**
  * Event thrown on an {@apilink Actor}, {@apilink Scene}, and {@apilink Engine} only once before the first update call
  */
-class InitializeEvent<Entity> extends GameEvent<Entity> {
+class InitializeEvent extends GameEvent {
   /**
    * @param engine  The reference to the current engine
    */
@@ -681,10 +680,10 @@ class ActionCompleteEvent extends GameEvent<Entity> {
 /**
  * Event thrown on an [[Actor]] when an Actor added to scene.
  */
-class AddEvent<Actor> extends GameEvent<Actor> {
+class AddEvent extends GameEvent {
   public function new(
     engine: Engine,
-    self: T
+    self: Actor
   ) {
     super();
     this.target = self;
@@ -694,10 +693,10 @@ class AddEvent<Actor> extends GameEvent<Actor> {
 /**
  * Event thrown on an [[Actor]] when an Actor removed from scene.
  */
-class RemoveEvent<Actor> extends GameEvent<Actor> {
+class RemoveEvent extends GameEvent {
   public function new(
     engine: Engine,
-    self: T
+    self: Actor
   ) {
     super();
     this.target = self;

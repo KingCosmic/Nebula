@@ -1,15 +1,15 @@
-package nebula.Math;
+package nebula.math;
 
-import nebula.Math.LineSegment;
-import nebula.Math.Vector;
+import nebula.math.LineSegment;
+import nebula.math.Vector;
 
 /**
  * A 2D ray that can be cast into the scene to do collision detection
  */
 
 class Ray {
-  public pos: Vector;
-  public dir: Vector;
+  public var pos: Vector;
+  public var dir: Vector;
 
   /**
    * @param pos The starting position for the ray
@@ -25,17 +25,17 @@ class Ray {
    * This number indicates the mathematical intersection time.
    * @param line  The line to test
    */
-  public intersect(line: LineSegment): Float {
+  public function intersect(line: LineSegment): Float {
     final numerator = line.begin.sub(this.pos);
 
     // Test is line and ray are parallel and non intersecting
-    if (this.dir.cross(line.getSlope()) === 0 && numerator.cross(this.dir) !== 0) {
+    if (this.dir.cross(line.getSlope()) == 0 && numerator.cross(this.dir) != 0) {
       return -1;
     }
 
     // Lines are parallel
     final divisor = this.dir.cross(line.getSlope());
-    if (divisor === 0) {
+    if (divisor == 0) {
       return -1;
     }
 
@@ -50,7 +50,7 @@ class Ray {
     return -1;
   }
 
-  public intersectPoint(line: LineSegment): Vector {
+  public function intersectPoint(line: LineSegment): Vector {
     final time = this.intersect(line);
     if (time < 0) {
       return null;
@@ -61,7 +61,7 @@ class Ray {
   /**
    * Returns the point of intersection given the intersection time
    */
-  public getPoint(time: number): Vector {
+  public function getPoint(time: Float): Vector {
     return this.pos.add(this.dir.scale(time));
   }
 }

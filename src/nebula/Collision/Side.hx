@@ -1,41 +1,41 @@
-import type { Vector } from '../Math/vector';
+package nebula.collision;
+
+import nebula.math.Vector;
 
 /**
  * An enum that describes the sides of an axis aligned box for collision
  */
-export enum Side {
-  None = 'None',
-  Top = 'Top',
-  Bottom = 'Bottom',
-  Left = 'Left',
-  Right = 'Right'
+enum ESide {
+  None;
+  Top;
+  Bottom;
+  Left;
+  Right;
 }
 
-export module Side {
+class Side {
   /**
    * Returns the opposite side from the current
    */
-  export function getOpposite(side: Side): Side {
-    if (side === Side.Top) {
-      return Side.Bottom;
+  static public function getOpposite(side: ESide): ESide {
+    switch (side) {
+      case ESide.Top:
+        return ESide.Bottom;
+      case ESide.Bottom:
+        return ESide.Top;
+      case ESide.Left:
+        return ESide.Right;
+      case ESide.Right:
+        return ESide.Left;
+      default:
+        return ESide.None;
     }
-    if (side === Side.Bottom) {
-      return Side.Top;
-    }
-    if (side === Side.Left) {
-      return Side.Right;
-    }
-    if (side === Side.Right) {
-      return Side.Left;
-    }
-
-    return Side.None;
   }
 
   /**
    * Given a vector, return the Side most in that direction
    */
-  export function fromDirection(direction: Vector): Side {
+  static public function fromDirection(direction: Vector): Side {
     if (Math.abs(direction.x) >= Math.abs(direction.y)) {
       if (direction.x <= 0) {
         return Side.Left;

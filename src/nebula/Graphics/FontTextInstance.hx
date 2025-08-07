@@ -1,29 +1,29 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
 import nebula.Color;
 
-import nebula.Util.DrawUtil;
+import nebula.util.DrawUtil;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Graphics.Font;
+import nebula.graphics.Font;
 
 class FontTextInstance {
-  public canvas: HTMLCanvasElement;
-  public ctx: CanvasRenderingContext2D;
-  private _textFragments: { x: Int; y: Int; canvas: HTMLCanvasElement }[] = [];
-  public dimensions: BoundingBox;
-  public disposed: Bool = false;
-  private _lastHashCode: String;
+  public var canvas: HTMLCanvasElement;
+  public var ctx: CanvasRenderingContext2D;
+  private var _textFragments: Array<{ x: Int, y: Int, canvas: HTMLCanvasElement }> = [];
+  public var dimensions: BoundingBox;
+  public var disposed: Bool = false;
+  private var _lastHashCode: String;
 
   public function new(
-    public readonly font: Font,
-    public readonly text: String,
-    public readonly color: Color,
-    public readonly maxWidth?: Int
+    font: Font,
+    text: String,
+    color: Color,
+    ?maxWidth: Int
   ) {
     this.canvas = document.createElement('canvas');
     final ctx = this.canvas.getContext('2d');
@@ -36,7 +36,7 @@ class FontTextInstance {
     this._lastHashCode = this.getHashCode();
   }
 
-  measureText(text: String, maxWidth?: Int): BoundingBox {
+  function measureText(text: String, ?maxWidth: Int): BoundingBox {
     if (this.disposed) {
       throw Error('Accessing disposed text instance! ' + this.text);
     }
@@ -47,7 +47,7 @@ class FontTextInstance {
       lines = text.split('\n');
     }
 
-    final maxWidthLine = lines.reduce((a, b) => {
+    final maxWidthLine = lines.reduce((a, b) -> {
       return a.length > b.length ? a : b;
     });
 
@@ -71,7 +71,7 @@ class FontTextInstance {
     return measurement;
   }
 
-  private _setDimension(textBounds: BoundingBox, bitmap: CanvasRenderingContext2D) {
+  private function _setDimension(textBounds: BoundingBox, bitmap: CanvasRenderingContext2D) {
     var lineHeightRatio = 1;
     if (this.font.lineHeight) {
       lineHeightRatio = this.font.lineHeight / this.font.size;
@@ -83,7 +83,7 @@ class FontTextInstance {
     bitmap.canvas.height = (textBounds.height + this.font.padding * 2) * 2 * this.font.quality * lineHeightRatio;
   }
 
-  public static getHashCode(font: Font, text: String, color?: Color) {
+  public static function getHashCode(font: Font, text: String, ?color: Color) {
     final hash =
       text +
       '__hashcode__' +
@@ -103,11 +103,11 @@ class FontTextInstance {
     return hash;
   }
 
-  getHashCode(includeColor: Bool = true) {
+  function getHashCode(includeColor: Bool = true) {
     return FontTextInstance.getHashCode(this.font, this.text, includeColor ? this.color : undefined);
   }
 
-  private _applyRasterProperties(ctx: CanvasRenderingContext2D) {
+  private function _applyRasterProperties(ctx: CanvasRenderingContext2D) {
     ctx.translate(this.font.padding, this.font.padding);
     ctx.imageSmoothingEnabled = this.font.smoothing;
     ctx.lineWidth = this.font.lineWidth;
@@ -116,7 +116,7 @@ class FontTextInstance {
     ctx.fillStyle = this.color.toString();
   }
 
-  private _applyFont(ctx: CanvasRenderingContext2D) {
+  private function _applyFont(ctx: CanvasRenderingContext2D) {
     ctx.resetTransform();
     ctx.translate(this.font.padding + ctx.canvas.width / 2, this.font.padding + ctx.canvas.height / 2);
     ctx.scale(this.font.quality, this.font.quality);
@@ -139,11 +139,11 @@ class FontTextInstance {
     }
   }
 
-  private _drawText(ctx: CanvasRenderingContext2D, lines: String[], lineHeight: Int): Void {
+  private function _drawText(ctx: CanvasRenderingContext2D, lines: Array<String>, lineHeight: Int): Void {
     this._applyRasterProperties(ctx);
     this._applyFont(ctx);
 
-    for (var i = 0; i < lines.length; i++) {
+    for (i in 0...lines.length) {
       final line = lines[i];
       if (this.color) {
         ctx.fillText(line, 0, i * lineHeight);
@@ -164,8 +164,8 @@ class FontTextInstance {
     }
   }
 
-  private _splitTextBitmap(bitmap: CanvasRenderingContext2D) {
-    final textImages: { x: number; y: number; canvas: HTMLCanvasElement }[] = [];
+  private function _splitTextBitmap(bitmap: CanvasRenderingContext2D) {
+    final textImages: Array<{ x: Int, y: Int, canvas: HTMLCanvasElement }> = [];
     var currentX = 0;
     var currentY = 0;
     // 4k is the max for mobile devices
@@ -187,7 +187,7 @@ class FontTextInstance {
         // draw current slice to new bitmap in < 4k chunks
         ctx.drawImage(bitmap.canvas, currentX, currentY, width, height, 0, 0, width, height);
 
-        textImages.push({ x: currentX, y: currentY, canvas });
+        textImages.push({ x: currentX, y: currentY, canvas: canvas });
         currentY += height;
       }
       currentX += width;
@@ -196,18 +196,18 @@ class FontTextInstance {
     return textImages;
   }
 
-  public flagDirty() {
+  public function flagDirty() {
     this._dirty = true;
   }
-  private _dirty = true;
-  private _ex?: ExcaliburGraphicsContext;
-  public render(ex: ExcaliburGraphicsContext, x: Int, y: Int, maxWidth?: Int) {
+  private var _dirty = true;
+  private var _ex: Null<ExcaliburGraphicsContext>;
+  public function render(ex: ExcaliburGraphicsContext, x: Int, y: Int, ?maxWidth: Int) {
     if (this.disposed) {
       throw Error('Accessing disposed text instance! ' + this.text);
     }
     this._ex = ex;
     final hashCode = this.getHashCode();
-    if (this._lastHashCode !== hashCode) {
+    if (this._lastHashCode != hashCode) {
       this._dirty = true;
     }
 
@@ -222,8 +222,8 @@ class FontTextInstance {
       this._drawText(this.ctx, lines, lineHeight);
 
       // clear any out old fragments
-      if (ex instanceof ExcaliburGraphicsContextWebGL) {
-        for (final frag of this._textFragments) {
+      if (Std.isOfType(ex, ExcaliburGraphicsContextWebGL)) {
+        for (frag in this._textFragments) {
           ex.textureLoader.delete(frag.canvas);
         }
       }
@@ -231,8 +231,8 @@ class FontTextInstance {
       // splits to < 4k fragments for large text
       this._textFragments = this._splitTextBitmap(this.ctx);
 
-      if (ex instanceof ExcaliburGraphicsContextWebGL) {
-        for (final frag of this._textFragments) {
+      if (Std.isOfType(ex, ExcaliburGraphicsContextWebGL)) {
+        for (frag in this._textFragments) {
           ex.textureLoader.load(frag.canvas, { filtering: this.font.filtering }, true);
         }
       }
@@ -241,7 +241,7 @@ class FontTextInstance {
     }
 
     // draws the bitmap fragments to excalibur graphics context
-    for (final frag of this._textFragments) {
+    for (frag in this._textFragments) {
       ex.drawImage(
         frag.canvas,
         0,
@@ -256,13 +256,13 @@ class FontTextInstance {
     }
   }
 
-  dispose() {
+  function dispose() {
     this.disposed = true;
-    this.dimensions = undefined as any;
-    this.canvas = undefined as any;
-    this.ctx = undefined as any;
-    if (this._ex instanceof ExcaliburGraphicsContextWebGL) {
-      for (final frag of this._textFragments) {
+    this.dimensions = null;
+    this.canvas = null;
+    this.ctx = null;
+    if (Std.isOfType(this._ex, ExcaliburGraphicsContextWebGL)) {
+      for (frag in this._textFragments) {
         this._ex.textureLoader.delete(frag.canvas);
       }
     }
@@ -274,11 +274,11 @@ class FontTextInstance {
    * @param text
    * @param maxWidth
    */
-  private _cachedText?: String;
-  private _cachedLines?: String[];
-  private _cachedRenderWidth?: Int;
-  private _getLinesFromText(text: String, maxWidth?: Int): String[] {
-    if (this._cachedText === text && this._cachedRenderWidth === maxWidth && this._cachedLines?.length) {
+  private var _cachedText: Null<String>;
+  private var _cachedLines: Null<Array<String>>;
+  private var _cachedRenderWidth: Null<Int>;
+  private function _getLinesFromText(text: String, ?maxWidth: Int): Array<String> {
+    if (this._cachedText == text && this._cachedRenderWidth == maxWidth && this._cachedLines?.length) {
       return this._cachedLines;
     }
 
@@ -289,7 +289,7 @@ class FontTextInstance {
     }
 
     // If the current line goes past the maxWidth, append a new line without modifying the underlying text.
-    for (var i = 0; i < lines.length; i++) {
+    for (i in 0...lines.length) {
       var line = lines[i];
       var newLine = '';
       if (this.measureText(line).width > maxWidth) {

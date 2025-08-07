@@ -1,4 +1,4 @@
-package nebula.Graphics;
+package nebula.graphics;
 
 /**
  * Describes the different image filtering modes
@@ -9,24 +9,26 @@ enum ImageFiltering {
    *
    * Useful for Pixel art aesthetics.
    */
-  Pixel = 'Pixel',
+  Pixel;
 
   /**
    * Blended is useful when you have high resolution artwork and would like it blended and smoothed
    */
-  Blended = 'Blended'
+  Blended;
 }
 
-/**
- * Parse the image filtering attribute value, if it doesn't match returns null
- */
-function parseImageFiltering(val: String): ImageFiltering | undefined {
-  switch (val) {
-    case ImageFiltering.Pixel:
-      return ImageFiltering.Pixel;
-    case ImageFiltering.Blended:
-      return ImageFiltering.Blended;
-    default:
-      return undefined;
-  }
+class Filtering {
+ /**
+   * Parse the image filtering attribute value, if it doesn't match returns null
+   */
+  public static function parseImageFiltering(val: String): Null<ImageFiltering> {
+    switch (val) {
+      case 'Pixel':
+        return ImageFiltering.Pixel;
+      case 'Blended':
+        return ImageFiltering.Blended;
+      default:
+        return null;
+    }
+  } 
 }

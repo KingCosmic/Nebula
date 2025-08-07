@@ -1,30 +1,30 @@
-package nebula.Director;
+package nebula.director;
 
 import nebula.Color;
-import nebula.Interfaces.Loadable;
-import nebula.Util.DrawUtil;
+import nebula.interfaces.Loadable;
+import nebula.util.DrawUtil;
 
-import nebula.Math.Vector;
-import nebula.Util.Util;
+import nebula.math.Vector;
+import nebula.util.Util;
 
 import nebula.EventEmitter;
-import nebula.Director.DefaultLoader;
+import nebula.director.DefaultLoader;
 
 import nebula.Engine;
 import nebula.Screen;
 
-import nebula.Util.Log;
-import nebula.Util.Future;
+import nebula.util.Log;
+import nebula.util.Future;
 
 interface LoaderOptions extends DefaultLoaderOptions {
   /**
    * Go fullscreen after loading and clicking play
    */
-  fullscreenAfterLoad?: Bool;
+  var fullscreenAfterLoad: Null<Bool>;
   /**
    * Fullscreen container element or id
    */
-  fullscreenContainer?: HTMLElement | String;
+  var fullscreenContainer: Null<Any>;
 }
 
 /**
@@ -93,75 +93,80 @@ interface LoaderOptions extends DefaultLoaderOptions {
  * ```
  */
 class Loader extends DefaultLoader {
-  private _logger = Logger.getInstance();
-  private static _DEFAULT_LOADER_OPTIONS: LoaderOptions = {
+  private var _logger = Logger.getInstance();
+  private static var _DEFAULT_LOADER_OPTIONS: LoaderOptions = {
     loadables: [],
     fullscreenAfterLoad: false,
     fullscreenContainer: undefined
   };
-  private _originalOptions: LoaderOptions = { loadables: [] };
-  public events = new EventEmitter();
-  public screen!: Screen;
-  private _playButtonShown: Bool = false;
+  private var _originalOptions: LoaderOptions = { loadables: [] };
+  public var events = new EventEmitter();
+  public var screen: Screen;
+  private var _playButtonShown: Bool = false;
 
   // logo drawing stuff
 
   // base64 string encoding of the excalibur logo (logo-white.png)
-  public logo = logoImg;
-  public logoWidth = 468;
-  public logoHeight = 118;
+  public var logo = logoImg;
+  public var logoWidth = 468;
+  public var logoHeight = 118;
   /**
    * Positions the top left corner of the logo image
    * If not set, the loader automatically positions the logo
    */
-  public logoPosition!: Vector | null;
+  public var logoPosition: Null<Vector>;
   /**
    * Positions the top left corner of the play button.
    * If not set, the loader automatically positions the play button
    */
-  public playButtonPosition!: Vector | null;
+  public var playButtonPosition: Null<Vector>;
   /**
    * Positions the top left corner of the loading bar
    * If not set, the loader automatically positions the loading bar
    */
-  public loadingBarPosition!: Vector | null;
+  public var loadingBarPosition: Null<Vector>;
 
   /**
    * Gets or sets the color of the loading bar, default is {@apilink Color.White}
    */
-  public loadingBarColor: Color = Color.White;
+  public var loadingBarColor: Color = Color.White;
 
   /**
    * Gets or sets the background color of the loader as a hex string
    */
-  public backgroundColor: String = '#176BAA';
+  public var backgroundColor: String = '#176BAA';
 
-  protected _imageElement!: HTMLImageElement;
-  protected _imageLoaded: Future<void> = new Future();
-  protected get _image() {
-    if (!this._imageElement) {
-      this._imageElement = new Image();
-      this._imageElement.onload = () => this._imageLoaded.resolve();
-      this._imageElement.src = this.logo;
-    }
+  var _imageElement: Any;
+  var _imageLoaded: Future<Void> = new Future();
+  var _image(get, never): Any;
+  function get__image() {
+    // if (!this._imageElement) {
+    //   this._imageElement = new Image();
+    //   this._imageElement.onload = () -> this._imageLoaded.resolve();
+    //   this._imageElement.src = this.logo;
+    // }
 
     return this._imageElement;
   }
 
-  public suppressPlayButton: Bool = false;
-  public get playButtonRootElement(): HTMLElement | null {
+  public var suppressPlayButton: Bool = false;
+  public var playButtonRootElement(get, never): Null<Any>;
+  function get_playButtonRootElement() {
     return this._playButtonRootElement;
   }
-  public get playButtonElement(): HTMLButtonElement | null {
+
+  public var playButtonElement(get, never): Null<Any>;
+  function get_playButtonElement() {
     return this._playButtonElement;
   }
-  protected _playButtonRootElement!: HTMLElement;
-  protected _playButtonElement!: HTMLButtonElement;
-  protected _styleBlock!: HTMLStyleElement;
+  var _playButtonRootElement: Any;
+  var _playButtonElement: Any;
+  var _styleBlock: Any;
   /** Loads the css from Loader.css */
-  protected _playButtonStyles: string = loaderCss;
-  protected get _playButton() {
-    const existingRoot = document.getElementById('excalibur-play-root');
+  var _playButtonStyles: String = loaderCss;
+  public var _playButton(get, never): Any;
+  function get__playButton() {
+    final existingRoot = document.getElementById('excalibur-play-root');
     if (existingRoot) {
       this._playButtonRootElement = existingRoot;
     }
@@ -186,13 +191,13 @@ class Loader extends DefaultLoader {
   /**
    * Get/set play button text
    */
-  public playButtonText: string = 'Play game';
+  public var playButtonText: String = 'Play game';
 
   /**
    * Return a html button element for excalibur to use as a play button
    */
-  public startButtonFactory = () => {
-    var buttonElement: HTMLButtonElement = document.getElementById('excalibur-play') as HTMLButtonElement;
+  public var startButtonFactory = () -> {
+    var buttonElement: Any = document.getElementById('excalibur-play');
     if (!buttonElement) {
       buttonElement = document.createElement('button');
     }
@@ -204,29 +209,19 @@ class Loader extends DefaultLoader {
   };
 
   /**
-   * @param options Optionally provide options to loader
-   */
-  constructor(options?: LoaderOptions);
-  /**
    * @param loadables  Optionally provide the list of resources you want to load at constructor time
    */
-  constructor(loadables?: Loadable<any>[]);
-  constructor(loadablesOrOptions?: Loadable<any>[] | LoaderOptions) {
-    const options = Array.isArray(loadablesOrOptions)
-      ? {
-          loadables: loadablesOrOptions
-        }
-      : loadablesOrOptions;
+  public function new(options: LoaderOptions) {
     super(options);
-    this._originalOptions = { ...Loader._DEFAULT_LOADER_OPTIONS, ...options };
+    this._originalOptions = Object.spreadWith(Loader._DEFAULT_LOADER_OPTIONS, options);
   }
 
-  public override onInitialize(engine: Engine): void {
+  public override function onInitialize(engine: Engine): Void {
     this.engine = engine;
     this.screen = engine.screen;
     this.canvas.width = this.engine.canvas.width;
     this.canvas.height = this.engine.canvas.height;
-    this.screen.events.on('resize', () => {
+    this.screen.events.on('resize', () -> {
       this.canvas.width = this.engine.canvas.width;
       this.canvas.height = this.engine.canvas.height;
     });
@@ -235,16 +230,16 @@ class Loader extends DefaultLoader {
   /**
    * Shows the play button and returns a promise that resolves when clicked
    */
-  public async showPlayButton(): Promise<void> {
+  public function showPlayButton(): Any {
     if (this.suppressPlayButton) {
       this.hidePlayButton();
       // Delay is to give the logo a chance to show, otherwise don't delay
-      await delay(500, this.engine?.clock);
+      delay(500, this.engine?.clock);
     } else {
-      var resizeHandler = () => {
+      var resizeHandler = () -> {
         try {
           this._positionPlayButton();
-        } catch {
+        } catch (e: Any) {
           // swallow if can't position
         }
       };
@@ -254,51 +249,51 @@ class Loader extends DefaultLoader {
       this._playButtonShown = true;
       this._playButton.style.display = 'block';
       document.body.addEventListener('keyup', (evt: KeyboardEvent) => {
-        if (evt.key === 'Enter') {
+        if (evt.key == 'Enter') {
           this._playButton.click();
         }
       });
       this._positionPlayButton();
-      var playButtonClicked = new Promise<void>((resolve) => {
-        var startButtonHandler = (e: Event) => {
-          // We want to stop propagation to keep bubbling to the engine pointer handlers
-          e.stopPropagation();
-          // Hide Button after click
-          this.hidePlayButton();
-          if (this.engine?.browser) {
-            this.engine.browser.window.off('resize', resizeHandler);
-          }
+      // var playButtonClicked = new Promise<Void>((resolve) -> {
+      //   var startButtonHandler = (e: Event) => {
+      //     // We want to stop propagation to keep bubbling to the engine pointer handlers
+      //     e.stopPropagation();
+      //     // Hide Button after click
+      //     this.hidePlayButton();
+      //     if (this.engine?.browser) {
+      //       this.engine.browser.window.off('resize', resizeHandler);
+      //     }
 
-          if (this._originalOptions.fullscreenAfterLoad) {
-            try {
-              this._logger.info('requesting fullscreen');
-              if (this._originalOptions.fullscreenContainer instanceof HTMLElement) {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this._originalOptions.fullscreenContainer.requestFullscreen();
-              } else {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                this.engine.screen.enterFullscreen(this._originalOptions.fullscreenContainer);
-              }
-            } catch (error) {
-              this._logger.error('could not go fullscreen', error);
-            }
-          }
+      //     if (this._originalOptions.fullscreenAfterLoad) {
+      //       try {
+      //         this._logger.info('requesting fullscreen');
+      //         if (Std.isOfType(this._originalOptions.fullscreenContainer, HTMLElement)) {
+      //           // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      //           this._originalOptions.fullscreenContainer.requestFullscreen();
+      //         } else {
+      //           // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      //           this.engine.screen.enterFullscreen(this._originalOptions.fullscreenContainer);
+      //         }
+      //       } catch (error) {
+      //         this._logger.error('could not go fullscreen', error);
+      //       }
+      //     }
 
-          resolve();
-        };
-        this._playButton.addEventListener('click', startButtonHandler);
-        this._playButton.addEventListener('touchend', startButtonHandler);
-        this._playButton.addEventListener('pointerup', startButtonHandler);
-        if (this.engine) {
-          this.engine.input.gamepads.once('button', () => startButtonHandler(new Event('button')));
-        }
-      });
+      //     resolve();
+      //   };
+      //   this._playButton.addEventListener('click', startButtonHandler);
+      //   this._playButton.addEventListener('touchend', startButtonHandler);
+      //   this._playButton.addEventListener('pointerup', startButtonHandler);
+      //   if (this.engine) {
+      //     this.engine.input.gamepads.once('button', () -> startButtonHandler(new Event('button')));
+      //   }
+      // });
 
-      return await playButtonClicked;
+      return playButtonClicked;
     }
   }
 
-  public hidePlayButton() {
+  public function hidePlayButton() {
     this._playButtonShown = false;
     this._playButton.style.display = 'none';
   }
@@ -306,55 +301,58 @@ class Loader extends DefaultLoader {
   /**
    * Clean up generated elements for the loader
    */
-  public dispose() {
+  public function dispose() {
     if (this._playButtonRootElement.parentElement) {
       this._playButtonRootElement.removeChild(this._playButtonElement);
       document.body.removeChild(this._playButtonRootElement);
       document.head.removeChild(this._styleBlock);
-      this._playButtonRootElement = null as any;
-      this._playButtonElement = null as any;
-      this._styleBlock = null as any;
+      this._playButtonRootElement = null;
+      this._playButtonElement = null;
+      this._styleBlock = null;
     }
   }
 
-  data!: Loadable<any>[];
-
-  public override async onUserAction(): Promise<void> {
+  public override function onUserAction(): Any {
     // short delay in showing the button for aesthetics
-    await delay(200, this.engine?.clock);
+    delay(200, this.engine?.clock);
     this.canvas.flagDirty();
     // show play button
-    await this.showPlayButton();
+    this.showPlayButton();
   }
 
-  public override async onBeforeLoad(): Promise<void> {
+  public override function onBeforeLoad(): Any {
     this.screen.pushResolutionAndViewport();
     this.screen.resolution = { width: this.canvas.width, height: this.canvas.height };
     this.screen.applyResolutionAndViewport();
     var image = this._image;
-    await this._imageLoaded.promise;
-    await image?.decode(); // decode logo if it exists
+    this._imageLoaded.promise;
+    image?.decode(); // decode logo if it exists
   }
 
   // eslint-disable-next-line require-await
-  public override async onAfterLoad(): Promise<void> {
+  public override function onAfterLoad(): Any {
     this.screen.popResolutionAndViewport();
     this.screen.applyResolutionAndViewport();
     this.dispose();
   }
 
-  private _positionPlayButton() {
+  private function _positionPlayButton() {
     if (this.engine) {
-      var { x: left, y: top, width: screenWidth, height: screenHeight } = this.engine.canvas.getBoundingClientRect();
+      final bcr = this.engine.canvas.getBoundingClientRect();
+      var left = bcr.x,
+            top = bcr.y,
+            screenWidth = bcr.width,
+            screenHeight = bcr.height;
+
       if (this._playButtonRootElement) {
         var buttonWidth = this._playButton.clientWidth;
         var buttonHeight = this._playButton.clientHeight;
         if (this.playButtonPosition) {
-          this._playButtonRootElement.style.left = `${this.playButtonPosition.x}px`;
-          this._playButtonRootElement.style.top = `${this.playButtonPosition.y}px`;
+          this._playButtonRootElement.style.left = '${this.playButtonPosition.x}px';
+          this._playButtonRootElement.style.top = '${this.playButtonPosition.y}px';
         } else {
-          this._playButtonRootElement.style.left = `${left + screenWidth / 2 - buttonWidth / 2}px`;
-          this._playButtonRootElement.style.top = `${top + screenHeight / 2 - buttonHeight / 2 + 100}px`;
+          this._playButtonRootElement.style.left = '${left + screenWidth / 2 - buttonWidth / 2}px';
+          this._playButtonRootElement.style.top = '${top + screenHeight / 2 - buttonHeight / 2 + 100}px';
         }
       }
     }
@@ -365,7 +363,7 @@ class Loader extends DefaultLoader {
    * Override `logo`, `logoWidth`, `logoHeight` and `backgroundColor` properties
    * to customize the drawing, or just override entire method.
    */
-  public override onDraw(ctx: CanvasRenderingContext2D) {
+  public override function onDraw(ctx: Any) {
     var canvasHeight = this.engine.canvasHeight / this.engine.pixelRatio;
     var canvasWidth = this.engine.canvasWidth / this.engine.pixelRatio;
 

@@ -1,56 +1,57 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Graphics.ParallaxGroup;
-import nebula.Graphics.GraphicsComponent;
-import nebula.Graphics.GraphicsGroup;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.graphics.ParallaxComponent;
+import nebula.graphics.GraphicsComponent;
+import nebula.graphics.GraphicsGroup;
 
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.EntityComponentSystem.Entity;
-import nebula.EntityComponentSystem;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.entitycomponentsystem.Entity;
 
-import nebula.Collision.BodyComponent;
+import nebula.collision.BodyComponent;
 
-import nebula.Math.Vector;
-import nebula.Math.CoordPlane;
-import nebula.Math.Transform;
+import nebula.math.Vector;
+import nebula.math.CoordPlane;
+import nebula.math.Transform;
 
 import nebula.Engine;
 import nebula.Camera;
 import nebula.Scene;
 import nebula.Events;
 
-import nebula.Graphics.FontCache;
-import nebula.Graphics.Graphic;
-import nebula.Graphics.TransformInterpolation;
+import nebula.graphics.FontCache;
+import nebula.graphics.Graphic;
+import nebula.graphics.TransformInterpolation;
 
 class GraphicsSystem extends System {
-  static priority = SystemPriority.Average;
+  static var priority = SystemPriority.Average;
 
-  public readonly systemType = SystemType.Draw;
-  private _token = 0;
+  public var systemType = SystemType.Draw;
+  private var _token = 0;
   // Set in the initialize
-  private _graphicsContext!: ExcaliburGraphicsContext;
-  private _camera!: Camera;
-  private _engine!: Engine;
-  private _sortedTransforms: TransformComponent[] = [];
-  query: Query<typeof TransformComponent | typeof GraphicsComponent>;
-  public get sortedTransforms() {
+  private var _graphicsContext: ExcaliburGraphicsContext;
+  private var _camera: Camera;
+  private var _engine: Engine;
+  private var _sortedTransforms: Array<TransformComponent> = [];
+  var query: Query;
+
+  public var sortedTransforms(get, never): Array<TransformComponent>;
+  function get_sortedTransforms() {
     return this._sortedTransforms;
   }
 
-  public function new(public world: World) {
+  public function new(world: World) {
     super();
     this.query = this.world.query([TransformComponent, GraphicsComponent]);
-    this.query.entityAdded$.subscribe((e) => {
+    this.query.entityAdded.subscribe((e) -> {
       final tx = e.get(TransformComponent);
       this._sortedTransforms.push(tx);
-      tx.zIndexChanged$.subscribe(this._zIndexUpdate);
+      tx.zIndexChanged.subscribe(this._zIndexUpdate);
       this._zHasChanged = true;
     });
-    this.query.entityRemoved$.subscribe((e) => {
+    this.query.entityRemoved.subscribe((e) -> {
       final tx = e.get(TransformComponent);
-      tx.zIndexChanged$.unsubscribe(this._zIndexUpdate);
+      tx.zIndexChanged.unsubscribe(this._zIndexUpdate);
       final index = this._sortedTransforms.indexOf(tx);
       if (index > -1) {
         this._sortedTransforms.splice(index, 1);
@@ -58,28 +59,28 @@ class GraphicsSystem extends System {
     });
   }
 
-  public initialize(world: World, scene: Scene): Void {
+  public function initialize(world: World, scene: Scene): Void {
     this._camera = scene.camera;
     this._engine = scene.engine;
   }
 
-  private _zHasChanged = false;
-  private _zIndexUpdate = () => {
+  private var _zHasChanged = false;
+  private var _zIndexUpdate = () -> {
     this._zHasChanged = true;
   };
 
-  public preupdate(): Void {
+  public function preupdate(): Void {
     // Graphics context could be switched to fallback in a new frame
     this._graphicsContext = this._engine.graphicsContext;
     if (this._zHasChanged) {
-      this._sortedTransforms.sort((a, b) => {
+      this._sortedTransforms.sort((a, b) -> {
         return a.globalZ - b.globalZ;
       });
       this._zHasChanged = false;
     }
   }
 
-  public update(elapsed: Float): Void {
+  public function update(elapsed: Int): Void {
     this._token++;
     var graphics: GraphicsComponent;
     FontCache.checkAndClearCache();
@@ -90,9 +91,9 @@ class GraphicsSystem extends System {
     if (this._camera) {
       this._camera.draw(this._graphicsContext);
     }
-    for (var transformIndex = 0; transformIndex < this._sortedTransforms.length; transformIndex++) {
+    for (transformIndex in 0...this._sortedTransforms.length) {
       final transform = this._sortedTransforms[transformIndex];
-      final entity = transform.owner as Entity;
+      final entity = transform.owner;
 
       // If the entity is offscreen skip
       if (entity.hasTag('ex.offscreen')) {
@@ -112,12 +113,12 @@ class GraphicsSystem extends System {
       entity.events.emit('pretransformdraw', new PreTransformDrawEvent(this._graphicsContext, elapsed, entity));
 
       // This optionally sets our camera based on the entity coord plan (world vs. screen)
-      if (transform.coordPlane === CoordPlane.Screen) {
+      if (transform.coordPlane == CoordPlane.Screen) {
         this._graphicsContext.restore();
       }
 
       this._graphicsContext.save();
-      if (transform.coordPlane === CoordPlane.Screen) {
+      if (transform.coordPlane == CoordPlane.Screen) {
         this._graphicsContext.translate(this._engine.screen.contentArea.left, this._engine.screen.contentArea.top);
       }
 
@@ -164,7 +165,7 @@ class GraphicsSystem extends System {
       this._graphicsContext.restore();
 
       // Reset the transform back to the original world space
-      if (transform.coordPlane === CoordPlane.Screen) {
+      if (transform.coordPlane == CoordPlane.Screen) {
         this._graphicsContext.save();
         if (this._camera) {
           this._camera.draw(this._graphicsContext);
@@ -180,7 +181,7 @@ class GraphicsSystem extends System {
     this._graphicsContext.restore();
   }
 
-  private _drawGraphicsComponent(graphicsComponent: GraphicsComponent, transformComponent: TransformComponent) {
+  private function _drawGraphicsComponent(graphicsComponent: GraphicsComponent, transformComponent: TransformComponent) {
     if (graphicsComponent.isVisible) {
       final flipHorizontal = graphicsComponent.flipHorizontal;
       final flipVertical = graphicsComponent.flipVertical;
@@ -226,11 +227,11 @@ class GraphicsSystem extends System {
         // TODO move debug code out?
         if (this._engine?.isDebug && this._engine.debug.graphics.showBounds) {
           final offset = vec(offsetX, offsetY);
-          if (graphic instanceof GraphicsGroup) {
-            for (final member of graphic.members) {
+          if (Std.isOfType(graphic, GraphicsGroup)) {
+            for (member in graphic.members) {
               var g: Graphic;
               var pos: Vector = Vector.Zero;
-              if (member instanceof Graphic) {
+              if (Std.isOfType(member, Graphic)) {
                 g = member;
               } else {
                 g = member.graphic;
@@ -252,14 +253,14 @@ class GraphicsSystem extends System {
     }
   }
 
-  private _targetInterpolationTransform = new Transform();
+  private var _targetInterpolationTransform = new Transform();
   /**
    * This applies the current entity transform to the graphics context
    * @param entity
    */
-  private _applyTransform(entity: Entity): Void {
+  private function _applyTransform(entity: Entity): Void {
     final ancestors = entity.getAncestors();
-    for (var i = 0; i < ancestors.length; i++) {
+    for (i in 0...ancestors.length) {
       final ancestor = ancestors[i];
       final transform = ancestor?.get(TransformComponent);
       final optionalBody = ancestor?.get(BodyComponent);
@@ -280,9 +281,9 @@ class GraphicsSystem extends System {
     }
   }
 
-  private _applyOpacity(entity: Entity): Void {
+  private function _applyOpacity(entity: Entity): Void {
     final ancestors = entity.getAncestors();
-    for (var i = 0; i < ancestors.length; i++) {
+    for (i in 0...ancestors.length) {
       final ancestor = ancestors[i];
       final maybeGraphics = ancestor?.get(GraphicsComponent);
       this._graphicsContext.opacity *= maybeGraphics?.opacity ?? 1;

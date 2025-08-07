@@ -1,12 +1,12 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Filtering;
-import nebula.Graphics.Raster;
+import nebula.graphics.Filtering;
+import nebula.graphics.Raster;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
 interface PolygonOptions {
-  points: Vector[];
+  var points: Array<Vector>;
 }
 
 /**
@@ -15,11 +15,13 @@ interface PolygonOptions {
  * Polygons default to {@apilink ImageFiltering.Blended}
  */
 class Polygon extends Raster {
-  private _points: Vector[] = [];
-  public get points(): Vector[] {
+  private var _points: Array<Vector> = [];
+
+  public var points(get, set): Array<Vector>;
+  function get_points(): Array<Vector> {
     return this._points;
   }
-  public set points(points: Vector[]) {
+  function set_points(points: Array<Vector>) {
     this._points = points;
     final min = this.minPoint;
     this.width = this._points.reduce((max, p) => Math.max(p.x, max), 0) - min.x;
@@ -27,9 +29,10 @@ class Polygon extends Raster {
     this.flagDirty();
   }
 
-  public get minPoint() {
-    final minX = this._points.reduce((min, p) => Math.min(p.x, min), Infinity);
-    final minY = this._points.reduce((min, p) => Math.min(p.y, min), Infinity);
+  public var minPoint(get, never): Vector;
+  function get_minPoint() {
+    final minX = this._points.reduce((min, p) -> Math.min(p.x, min), Infinity);
+    final minY = this._points.reduce((min, p) -> Math.min(p.y, min), Infinity);
     return vec(minX, minY);
   }
 
@@ -40,22 +43,25 @@ class Polygon extends Raster {
     this.rasterize();
   }
 
-  public clone(): Polygon {
-    return new Polygon({
-      points: this.points.map((p) => p.clone()),
-      ...this.cloneGraphicOptions(),
-      ...this.cloneRasterOptions()
-    });
+  public function clone(): Polygon {
+    var config = Object.spreadWith(
+      { points: this.points.map((p) -> p.clone()) },
+      Object.spreadWith(
+        this.cloneGraphicOptions(),
+        this.cloneRasterOptions()
+      )
+    );
+    return new Polygon(config);
   }
 
-  execute(ctx: CanvasRenderingContext2D): Void {
+  function execute(ctx: CanvasRenderingContext2D): Void {
     if (this.points && this.points.length) {
       ctx.beginPath();
       // Iterate through the supplied points and construct a 'polygon'
       final min = this.minPoint.negate();
       final firstPoint = this.points[0].add(min);
       ctx.moveTo(firstPoint.x, firstPoint.y);
-      this.points.forEach((point) => {
+      this.points.forEach((point) -> {
         ctx.lineTo(point.x + min.x, point.y + min.y);
       });
       ctx.lineTo(firstPoint.x, firstPoint.y);

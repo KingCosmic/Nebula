@@ -1,68 +1,68 @@
-package nebula.Graphics.PostProcessor;
+package nebula.graphics.postprocessor;
 
-import nebula.Graphics.PostProcessor.ColorBlindnessMode;
-import nebula.Graphics.PostProcessor.PostProcessor;
+import nebula.graphics.postprocessor.ColorBlindnessMode;
+import nebula.graphics.postprocessor.PostProcessor;
 
-import nebula.Graphics.Context.Shader;
-import nebula.Graphics.Context.VertexLayout;
+import nebula.graphics.context.Shader;
+import nebula.graphics.context.VertexLayout;
 
-import nebula.Graphics.PostProcessor.ScreenShader;
+import nebula.graphics.postprocessor.ScreenShader;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
 
 class ColorBlindnessPostProcessor implements PostProcessor {
-  private _shader!: ScreenShader;
-  private _simulate = false;
+  private var _shader: ScreenShader;
+  private var _simulate = false;
   public function new(
-    private _colorBlindnessMode: ColorBlindnessMode,
+    _colorBlindnessMode: ColorBlindnessMode,
     simulate = false
   ) {
     this._simulate = simulate;
   }
 
-  initialize(graphicsContext: ExcaliburGraphicsContextWebGL): Void {
+  function initialize(graphicsContext: ExcaliburGraphicsContextWebGL): Void {
     this._shader = new ScreenShader(graphicsContext, colorBlindCorrectSource);
     this.simulate = this._simulate;
     this.colorBlindnessMode = this._colorBlindnessMode;
   }
 
-  getShader(): Shader {
+  function getShader(): Shader {
     return this._shader.getShader();
   }
 
-  getLayout(): VertexLayout {
+  function getLayout(): VertexLayout {
     return this._shader.getLayout();
   }
 
-  set colorBlindnessMode(colorBlindMode: ColorBlindnessMode) {
+  public var colorBlindnessMode(get, set): ColorBlindnessMode;
+  function get_colorBlindnessMode(): ColorBlindnessMode {
+    return this._colorBlindnessMode;
+  }
+  function set_colorBlindnessMode(colorBlindMode: ColorBlindnessMode) {
     this._colorBlindnessMode = colorBlindMode;
     if (this._shader) {
       final shader = this._shader.getShader();
       shader.use();
-      if (this._colorBlindnessMode === ColorBlindnessMode.Protanope) {
+      if (this._colorBlindnessMode == ColorBlindnessMode.Protanope) {
         shader.setUniformInt('u_type', 0);
-      } else if (this._colorBlindnessMode === ColorBlindnessMode.Deuteranope) {
+      } else if (this._colorBlindnessMode == ColorBlindnessMode.Deuteranope) {
         shader.setUniformInt('u_type', 1);
-      } else if (this._colorBlindnessMode === ColorBlindnessMode.Tritanope) {
+      } else if (this._colorBlindnessMode == ColorBlindnessMode.Tritanope) {
         shader.setUniformInt('u_type', 2);
       }
     }
   }
 
-  get colorBlindnessMode(): ColorBlindnessMode {
-    return this._colorBlindnessMode;
+  public var simulate(get, set): Bool;
+  function get_simulate(): Bool {
+    return this._simulate;
   }
-
-  set simulate(value: Bool) {
+  function set_simulate(value: Bool) {
     this._simulate = value;
     if (this._shader) {
       final shader = this._shader.getShader();
       shader.use();
       shader.setUniformBoolean('u_simulate', value);
     }
-  }
-
-  get simulate(): Bool {
-    return this._simulate;
   }
 }

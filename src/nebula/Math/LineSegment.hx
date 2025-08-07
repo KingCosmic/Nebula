@@ -1,7 +1,7 @@
-package nebula.Math;
+package nebula.math;
 
-import nebula.Math.AffineMatrix;
-import nebula.Math.Vector;
+import nebula.math.AffineMatrix;
+import nebula.math.Vector;
 
 /**
  * A 2D line segment
@@ -13,18 +13,18 @@ class LineSegment {
    * @param end  The ending point of the line segment
    */
   public function new(
-    public begin: Vector,
-    public end: Vector
+    begin: Vector,
+    end: Vector
   ) {}
 
-  clone(dest?: LineSegment): LineSegment {
+  function clone(?dest: LineSegment): LineSegment {
     final result = dest || new LineSegment(this.begin.clone(), this.end.clone());
     result.begin = this.begin.clone(result.begin);
     result.end = this.end.clone(result.end);
     return result;
   }
 
-  transform(matrix: AffineMatrix, dest?: LineSegment): LineSegment {
+  function transform(matrix: AffineMatrix, ?dest: LineSegment): LineSegment {
     final result = dest || new LineSegment(Vector.Zero, Vector.Zero);
     result.begin = matrix.multiply(this.begin, result.begin);
     result.end = matrix.multiply(this.end, result.end);
@@ -34,45 +34,47 @@ class LineSegment {
   /**
    * Gets the raw slope (m) of the line. Will return (+/-)Infinity for vertical lines.
    */
-  public get slope() {
+  public var slope(get, never): Float;
+  function get_slope() {
     return (this.end.y - this.begin.y) / (this.end.x - this.begin.x);
   }
 
   /**
    * Gets the Y-intercept (b) of the line. Will return (+/-)Infinity if there is no intercept.
    */
-  public get intercept() {
+  public var intercept(get, never): Float;
+  function get_intercept() {
     return this.begin.y - this.slope * this.begin.x;
   }
 
-  private _normal: Vector;
+  private var _normal: Vector;
   /**
    * Gets the normal of the line
    */
-  public normal(): Vector {
+  public function normal(): Vector {
     if (this._normal) {
       return this._normal;
     }
     return (this._normal = this.end.sub(this.begin).normal());
   }
 
-  private _dir: Vector;
-  public dir(): Vector {
+  private var _dir: Vector;
+  public function dir(): Vector {
     if (this._dir) {
       return this._dir;
     }
     return (this._dir = this.end.sub(this.begin));
   }
 
-  public getPoints(): Vector[] {
+  public function getPoints(): Array<Vector> {
     return [this.begin, this.end];
   }
 
-  private _slope: Vector;
+  private var _slope: Vector;
   /**
    * Returns the slope of the line in the form of a vector of length 1
    */
-  public getSlope(): Vector {
+  public function getSlope(): Vector {
     if (this._slope) {
       return this._slope;
     }
@@ -85,7 +87,7 @@ class LineSegment {
   /**
    * Returns the edge of the line as vector, the length of the vector is the length of the edge
    */
-  public getEdge(): Vector {
+  public function getEdge(): Vector {
     final begin = this.begin;
     final end = this.end;
     return end.sub(begin);
@@ -94,7 +96,7 @@ class LineSegment {
   /**
    * Returns the length of the line segment in pixels
    */
-  public getLength(): Int {
+  public function getLength(): Int {
     final begin = this.begin;
     final end = this.end;
     final distance = begin.distance(end);
@@ -104,14 +106,15 @@ class LineSegment {
   /**
    * Returns the midpoint of the edge
    */
-  public get midpoint(): Vector {
+  public var midpoint(get, never): Vector;
+  function get_midpoint(): Vector {
     return this.begin.add(this.end).scale(0.5);
   }
 
   /**
    * Flips the direction of the line segment
    */
-  public flip(): LineSegment {
+  public function flip(): LineSegment {
     return new LineSegment(this.end, this.begin);
   }
 
@@ -119,7 +122,7 @@ class LineSegment {
    * Tests if a given point is below the line, points in the normal direction above the line are considered above.
    * @param point
    */
-  public below(point: Vector): Bool {
+  public function below(point: Vector): Bool {
     final above2 = (this.end.x - this.begin.x) * (point.y - this.begin.y) - (this.end.y - this.begin.y) * (point.x - this.begin.x);
     return above2 >= 0;
   }
@@ -129,7 +132,7 @@ class LineSegment {
    * @param sideVector Vector that traces the line
    * @param length Length to clip along side
    */
-  public clip(sideVector: Vector, length: Float, normalize = true): LineSegment {
+  public function clip(sideVector: Vector, length: Float, normalize = true): LineSegment {
     var dir = sideVector;
     if (normalize) {
       dir = dir.normalize();
@@ -150,7 +153,7 @@ class LineSegment {
       final clipTime = near / (near - far);
       results.push(this.begin.add(this.end.sub(this.begin).scale(clipTime)));
     }
-    if (results.length !== 2) {
+    if (results.length != 2) {
       return null;
     }
 
@@ -162,7 +165,7 @@ class LineSegment {
    * https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
    * @param point
    */
-  public distanceToPoint(point: Vector, signed: Bool = false) {
+  public function distanceToPoint(point: Vector, signed: Bool = false) {
     final x0 = point.x;
     final y0 = point.y;
 
@@ -183,7 +186,7 @@ class LineSegment {
    * n is a unit vector in direction of the line
    * @param point
    */
-  public findVectorToPoint(point: Vector): Vector {
+  public function findVectorToPoint(point: Vector): Vector {
     final aMinusP = this.begin.sub(point);
     final n = this.getSlope();
 
@@ -197,13 +200,13 @@ class LineSegment {
    * @param y The known Y value of the target point
    * @returns A new point with the other calculated axis value
    */
-  public findPoint(x: Int = null, y: Int = null): Vector {
+  public function findPoint(?x: Int = null, ?y: Int = null): Vector {
     final m = this.slope;
     final b = this.intercept;
 
-    if (x !== null) {
+    if (x != null) {
       return new Vector(x, m * x + b);
-    } else if (y !== null) {
+    } else if (y != null) {
       return new Vector((y - b) / m, y);
     } else {
       throw new Error('You must provide an X or a Y value');
@@ -211,36 +214,9 @@ class LineSegment {
   }
 
   /**
-   * Whether or not the given point lies on this line. This method is precise by default
-   * meaning the point must lie exactly on the line. Adjust threshold to
-   * loosen the strictness of the check for floating-point calculations.
-   */
-  public hasPoint(x: Int, y: Int, threshold?: Float): Bool;
-
-  /**
-   * Whether or not the given point lies on this line. This method is precise by default
-   * meaning the point must lie exactly on the line. Adjust threshold to
-   * loosen the strictness of the check for floating-point calculations.
-   */
-  public hasPoint(v: Vector, threshold?: Float): Bool;
-
-  /**
    * @see http://stackoverflow.com/a/11908158/109458
    */
-  public hasPoint(): Bool {
-    var currPoint: Vector;
-    var threshold = 0;
-
-    if (typeof arguments[0] === 'number' && typeof arguments[1] === 'number') {
-      currPoint = new Vector(arguments[0], arguments[1]);
-      threshold = arguments[2] || 0;
-    } else if (arguments[0] instanceof Vector) {
-      currPoint = arguments[0];
-      threshold = arguments[1] || 0;
-    } else {
-      throw 'Could not determine the arguments for Vector.hasPoint';
-    }
-
+  public function hasPoint(currPoint: Vector, ?threshold: Float = 0): Bool {
     final dxc = currPoint.x - this.begin.x;
     final dyc = currPoint.y - this.begin.y;
 

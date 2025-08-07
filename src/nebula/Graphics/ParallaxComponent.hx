@@ -1,13 +1,13 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.EntityComponentSystem.Component;
+import nebula.entitycomponentsystem.Component;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
 class ParallaxComponent extends Component {
-  parallaxFactor = vec(1.0, 1.0);
+  var parallaxFactor = vec(1.0, 1.0);
 
-  public function new(parallaxFactor?: Vector) {
+  public function new(?parallaxFactor: Vector) {
     super();
     this.parallaxFactor = parallaxFactor ?? this.parallaxFactor;
   }

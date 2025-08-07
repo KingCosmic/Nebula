@@ -1,6 +1,6 @@
-package nebula.Util;
+package nebula.util;
 
-public class Object {
+class Object {
   public static function spreadWith(original: Dynamic, additions: Dynamic): Dynamic {
     var result: Dynamic = {};
     for (field in Reflect.fields(original)) {

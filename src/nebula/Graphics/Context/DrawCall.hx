@@ -1,21 +1,21 @@
-package nebula.Graphics.Context
+package nebula.graphics.context;
 
-import nebula.Math.AffineMatrix;
+import nebula.math.AffineMatrix;
 
 import nebula.Color;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
 class DrawCall {
-  public z: Int = 0;
-  public priority: Int = 0;
-  public renderer: String = '';
-  public transform: AffineMatrix = AffineMatrix.identity();
-  public state: ExcaliburGraphicsContextState = {
+  public var z: Int = 0;
+  public var priority: Int = 0;
+  public var renderer: String = '';
+  public var transform: AffineMatrix = AffineMatrix.identity();
+  public var state: ExcaliburGraphicsContextState = {
     z: 0,
     opacity: 1,
     tint: Color.White,
     material: null
   };
-  public args: any[] = new Array(10);
+  public var args: Array<Any> = new Array(10);
 }

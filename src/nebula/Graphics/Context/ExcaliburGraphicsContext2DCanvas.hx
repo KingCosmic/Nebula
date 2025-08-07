@@ -1,15 +1,15 @@
-package nebula.Graphics.Context;
+package nebula.graphics.context;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Graphics.Context.StateStack;
-import nebula.Graphics.Context.DebugText;
-import nebula.Graphics.Context.Material;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.graphics.context.StateStack;
+import nebula.graphics.context.DebugText;
+import nebula.graphics.context.Material;
 
-import nebula.Graphics.GraphicsDiagnostics;
-import nebula.Graphics.PostProcessor.PostProcessor;
+import nebula.graphics.GraphicsDiagnostics;
+import nebula.graphics.postprocessor.PostProcessor;
 
-import nebula.Math.Vector;
-import nebula.Math.AffineMatrix;
+import nebula.math.Vector;
+import nebula.math.AffineMatrix;
 
 import nebula.Screen;
 import nebula.Color;
@@ -17,8 +17,8 @@ import nebula.Color;
 final pixelSnapEpsilon: Float = 0.0001;
 
 class ExcaliburGraphicsContext2DCanvasDebug implements DebugDraw {
-  private _debugText = new DebugText();
-  public functiton new(private _ex: ExcaliburGraphicsContext2DCanvas) {}
+  private var _debugText = new DebugText();
+  public function new(_ex: ExcaliburGraphicsContext2DCanvas) {}
   /**
    * Draw a debug rectangle to the context
    * @param x
@@ -26,7 +26,7 @@ class ExcaliburGraphicsContext2DCanvasDebug implements DebugDraw {
    * @param width
    * @param height
    */
-  drawRect(x: Int, y: Int, width: Int, height: Int): Void {
+  function drawRect(x: Int, y: Int, width: Int, height: Int): Void {
     this._ex.__ctx.save();
     this._ex.__ctx.strokeStyle = 'red';
     this._ex.__ctx.strokeRect(
@@ -38,7 +38,7 @@ class ExcaliburGraphicsContext2DCanvasDebug implements DebugDraw {
     this._ex.__ctx.restore();
   }
 
-  drawLine(start: Vector, end: Vector, lineOptions: LineGraphicsOptions = { color: Color.Black }): Void {
+  function drawLine(start: Vector, end: Vector, lineOptions: LineGraphicsOptions = { color: Color.Black }): Void {
     this._ex.__ctx.save();
     this._ex.__ctx.beginPath();
     this._ex.__ctx.strokeStyle = lineOptions.color?.toString() ?? '';
@@ -56,7 +56,7 @@ class ExcaliburGraphicsContext2DCanvasDebug implements DebugDraw {
     this._ex.__ctx.restore();
   }
 
-  drawPoint(point: Vector, pointOptions: PointGraphicsOptions = { color: Color.Black, size: 5 }): Void {
+  function drawPoint(point: Vector, pointOptions: PointGraphicsOptions = { color: Color.Black, size: 5 }): Void {
     this._ex.__ctx.save();
     this._ex.__ctx.beginPath();
     this._ex.__ctx.fillStyle = pointOptions.color.toString();
@@ -72,13 +72,13 @@ class ExcaliburGraphicsContext2DCanvasDebug implements DebugDraw {
     this._ex.__ctx.restore();
   }
 
-  drawText(text: String, pos: Vector) {
+  function drawText(text: String, pos: Vector) {
     this._debugText.write(this._ex, text, pos);
   }
 }
 
 interface ExcaliburGraphicsContext2DOptions extends ExcaliburGraphicsContextOptions {
-  context?: CanvasRenderingContext2D;
+  var context: Null<CanvasRenderingContext2D>;
 }
 
 class ExcaliburGraphicsContext2DCanvas implements ExcaliburGraphicsContext {
@@ -86,62 +86,70 @@ class ExcaliburGraphicsContext2DCanvas implements ExcaliburGraphicsContext {
    * Meant for internal use only. Access the internal context at your own risk and no guarantees this will exist in the future.
    * @internal
    */
-  public __ctx!: CanvasRenderingContext2D;
-  public get width() {
+  public var __ctx: CanvasRenderingContext2D;
+  public var width(get, never): Int;
+  function get_width() {
     return this.__ctx.canvas.width;
   }
 
-  public get height() {
+  public var height(get, never): Int;
+  function get_height() {
     return this.__ctx.canvas.height;
   }
 
   /**
    * Unused in Canvas implementation
    */
-  public readonly useDrawSorting: boolean = false;
+  public var useDrawSorting: Bool = false;
 
   /**
    * Unused in Canvas implementation
    */
-  public z: Int = 0;
+  public var z: Int = 0;
 
-  public backgroundColor: Color = Color.ExcaliburBlue;
+  public var backgroundColor: Color = Color.ExcaliburBlue;
 
-  private _state = new StateStack();
+  private var _state = new StateStack();
 
-  public get opacity(): Float {
+  public var opacity(get, set): Float;
+  function get_opacity(): Float {
     return this._state.current.opacity;
   }
 
-  public set opacity(value: Float) {
+  function set_opacity(value: Float) {
     this._state.current.opacity = value;
   }
 
-  public get tint(): Null<Color> {
+  public var tint(get, set): Null<Color>;
+  function get_tint(): Null<Color> {
     return this._state.current.tint;
   }
-
-  public set tint(color: Null<Color>) {
+  function set_tint(color: Null<Color>) {
     this._state.current.tint = color;
   }
 
-  public snapToPixel: Bool = false;
+  public var snapToPixel: Bool = false;
 
-  public get smoothing(): Bool {
+  public var smoothing(get, set): Bool;
+  function get_smoothing(): Bool {
     return this.__ctx.imageSmoothingEnabled;
   }
-
-  public set smoothing(value: Bool) {
+  function set_smoothing(value: Bool) {
     this.__ctx.imageSmoothingEnabled = value;
   }
 
   public function new(options: ExcaliburGraphicsContext2DOptions) {
-    final { canvasElement, context, enableTransparency, snapToPixel, antialiasing: smoothing, backgroundColor } = options;
+    final canvasElement = options.canvasElement,
+          context = options.context,
+          enableTransparency = options.enableTransparency,
+          snapToPixel = options.snapToPixel,
+          smoothing = options.antialiasing,
+          backgroundColor = options.backgroundColor;
     this.__ctx =
       context ??
       (canvasElement.getContext('2d', {
         alpha: enableTransparency ?? true
-      }) as CanvasRenderingContext2D);
+      }));
     if (!this.__ctx) {
       throw new Error('Cannot build new ExcaliburGraphicsContext2D for some reason!');
     }
@@ -150,69 +158,69 @@ class ExcaliburGraphicsContext2DCanvas implements ExcaliburGraphicsContext {
     this.smoothing = smoothing ?? this.smoothing;
   }
 
-  public resetTransform(): Void {
+  public function resetTransform(): Void {
     this.__ctx.resetTransform();
   }
 
-  public updateViewport(_resolution: Resolution): Void {
+  public function updateViewport(_resolution: Resolution): Void {
     // pass
   }
 
   /**
    * Draw an image to the Excalibur Graphics context at an x and y coordinate using the images width and height
    */
-  drawImage(image: HTMLImageSource, x: Int, y: Int): Void;
+  function drawImage(image: HTMLImageSource, x: Int, y: Int): Void;
   /**
    *
    * Draw an image to the Excalibur Graphics context at an x and y coordinate with a specific width and height
    */
-  drawImage(image: HTMLImageSource, x: Int, y: Int, width: Int, height: Int): Void;
+  function drawImage(image: HTMLImageSource, x: Int, y: Int, width: Int, height: Int): Void;
   /**
    *
    * Draw an image to the Excalibur Graphics context specifying the source image coordinates (sx, sy, swidth, sheight)
    * and to a specific destination on the context (dx, dy, dwidth, dheight)
    */
-  drawImage(
+  function drawImage(
     image: HTMLImageSource,
     sx: Int,
     sy: Int,
-    swidth?: Int,
-    sheight?: Int,
-    dx?: Int,
-    dy?: Int,
-    dwidth?: Int,
-    dheight?: Int
+    ?swidth: Int,
+    ?sheight: Int,
+    ?dx: Int,
+    ?dy: Int,
+    ?dwidth: Int,
+    ?dheight: Int
   ): Void;
 
-  drawImage(
+  function drawImage(
     image: HTMLImageSource,
     sx: Int,
     sy: Int,
-    swidth?: Int,
-    sheight?: Int,
-    dx?: Int,
-    dy?: Int,
-    dwidth?: Int,
-    dheight?: Int
+    ?swidth: Int,
+    ?sheight: Int,
+    ?dx: Int,
+    ?dy: Int,
+    ?dwidth: Int,
+    ?dheight: Int
   ): Void {
-    if (swidth === 0 || sheight === 0) {
+    if (swidth == 0 || sheight == 0) {
       return; // zero dimension dest exit early
-    } else if (dwidth === 0 || dheight === 0) {
+    } else if (dwidth == 0 || dheight == 0) {
       return; // zero dimension dest exit early
-    } else if (image.width === 0 || image.height === 0) {
+    } else if (image.width == 0 || image.height == 0) {
       return; // zero dimension source exit early
     }
 
     this.__ctx.globalAlpha = this.opacity;
     final args = [image, sx, sy, swidth, sheight, dx, dy, dwidth, dheight]
-      .filter((a) => a !== undefined)
-      .map((a) => (typeof a === 'number' && this.snapToPixel ? ~~a : a));
-    this.__ctx.drawImage.apply(this.__ctx, args as any);
+      .filter((a) -> a != null)
+      .map((a) -> (Std.isTypeOf(a, Int) && this.snapToPixel ? ~~a : a));
+    this.__ctx.drawImage.apply(this.__ctx, args);
     GraphicsDiagnostics.DrawCallCount++;
     GraphicsDiagnostics.DrawnImagesCount = 1;
   }
 
-  public drawLine(start: Vector, end: Vector, color: Color, thickness = 1) {
+  public function drawLine(start: Vector, end: Vector, color: Color, thickness = 1) {
     this.__ctx.save();
     this.__ctx.beginPath();
     this.__ctx.strokeStyle = color.toString();
@@ -227,7 +235,7 @@ class ExcaliburGraphicsContext2DCanvas implements ExcaliburGraphicsContext {
     this.__ctx.restore();
   }
 
-  public drawRectangle(pos: Vector, width: Int, height: Int, color: Color) {
+  public function drawRectangle(pos: Vector, width: Int, height: Int, color: Color) {
     this.__ctx.save();
     this.__ctx.fillStyle = color.toString();
     this.__ctx.fillRect(
@@ -239,7 +247,7 @@ class ExcaliburGraphicsContext2DCanvas implements ExcaliburGraphicsContext {
     this.__ctx.restore();
   }
 
-  public drawCircle(pos: Vector, radius: Float, color: Color, stroke?: Color, thickness?: Int) {
+  public function drawCircle(pos: Vector, radius: Float, color: Color, ?stroke: Color, ?thickness: Int) {
     this.__ctx.save();
     this.__ctx.beginPath();
     if (stroke) {
@@ -264,12 +272,12 @@ class ExcaliburGraphicsContext2DCanvas implements ExcaliburGraphicsContext {
     this.__ctx.restore();
   }
 
-  debug = new ExcaliburGraphicsContext2DCanvasDebug(this);
+  var debug = new ExcaliburGraphicsContext2DCanvasDebug(this);
 
   /**
    * Save the current state of the canvas to the stack (transforms and opacity)
    */
-  save(): Void {
+  function save(): Void {
     this.__ctx.save();
     this._state.save();
   }
@@ -277,7 +285,7 @@ class ExcaliburGraphicsContext2DCanvas implements ExcaliburGraphicsContext {
   /**
    * Restore the state of the canvas from the stack
    */
-  restore(): Void {
+  function restore(): Void {
     this.__ctx.restore();
     this._state.restore();
   }
@@ -287,14 +295,14 @@ class ExcaliburGraphicsContext2DCanvas implements ExcaliburGraphicsContext {
    * @param x
    * @param y
    */
-  translate(x: Int, y: Int): Void {
+  function translate(x: Int, y: Int): Void {
     this.__ctx.translate(this.snapToPixel ? ~~(x + pixelSnapEpsilon) : x, this.snapToPixel ? ~~(y + pixelSnapEpsilon) : y);
   }
 
   /**
    * Rotate the context about the current origin
    */
-  rotate(angle: Int): Void {
+  function rotate(angle: Int): Void {
     this.__ctx.rotate(angle);
   }
 
@@ -303,56 +311,56 @@ class ExcaliburGraphicsContext2DCanvas implements ExcaliburGraphicsContext {
    * @param x
    * @param y
    */
-  scale(x: Float, y: Float): Void {
+  function scale(x: Float, y: Float): Void {
     this.__ctx.scale(x, y);
   }
 
-  public getTransform(): AffineMatrix {
+  public function getTransform(): AffineMatrix {
     throw new Error('Not implemented');
   }
 
-  public multiply(_m: AffineMatrix): Void {
+  public function multiply(_m: AffineMatrix): Void {
     this.__ctx.setTransform(this.__ctx.getTransform().multiply(_m.toDOMMatrix()));
   }
 
-  public addPostProcessor(_postprocessor: PostProcessor) {
+  public function addPostProcessor(_postprocessor: PostProcessor) {
     // pass
   }
 
-  public removePostProcessor(_postprocessor: PostProcessor) {
+  public function removePostProcessor(_postprocessor: PostProcessor) {
     // pass
   }
 
-  public clearPostProcessors() {
+  public function clearPostProcessors() {
     // pass
   }
 
-  public updatePostProcessors(elapsed: Int) {
+  public function updatePostProcessors(elapsed: Int) {
     // pass
   }
 
-  public beginDrawLifecycle() {
+  public function beginDrawLifecycle() {
     // pass
   }
 
-  public endDrawLifecycle() {
+  public function endDrawLifecycle() {
     // pass
   }
 
-  public set material(material: Null<Material>) {
+  public var material(get, set): Null<Material>;
+  function set_material(material: Null<Material>) {
     this._state.current.material = material;
   }
-
-  public get material(): Null<Material> {
+  function get_material(): Null<Material> {
     return this._state.current.material;
   }
 
-  public createMaterial(options: Omit<MaterialOptions, 'graphicsContext'>): Material {
+  public function createMaterial(options: Omit<MaterialOptions, 'graphicsContext'>): Null<Material> {
     // pass
-    return null as dynamic;
+    return null;
   }
 
-  clear(): Void {
+  function clear(): Void {
     // Clear frame
     this.__ctx.clearRect(0, 0, this.width, this.height);
     this.__ctx.fillStyle = this.backgroundColor.toString();
@@ -363,11 +371,11 @@ class ExcaliburGraphicsContext2DCanvas implements ExcaliburGraphicsContext {
   /**
    * Flushes the batched draw calls to the screen
    */
-  flush(): Void {
+  function flush(): Void {
     // pass
   }
 
-  dispose(): Void {
-    this.__ctx = undefined as dynamic;
+  function dispose(): Void {
+    this.__ctx = null;
   }
 }

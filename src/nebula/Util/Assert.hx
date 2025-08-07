@@ -1,3 +1,5 @@
+package nebula.util;
+
 /**
  * Asserts will throw in `process.env.NODE_ENV === 'development'` builds if the expression evaluates false
  */

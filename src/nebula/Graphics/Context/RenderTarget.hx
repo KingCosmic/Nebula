@@ -1,34 +1,34 @@
-package nebula.Graphics.Context;
+package nebula.graphics.context;
 
-import nebula.Graphics.Context.RenderSource;
+import nebula.graphics.context.RenderSource;
 
 interface RenderTargetOptions {
-  gl: WebGL2RenderingContext;
-  width: Int;
-  height: Int;
-  transparency: Bool;
+  var gl: WebGL2RenderingContext;
+  var width: Int;
+  var height: Int;
+  var transparency: Bool;
   /**
    * Optionally enable render buffer multisample anti-aliasing
    *
    * By default false
    */
-  antialias?: Bool;
+  var antialias: Null<Bool>;
   /**
    * Optionally specify number of anti-aliasing samples to use
    *
    * By default the max for the platform is used if antialias is on.
    */
-  samples?: Int;
+  var samples: Null<Int>;
 }
 
 class RenderTarget {
-  width: Int;
-  height: Int;
-  transparency: Bool;
-  antialias: Bool = false;
-  samples: Int = 1;
-  private _gl: WebGL2RenderingContext;
-  public readonly bufferFormat: Int;
+  var width: Int;
+  var height: Int;
+  var transparency: Bool;
+  var antialias: Bool = false;
+  var samples: Int = 1;
+  private var _gl: WebGL2RenderingContext;
+  public var bufferFormat: Int;
   public function new(options: RenderTargetOptions) {
     this._gl = options.gl;
     this.width = options.width;
@@ -55,7 +55,7 @@ class RenderTarget {
     this._setupFramebuffer();
   }
 
-  setResolution(width: Int, height: Int) {
+  function setResolution(width: Int, height: Int) {
     final gl = this._gl;
     this.width = width;
     this.height = height;
@@ -77,25 +77,31 @@ class RenderTarget {
     }
   }
 
-  private _renderBuffer!: WebGLRenderbuffer;
-  public get renderBuffer() {
+  private var _renderBuffer: WebGLRenderbuffer;
+  public var renderBuffer(get, never): WebGLFramebuffer;
+  function get_renderBuffer() {
     return this._renderBuffer;
   }
-  private _renderFrameBuffer!: WebGLFramebuffer;
-  public get renderFrameBuffer() {
+
+  private var _renderFrameBuffer: WebGLFramebuffer;
+  public var renderFrameBuffer(get, never): WebGLFramebuffer;
+  function get_renderFrameBuffer() {
     return this._renderFrameBuffer;
   }
 
-  private _frameBuffer!: WebGLFramebuffer;
-  public get frameBuffer() {
+  private var _frameBuffer: WebGLFramebuffer;
+  public var frameBuffer(get, never): WebGLFramebuffer;
+  function get_frameBuffer() {
     return this._frameBuffer;
   }
-  private _frameTexture!: WebGLTexture;
-  public get frameTexture() {
+
+  private var _frameTexture: WebGLTexture;
+  public var frameTexture(get, never): WebGLTexture;
+  function get_frameTexture() {
     return this._frameTexture;
   }
 
-  private _setupRenderBuffer() {
+  private function _setupRenderBuffer() {
     if (this.antialias) {
       final gl = this._gl;
       // Render buffers can be used as an input to a shader
@@ -114,7 +120,7 @@ class RenderTarget {
     }
   }
 
-  private _setupFramebuffer() {
+  private function _setupFramebuffer() {
     // Allocates frame buffer
     final gl = this._gl;
     this._frameTexture = gl.createTexture()!;
@@ -139,7 +145,7 @@ class RenderTarget {
     this.disable();
   }
 
-  public toRenderSource() {
+  public function toRenderSource() {
     if (this.renderBuffer) {
       this.blitRenderBufferToFrameBuffer();
     }
@@ -147,7 +153,7 @@ class RenderTarget {
     return source;
   }
 
-  public blitToScreen() {
+  public function blitToScreen() {
     final gl = this._gl;
     // set to size of canvas's drawingBuffer
     if (this._renderBuffer) {
@@ -163,7 +169,7 @@ class RenderTarget {
     }
   }
 
-  public blitRenderBufferToFrameBuffer() {
+  public function blitRenderBufferToFrameBuffer() {
     if (this._renderBuffer) {
       final gl = this._gl;
       gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.renderFrameBuffer);
@@ -173,7 +179,7 @@ class RenderTarget {
     }
   }
 
-  public copyToTexture(texture: WebGLTexture) {
+  public function copyToTexture(texture: WebGLTexture) {
     final gl = this._gl;
     if (this._renderBuffer) {
       this.blitRenderBufferToFrameBuffer();
@@ -186,7 +192,7 @@ class RenderTarget {
   /**
    * When called, all drawing gets redirected to this render target
    */
-  public use() {
+  public function use() {
     final gl = this._gl;
     if (this.antialias) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, this._renderFrameBuffer);
@@ -201,7 +207,7 @@ class RenderTarget {
   /**
    * When called, all drawing is sent back to the canvas
    */
-  public disable() {
+  public function disable() {
     final gl = this._gl;
     // passing null switches rendering back to the canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);

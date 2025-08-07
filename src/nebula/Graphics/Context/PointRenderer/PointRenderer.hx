@@ -1,32 +1,32 @@
-package nebula.Graphics.Context.PointRenderer;
+package nebula.graphics.context.pointrenderer;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 import nebula.Color;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
 
-import nebula.Graphics.Context.Renderer;
-import nebula.Graphics.Context.Shader;
-import nebula.Graphics.Context.VertexBuffer;
-import nebula.Graphics.Context.VertexLayout;
+import nebula.graphics.context.Renderer;
+import nebula.graphics.context.Shader;
+import nebula.graphics.context.VertexBuffer;
+import nebula.graphics.context.VertexLayout;
 
-import nebula.Graphics.GraphicsDiagnostics;
+import nebula.graphics.GraphicsDiagnostics;
 
 // import pointVertexSource from './point-vertex.glsl?raw';
 // import pointFragmentSource from './point-fragment.glsl?raw';
 
 class PointRenderer implements RendererPlugin {
-  public readonly type = 'ex.point';
-  public priority: Int = 0;
-  private _shader!: Shader;
-  private _maxPoints: Int = 10922;
-  private _buffer!: VertexBuffer;
-  private _layout!: VertexLayout;
-  private _gl!: WebGLRenderingContext;
-  private _context!: ExcaliburGraphicsContextWebGL;
-  private _pointCount: Int = 0;
-  private _vertexIndex: Int = 0;
-  initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
+  public var type = 'ex.point';
+  public var priority: Int = 0;
+  private var _shader: Shader;
+  private var _maxPoints: Int = 10922;
+  private var _buffer: VertexBuffer;
+  private var _layout: VertexLayout;
+  private var _gl: WebGLRenderingContext;
+  private var _context: ExcaliburGraphicsContextWebGL;
+  private var _pointCount: Int = 0;
+  private var _vertexIndex: Int = 0;
+  function initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
     this._gl = gl;
     this._context = context;
     this._shader = new Shader({
@@ -38,13 +38,13 @@ class PointRenderer implements RendererPlugin {
     this._shader.use();
     this._shader.setUniformMatrix('u_matrix', this._context.ortho);
     this._buffer = new VertexBuffer({
-      gl,
+      gl: gl,
       size: 7 * this._maxPoints,
       type: 'dynamic'
     });
 
     this._layout = new VertexLayout({
-      gl,
+      gl: gl,
       shader: this._shader,
       vertexBuffer: this._buffer,
       attributes: [
@@ -55,14 +55,14 @@ class PointRenderer implements RendererPlugin {
     });
   }
 
-  public dispose() {
+  public function dispose() {
     this._buffer.dispose();
     this._shader.dispose();
-    this._context = null as dynamic;
-    this._gl = null as dynamic;
+    this._context = null;
+    this._gl = null;
   }
 
-  draw(point: Vector, color: Color, size: Int): Void {
+  function draw(point: Vector, color: Color, size: Int): Void {
     // Force a render if the batch is full
     if (this._isFull()) {
       this.flush();
@@ -91,20 +91,20 @@ class PointRenderer implements RendererPlugin {
     vertexBuffer[this._vertexIndex++] = size * Math.max(transform.getScaleX(), transform.getScaleY());
   }
 
-  private _isFull() {
+  private function _isFull() {
     if (this._pointCount >= this._maxPoints) {
       return true;
     }
     return false;
   }
 
-  hasPendingDraws(): Bool {
-    return this._pointCount !== 0;
+  function hasPendingDraws(): Bool {
+    return this._pointCount != 0;
   }
 
-  flush(): Void {
+  function flush(): Void {
     // nothing to draw early exit
-    if (this._pointCount === 0) {
+    if (this._pointCount == 0) {
       return;
     }
 

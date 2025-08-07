@@ -1,19 +1,19 @@
-package nebula.Util;
+package nebula.util;
 
 import nebula.Engine;
 import nebula.Color;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
 /**
  * Logging level that Excalibur will tag
  */
 enum LogLevel {
-  Debug,
-  Info,
-  Warn,
-  Error,
-  Fatal
+  Debug;
+  Info;
+  Warn;
+  Error;
+  Fatal;
 }
 
 /**
@@ -22,8 +22,8 @@ enum LogLevel {
  * Derive from {@apilink Appender} to create your own logging appenders.
  */
 class Logger {
-  private static _INSTANCE: Null<Logger> = null;
-  private _appenders: Appender[] = [];
+  private static var _INSTANCE: Null<Logger> = null;
+  private var _appenders: Array<Appender> = [];
 
   public function new() {
     if (Logger._INSTANCE) {
@@ -39,12 +39,12 @@ class Logger {
    * Gets or sets the default logging level. Excalibur will only log
    * messages if equal to or above this level. Default: {@apilink LogLevel.Info}
    */
-  public defaultLevel: LogLevel = LogLevel.Info;
+  public var defaultLevel: LogLevel = LogLevel.Info;
 
   /**
    * Gets the current static instance of Logger
    */
-  public static getInstance(): Logger {
+  public static function getInstance(): Logger {
     if (Logger._INSTANCE == null) {
       Logger._INSTANCE = new Logger();
     }
@@ -54,14 +54,14 @@ class Logger {
   /**
    * Adds a new {@apilink Appender} to the list of appenders to write to
    */
-  public addAppender(appender: Appender): Void {
+  public function addAppender(appender: Appender): Void {
     this._appenders.push(appender);
   }
 
   /**
    * Clears all appenders from the logger
    */
-  public clearAppenders(): Void {
+  public function clearAppenders(): Void {
     this._appenders.length = 0;
   }
 
@@ -70,22 +70,22 @@ class Logger {
    * @param level  The LogLevel`to log the message at
    * @param args   An array of arguments to write to an appender
    */
-  private _log(level: Null<LogLevel>, args: dynamic[]): Void {
+  private function _log(level: Null<LogLevel>, args: Array<Any>): Void {
     if (level == null) {
       level = this.defaultLevel;
     }
 
     final len = this._appenders.length;
 
-    for (var i = 0; i < len; i++) {
+    for (i in 0...len) {
       if (level >= this.defaultLevel) {
         this._appenders[i].log(level, args);
       }
     }
   }
 
-  private _logOnceSet = new Set<dynamic>();
-  private _logOnce(level: LogLevel, args: dynamic[]): Void {
+  private var _logOnceSet = new Map<Any, Bool>();
+  private function _logOnce(level: LogLevel, args: Array<Any>): Void {
     final serialized = level + args.join('+');
     if (this._logOnceSet.has(serialized)) {
       return;
@@ -99,7 +99,7 @@ class Logger {
    * Writes a log message at the {@apilink LogLevel.Debug} level
    * @param args  Accepts any number of arguments
    */
-  public debug(...args: dynamic[]): Void {
+  public function debug(...args: Array<Any>): Void {
     this._log(LogLevel.Debug, args);
   }
 
@@ -107,7 +107,7 @@ class Logger {
    * Writes a log message once at the {@apilink LogLevel.Fatal} level, if it sees the same args again it wont log
    * @param args  Accepts any number of arguments
    */
-  public debugOnce(...args: dynamic[]): Void {
+  public function debugOnce(...args: Array<Any>): Void {
     this._logOnce(LogLevel.Debug, args);
   }
 
@@ -115,7 +115,7 @@ class Logger {
    * Writes a log message at the {@apilink LogLevel.Info} level
    * @param args  Accepts any number of arguments
    */
-  public info(...args: dynamic[]): Void {
+  public function info(...args: Array<Any>): Void {
     this._log(LogLevel.Info, args);
   }
 
@@ -123,7 +123,7 @@ class Logger {
    * Writes a log message once at the {@apilink LogLevel.Info} level, if it sees the same args again it wont log
    * @param args  Accepts any number of arguments
    */
-  public infoOnce(...args: dynamic[]): Void {
+  public function infoOnce(...args: Array<Any>): Void {
     this._logOnce(LogLevel.Info, args);
   }
 
@@ -131,7 +131,7 @@ class Logger {
    * Writes a log message at the {@apilink LogLevel.Warn} level
    * @param args  Accepts any number of arguments
    */
-  public warn(...args: dynamic[]): Void {
+  public function warn(...args: Array<Any>): Void {
     this._log(LogLevel.Warn, args);
   }
 
@@ -139,7 +139,7 @@ class Logger {
    * Writes a log message once at the {@apilink LogLevel.Warn} level, if it sees the same args again it won't log
    * @param args  Accepts any number of arguments
    */
-  public warnOnce(...args: dynamic[]): Void {
+  public function warnOnce(...args: Array<Any>): Void {
     this._logOnce(LogLevel.Warn, args);
   }
 
@@ -147,7 +147,7 @@ class Logger {
    * Writes a log message at the {@apilink LogLevel.Error} level
    * @param args  Accepts any number of arguments
    */
-  public error(...args: dynamic[]): Void {
+  public function error(...args: Array<Any>): Void {
     this._log(LogLevel.Error, args);
   }
 
@@ -155,7 +155,7 @@ class Logger {
    * Writes a log message once at the {@apilink LogLevel.Error} level, if it sees the same args again it won't log
    * @param args  Accepts any number of arguments
    */
-  public errorOnce(...args: dynamic[]): Void {
+  public function errorOnce(...args: Array<Any>): Void {
     this._logOnce(LogLevel.Error, args);
   }
 
@@ -163,7 +163,7 @@ class Logger {
    * Writes a log message at the {@apilink LogLevel.Fatal} level
    * @param args  Accepts any number of arguments
    */
-  public fatal(...args: dynamic[]): Void {
+  public function fatal(...args: Array<Any>): Void {
     this._log(LogLevel.Fatal, args);
   }
 
@@ -171,7 +171,7 @@ class Logger {
    * Writes a log message once at the {@apilink LogLevel.Fatal} level, if it sees the same args again it won't log
    * @param args  Accepts any number of arguments
    */
-  public fatalOnce(...args: dynamic[]): Void {
+  public function fatalOnce(...args: Array<Any>): Void {
     this._logOnce(LogLevel.Fatal, args);
   }
 }
@@ -185,7 +185,7 @@ interface Appender {
    * @param level  Level to log at
    * @param args   Arguments to log
    */
-  log(level: LogLevel, args: dynamic[]): Void;
+  function log(level: LogLevel, args: Array<Any>): Void;
 }
 
 /**
@@ -197,7 +197,7 @@ class ConsoleAppender implements Appender {
    * @param level  Level to log at
    * @param args   Arguments to log
    */
-  public log(level: LogLevel, args: dynamic[]): Void {
+  public function log(level: LogLevel, args: Array<Any>): Void {
     // Check for console support
     if (!console && !console.log && console.warn && console.error) {
       // todo maybe do something better than nothing
@@ -205,7 +205,7 @@ class ConsoleAppender implements Appender {
     }
 
     // Create a new console args array
-    final consoleArgs: any[] = [];
+    final consoleArgs: Array<Any> = [];
     consoleArgs.unshift.apply(consoleArgs, args);
     consoleArgs.unshift('[' + LogLevel[level] + '] : ');
 
@@ -236,42 +236,42 @@ class ConsoleAppender implements Appender {
 }
 
 interface ScreenAppenderOptions {
-  engine: Engine;
+  var engine: Engine;
   /**
    * Optionally set the width of the overlay canvas
    */
-  width?: Int;
+  var width: Null<Int>;
   /**
    * Optionally set the height of the overlay canvas
    */
-  height?: Int;
+  var height: Null<Int>;
   /**
    * Adjust the text offset from the left side of the screen
    */
-  xPos?: Int;
+  var xPos: Null<Int>;
   /**
    * Provide a text color
    */
-  color?: Color;
+  var color: Null<Color>;
   /**
    * Optionally set the CSS zindex of the overlay canvas
    */
-  zIndex?: Int;
+  var zIndex: Null<Int>;
 }
 
 /**
  * On-screen (canvas) appender
  */
 class ScreenAppender implements Appender {
-  private _messages: string[] = [];
-  public canvas: HTMLCanvasElement;
-  private _ctx: CanvasRenderingContext2D;
-  private _pos = 10;
-  private _color = Color.Black;
-  private _options: ScreenAppenderOptions;
+  private var _messages: Array<String> = [];
+  public var canvas: HTMLCanvasElement;
+  private var _ctx: CanvasRenderingContext2D;
+  private var _pos = 10;
+  private var _color = Color.Black;
+  private var _options: ScreenAppenderOptions;
   public function new(options: ScreenAppenderOptions) {
     this._options = options;
-    this.canvas = <HTMLCanvasElement>document.createElement('canvas');
+    this.canvas = document.createElement('canvas');
     this._ctx = this.canvas.getContext('2d')!;
     this.canvas.style.position = 'absolute';
     this.canvas.style.zIndex = options.zIndex?.toString() ?? '99';
@@ -279,12 +279,12 @@ class ScreenAppender implements Appender {
     this.canvas.style.userSelect = 'none';
     document.body.appendChild(this.canvas);
     this._positionScreenAppenderCanvas();
-    options.engine.screen.events.on('resize', () => {
+    options.engine.screen.events.on('resize', () -> {
       this._positionScreenAppenderCanvas();
     });
   }
 
-  private _positionScreenAppenderCanvas() {
+  private function _positionScreenAppenderCanvas() {
     final options = this._options;
     this.canvas.width = options.width ?? options.engine.screen.resolution.width;
     this.canvas.height = options.height ?? options.engine.screen.resolution.height;
@@ -301,7 +301,7 @@ class ScreenAppender implements Appender {
    * @param level  Level to log at
    * @param args   Arguments to log
    */
-  public log(level: LogLevel, args: dynamic[]): Void {
+  public function log(level: LogLevel, args: Array<Any>): Void {
     final message = args.join(',');
 
     this._ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -311,7 +311,7 @@ class ScreenAppender implements Appender {
     var pos = 10;
 
     this._messages = this._messages.slice(0, 1000);
-    for (var i = 0; i < this._messages.length; i++) {
+    for (i in 0...this._messages.length) {
       this._ctx.fillStyle = this._color.toRGBA();
       this._ctx.fillText(this._messages[i], this._pos, pos);
       pos += 10;

@@ -1,18 +1,18 @@
-package nebula.Math;
+package nebula.math;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
 interface VectorViewOptions {
-  getX: () => Int;
-  getY: () => Int;
-  setX: (x: Int) => Void;
-  setY: (y: Int) => Void;
+  var getX: () -> Int;
+  var getY: () -> Int;
+  var setX: (x: Int) -> Void;
+  var setY: (y: Int) -> Void;
 }
 class VectorView extends Vector {
-  private _getX: () => Int;
-  private _getY: () => Int;
-  private _setX: (x: Int) => Void;
-  private _setY: (y: Int) => Void;
+  private var _getX: () -> Int;
+  private var _getY: () -> Int;
+  private var _setX: (x: Int) -> Void;
+  private var _setY: (y: Int) -> Void;
   public function new(options: VectorViewOptions) {
     super(0, 0);
     this._getX = options.getX;
@@ -20,19 +20,20 @@ class VectorView extends Vector {
     this._setX = options.setX;
     this._setY = options.setY;
   }
-  public get x() {
+  public var x(get, set): Int;
+  function get_x() {
     return (this._x = this._getX());
   }
-
-  public set x(val) {
+  function set_x(val: Int) {
     this._setX(val);
     this._x = val;
   }
 
-  public get y() {
+  public var y(get, set): Int;
+  function get_y() {
     return (this._y = this._getY());
   }
-  public set y(val) {
+  function set_y(val: Int) {
     this._setY(val);
     this._y = val;
   }

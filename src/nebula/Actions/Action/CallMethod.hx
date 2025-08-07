@@ -1,26 +1,26 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.Actions.Action;
+import nebula.actions.Action;
 
 class CallMethod implements Action {
-  id = nextActionId();
-  private _method: () => any;
-  private _hasBeenCalled: Bool = false;
-  constructor(method: () => any) {
+  var id = nextActionId();
+  private var _method: () -> Any;
+  private var _hasBeenCalled: Bool = false;
+  public function new(method: () -> Any) {
     this._method = method;
   }
 
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     this._method();
     this._hasBeenCalled = true;
   }
-  public isComplete() {
+  public function isComplete() {
     return this._hasBeenCalled;
   }
-  public reset() {
+  public function reset() {
     this._hasBeenCalled = false;
   }
-  public stop() {
+  public function stop() {
     this._hasBeenCalled = true;
   }
 }

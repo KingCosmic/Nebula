@@ -1,7 +1,7 @@
-package nebula.Util;
+package nebula.util;
 
-import nebula.Util.Log;
-import nebula.Util.Fps;
+import nebula.util.Log;
+import nebula.util.Fps;
 
 enum ScheduleCallbackTiming {
   PreFrame;
@@ -38,10 +38,10 @@ interface ClockOptions {
  * method is unique to your clock implementation.
  */
 abstract class Clock {
-  private var tick: (elapsed: Int) => Any;
-  private var _onFatalException: (e: Any) -> (Any = () -> {
+  private var tick: (elapsed: Int) -> Any;
+  private var _onFatalException: (e: Any) -> Any = () -> {
     /* default nothing */
-  });
+  };
   private var _maxFps: Int = Infinity;
   private var _lastTime: Int = 0;
   public var fpsSampler: FpsSampler;
@@ -156,7 +156,7 @@ abstract class Clock {
       // only run frame if enough time has elapsed
       if (elapsed >= fpsInterval) {
         var leftover = 0;
-        if (fpsInterval !== 0) {
+        if (fpsInterval != 0) {
           leftover = elapsed % fpsInterval;
           elapsed = elapsed - leftover; // shift elapsed to be "in phase" with the current loop fps
         }
@@ -209,8 +209,8 @@ abstract class Clock {
  * The {@apilink StandardClock} implements the requestAnimationFrame browser api to run the tick()
  */
 class StandardClock extends Clock {
-  private _running = false;
-  private _requestId: Int;
+  private var _running = false;
+  private var _requestId: Int;
   public function new(options: ClockOptions) {
     super(options);
   }
@@ -309,7 +309,7 @@ class TestClock extends Clock {
    * @param overrideUpdateMs
    */
   function run(numberOfSteps: Int, ?overrideUpdateMs: Int): Void {
-    for (var i = 0; i < numberOfSteps; i++) {
+    for (i in 0...numberOfSteps) {
       this.step(overrideUpdateMs ?? this._updateMs);
     }
   }

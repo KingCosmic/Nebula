@@ -1,31 +1,31 @@
-package nebula.Particles;
+package nebula.particles;
 
 import nebula.Engine;
 import nebula.Color;
 
-import nebula.Math.Vector;
-import nebula.Math.Random;
-import nebula.Math.Util;
+import nebula.math.Vector;
+import nebula.math.Random;
+import nebula.math.Util;
 
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.EntityComponentSystem.Components.MotionComponent;
-import nebula.EntityComponentSystem.Entity;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.entitycomponentsystem.components.MotionComponent;
+import nebula.entitycomponentsystem.Entity;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
-import nebula.Graphics.GraphicsComponent;
-import nebula.Graphics.Graphic;
+import nebula.graphics.GraphicsComponent;
+import nebula.graphics.Graphic;
 
-import nebula.Particles.EmitterType;
-import nebula.Particles.ParticleEmitter;
+import nebula.particles.EmitterType;
+import nebula.particles.ParticleEmitter;
 
-import nebula.Collision.Integrator.EulerIntegrator;
+import nebula.collision.integrator.EulerIntegrator;
 
 /**
  * CPU Particle is used in a {@apilink ParticleEmitter}
  */
 class Particle extends Entity {
-  public static DefaultConfig: ParticleConfig = {
+  public static var DefaultConfig: ParticleConfig = {
     beginColor: Color.White,
     endColor: Color.White,
     life: 300,
@@ -36,38 +36,38 @@ class Particle extends Entity {
     endSize: undefined
   };
 
-  public focus?: Vector;
-  public focusAccel?: Float;
-  public beginColor: Color = Color.White;
-  public endColor: Color = Color.White;
+  public var focus: Null<Vector>;
+  public var focusAccel: Null<Float>;
+  public var beginColor: Color = Color.White;
+  public var endColor: Color = Color.White;
 
   // Life is counted in ms
-  public life: Int = 300;
-  public fade: Bool = false;
+  public var life: Int = 300;
+  public var fade: Bool = false;
 
   // Color transitions
-  private _rRate: Int = 1;
-  private _gRate: Int = 1;
-  private _bRate: Int = 1;
-  private _aRate: Int = 0;
-  private _currentColor: Color = Color.White;
+  private var _rRate: Int = 1;
+  private var _gRate: Int = 1;
+  private var _bRate: Int = 1;
+  private var _aRate: Int = 0;
+  private var _currentColor: Color = Color.White;
 
-  public size: Int = 5;
-  public graphic?: Graphic;
+  public var size: Int = 5;
+  public var graphic: Null<Graphic>;
 
-  public startSize?: Int;
-  public endSize?: Int;
-  public sizeRate: Int = 0;
+  public var startSize: Null<Int>;
+  public var endSize: Null<Int>;
+  public var sizeRate: Int = 0;
 
-  public visible = true;
-  public isOffscreen = false;
+  public var visible = true;
+  public var isOffscreen = false;
 
-  public transform: TransformComponent;
-  public motion: MotionComponent;
-  public graphics: GraphicsComponent;
-  public particleTransform = ParticleTransform.Global;
+  public var transform: TransformComponent;
+  public var motion: MotionComponent;
+  public var graphics: GraphicsComponent;
+  public var particleTransform = ParticleTransform.Global;
 
-  public name = `Particle#${this.id}`;
+  public var name = 'Particle#${this.id}';
 
   public function new(options: ParticleConfig) {
     super({ silenceWarnings: true });
@@ -77,17 +77,17 @@ class Particle extends Entity {
     this.configure(options);
   }
 
-  private _emitter?: ParticleEmitter;
-  registerEmitter(emitter: ParticleEmitter) {
+  private var _emitter: Null<ParticleEmitter>;
+  function registerEmitter(emitter: ParticleEmitter) {
     this._emitter = emitter;
-    if (this.particleTransform === ParticleTransform.Global) {
+    if (this.particleTransform == ParticleTransform.Global) {
       final globalPos = this._emitter.transform.globalPos;
       this.transform.pos = this.transform.pos.add(globalPos);
       this.motion.vel = this.motion.vel.rotate(this._emitter.transform.globalRotation);
     }
   }
 
-  configure(options: ParticleConfig) {
+  function configure(options: ParticleConfig) {
     this.particleTransform = options.transform ?? this.particleTransform;
     this.life = options.life ?? this.life;
     this.fade = options.fade ?? this.fade;
@@ -131,7 +131,7 @@ class Particle extends Entity {
     }
   }
 
-  public override kill() {
+  public override function kill() {
     if (this._emitter?.isActive) {
       this._emitter.removeParticle(this);
     } else {
@@ -139,7 +139,7 @@ class Particle extends Entity {
     }
   }
 
-  public update(engine: Engine, elapsed: Int) {
+  public function update(engine: Engine, elapsed: Int) {
     this.life = this.life - elapsed;
 
     if (this.life < 0) {
@@ -184,106 +184,106 @@ interface ParticleConfig {
    * If set to {@apilink ParticleTransform.Local} particles are children of the emitter and move relative to the emitter
    * as they would in a parent/child actor relationship.
    */
-  transform?: ParticleTransform;
+  var transform: Null<ParticleTransform>;
   /**
    * Starting position of the particle
    */
-  pos?: Vector;
+  var pos: Null<Vector>;
   /**
    * Starting velocity of the particle
    */
-  vel?: Vector;
+  var vel: Null<Vector>;
   /**
    * Starting acceleration of the particle
    */
-  acc?: Vector;
+  var acc: Null<Vector>;
   /**
    * Starting angular velocity of the particle
    */
-  angularVelocity?: Float;
+  var angularVelocity: Null<Float>;
   /**
    * Starting rotation of the particle
    */
-  rotation?: Float;
+  var rotation: Null<Float>;
   /**
    * Size of the particle in pixels
    */
-  size?: Int;
+  var size: Null<Int>;
   /**
    * Optionally set a graphic
    */
-  graphic?: Graphic;
+  var graphic: Null<Graphic>;
   /**
    * Totally life of the particle in milliseconds
    */
-  life?: Int;
+  var life: Null<Int>;
   /**
    * Starting opacity of the particle
    */
-  opacity?: Float;
+  var opacity: Null<Float>;
   /**
    * Should the particle fade out to fully transparent over their life
    */
-  fade?: Bool;
+  var fade: Null<Bool>;
 
   /**
    * Ending color of the particle over its life
    */
-  endColor?: Color;
+  var endColor: Null<Color>;
   /**
    * Beginning color of the particle over its life
    */
-  beginColor?: Color;
+  var beginColor: Null<Color>;
 
   /**
    * Set the start size when you want to change particle size over their life
    */
-  startSize?: Int;
+  var startSize: Null<Int>;
   /**
    * Set the end size when you want to change particle size over their life
    */
-  endSize?: Int;
+  var endSize: Null<Int>;
 
   /**
    * Smallest possible starting size of the particle
    */
-  minSize?: Int;
+  var minSize: Null<Int>;
   /**
    * Largest possible starting size of the particle
    */
-  maxSize?: Int;
+  var maxSize: Null<Int>;
   /**
    * Minimum magnitude of the particle starting speed
    */
-  minSpeed?: Int;
+  var minSpeed: Null<Int>;
   /**
    * Maximum magnitude of the particle starting speed
    */
-  maxSpeed?: Int;
+  var maxSpeed: Null<Int>;
   /**
    * Minimum angle to use for the particles starting rotation
    */
-  minAngle?: Float;
+  var minAngle: Null<Float>;
   /**
    * Maximum angle to use for the particles starting rotation
    */
-  maxAngle?: Float;
+  var maxAngle: Null<Float>;
 
   /**
    * Gets or sets the optional focus where all particles should accelerate towards
    *
    * If the particle transform is global the focus is in world space, otherwise it is relative to the emitter
    */
-  focus?: Vector;
+  var focus: Null<Vector>;
   /**
    * Gets or sets the optional acceleration for focusing particles if a focus has been specified
    */
-  focusAccel?: Float;
+  var focusAccel: Null<Float>;
 
   /**
    * Indicates whether particles should start with a random rotation
    */
-  randomRotation?: Bool;
+  var randomRotation: Null<Bool>;
 }
 
 enum ParticleTransform {
@@ -291,39 +291,39 @@ enum ParticleTransform {
    * {@apilink ParticleTransform.Global} is the default and emits particles as if
    * they were world space objects, useful for most effects.
    */
-  Global = 'global',
+  Global;
   /**
    * {@apilink ParticleTransform.Local} particles are children of the emitter and move relative to the emitter
    * as they would in a parent/child actor relationship.
    */
-  Local = 'local'
+  Local;
 }
 
 interface ParticleEmitterArgs {
-  particle?: ParticleConfig;
-  x?: Int;
-  y?: Int;
-  z?: Int;
-  pos?: Vector;
-  width?: Int;
-  height?: Int;
+  var particle: Null<ParticleConfig>;
+  var x: Null<Int>;
+  var y: Null<Int>;
+  var z: Null<Int>;
+  var pos: Null<Vector>;
+  var width: Null<Int>;
+  var height: Null<Int>;
   /**
    * Is emitting currently
    */
-  isEmitting?: Bool;
+  var isEmitting: Null<Bool>;
   /**
    * Particles per second
    */
-  emitRate?: Int;
-  focus?: Vector;
-  focusAccel?: Float;
+  var emitRate: Null<Int>;
+  var focus: Null<Vector>;
+  var focusAccel: Null<Float>;
   /**
    * Emitter shape
    */
-  emitterType?: EmitterType;
+  var emitterType: Null<EmitterType>;
   /**
    * Radius of the emitter if the emitter type is EmitterType.Circle
    */
-  radius?: Float;
-  random?: Random;
+  var radius: Null<Float>;
+  var random: Null<Random>;
 }

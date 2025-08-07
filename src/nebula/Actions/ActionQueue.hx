@@ -1,8 +1,8 @@
-package nebula.Actions;
+package nebula.actions;
 
 import nebula.Events;
-import nebula.EntityComponentSystem.Entity;
-import nebula.Actions.Action;
+import nebula.entitycomponentsystem.Entity;
+import nebula.actions.Action;
 
 /**
  * Action Queues represent an ordered sequence of actions
@@ -15,11 +15,11 @@ import nebula.Actions.Action;
  * queue.
  */
 class ActionQueue {
-  private _entity: Entity;
-  private _actions: Action[] = [];
-  private _currentAction: Action | null = null;
-  private _completedActions: Action[] = [];
-  constructor(entity: Entity) {
+  private var _entity: Entity;
+  private var _actions: Array<Action> = [];
+  private var _currentAction: Null<Action> = null;
+  private var _completedActions: Array<Action> = [];
+  public function new(entity: Entity) {
     this._entity = entity;
   }
 
@@ -27,7 +27,7 @@ class ActionQueue {
    * Add an action to the sequence
    * @param action
    */
-  public add(action: Action) {
+  public function add(action: Action) {
     this._actions.push(action);
   }
 
@@ -35,15 +35,15 @@ class ActionQueue {
    * Remove an action by reference from the sequence
    * @param action
    */
-  public remove(action: Action) {
-    const index = this._actions.indexOf(action);
+  public function remove(action: Action) {
+    final index = this._actions.indexOf(action);
     this._actions.splice(index, 1);
   }
 
   /**
    * Removes all actions from this sequence
    */
-  public clearActions(): void {
+  public function clearActions(): Void {
     this._actions.length = 0;
     this._completedActions.length = 0;
     if (this._currentAction) {
@@ -55,15 +55,15 @@ class ActionQueue {
    *
    * @returns The total list of actions in this sequence complete or not
    */
-  public getActions(): Action[] {
+  public function getActions(): Array<Action> {
     return this._actions.concat(this._completedActions);
   }
 
-  public getIncompleteActions(): Action[] {
+  public function getIncompleteActions(): Array<Action> {
     return this._actions;
   }
 
-  public getCurrentAction(): Action | null {
+  public function getCurrentAction(): Null<Action> {
     return this._currentAction;
   }
 
@@ -71,25 +71,24 @@ class ActionQueue {
    *
    * @returns `true` if there are more actions to process in the sequence
    */
-  public hasNext(): Bool {
+  public function hasNext(): Bool {
     return this._actions.length > 0;
   }
 
   /**
    * @returns `true` if the current sequence of actions is done
    */
-  public isComplete(): Bool {
-    return this._actions.length === 0;
+  public function isComplete(): Bool {
+    return this._actions.length == 0;
   }
 
   /**
    * Resets the sequence of actions, this is used to restart a sequence from the beginning
    */
-  public reset(): void {
+  public function reset(): Void {
     this._actions = this.getActions();
 
-    const len = this._actions.length;
-    for (let i = 0; i < len; i++) {
+    for (action in this._actions) {
       this._actions[i].reset();
     }
     this._completedActions = [];
@@ -99,9 +98,9 @@ class ActionQueue {
    * Update the queue which updates actions and handles completing actions
    * @param elapsed
    */
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     if (this._actions.length > 0) {
-      if (this._currentAction !== this._actions[0]) {
+      if (this._currentAction != this._actions[0]) {
         this._currentAction = this._actions[0];
         this._entity.emit('actionstart', new ActionStartEvent(this._currentAction, this._entity));
       }
@@ -110,7 +109,7 @@ class ActionQueue {
 
       if (this._currentAction.isComplete(this._entity)) {
         this._entity.emit('actioncomplete', new ActionCompleteEvent(this._currentAction, this._entity));
-        const complete = this._actions.shift();
+        final complete = this._actions.shift();
         if (complete) {
           this._completedActions.push(complete);
         }

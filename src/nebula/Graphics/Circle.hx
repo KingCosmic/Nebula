@@ -1,10 +1,10 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Filtering;
-import nebula.Graphics.Raster;
+import nebula.graphics.Filtering;
+import nebula.graphics.Raster;
 
 interface CircleOptions {
-  radius: Int;
+  var radius: Int;
 }
 
 /**
@@ -13,17 +13,18 @@ interface CircleOptions {
  * Circles default to {@apilink ImageFiltering.Blended}
  */
 class Circle extends Raster {
-  private _radius: Int = 0;
-  public get radius() {
+  private var _radius: Int = 0;
+  public var radius(get, set): Int;
+  function get_radius() {
     return this._radius;
   }
-  public set radius(value: Int) {
+  function set_radius(value: Int) {
     this._radius = value;
     this.width = this._radius * 2;
     this.height = this._radius * 2;
     this.flagDirty();
   }
-  constructor(options: RasterOptions & CircleOptions) {
+  public function new(options: RasterOptions & CircleOptions) {
     super(options);
     final lineWidth = options.lineWidth ?? (options.strokeColor ? 1 : 0); // default lineWidth in canvas is 1px
     this.padding = options.padding ?? 2 + lineWidth / 2; // default 2 padding for circles looks nice
@@ -32,15 +33,19 @@ class Circle extends Raster {
     this.rasterize();
   }
 
-  public clone(): Circle {
-    return new Circle({
-      radius: this.radius,
-      ...this.cloneGraphicOptions(),
-      ...this.cloneRasterOptions()
-    });
+  public function clone(): Circle {
+    final config = Object.spreadWith(
+      { radius: this.radius },
+      Object.spreadWith(
+        this.cloneGraphicOptions(),
+        this.cloneRasterOptions()
+      )
+    );
+
+    return new Circle(config);
   }
 
-  execute(ctx: CanvasRenderingContext2D): Void {
+  function execute(ctx: CanvasRenderingContext2D): Void {
     if (this.radius > 0) {
       ctx.beginPath();
       ctx.arc(this.radius, this.radius, this.radius, 0, Math.PI * 2);

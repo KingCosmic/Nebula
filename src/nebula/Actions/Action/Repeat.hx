@@ -1,20 +1,20 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.EntityComponentSystem.Entity;
-import nebula.Actions.ActionContext;
-import nebula.Actions.ActionQueue;
+import nebula.entitycomponentsystem.Entity;
+import nebula.actions.ActionContext;
+import nebula.actions.ActionQueue;
 
-import nebula.Actions.Action;
+import nebula.actions.Action;
 
 class Repeat implements Action {
-  id = nextActionId();
-  private _actionQueue: ActionQueue;
-  private _repeat: Float;
-  private _originalRepeat: Float;
-  private _stopped: Bool = false;
-  private _repeatContext: ActionContext;
-  private _repeatBuilder: (repeatContext: ActionContext) => any;
-  constructor(entity: Entity, repeatBuilder: (repeatContext: ActionContext) => any, repeat: Int) {
+  var id = nextActionId();
+  private var _actionQueue: ActionQueue;
+  private var _repeat: Float;
+  private var _originalRepeat: Float;
+  private var _stopped: Bool = false;
+  private var _repeatContext: ActionContext;
+  private var _repeatBuilder: (repeatContext: ActionContext) -> Any;
+  public function new(entity: Entity, repeatBuilder: (repeatContext: ActionContext) -> Any, repeat: Int) {
     this._repeatBuilder = repeatBuilder;
     this._repeatContext = new ActionContext(entity);
     this._actionQueue = this._repeatContext.getQueue();
@@ -26,7 +26,7 @@ class Repeat implements Action {
     this._repeat--; // current execution is the first repeat
   }
 
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     if (this._actionQueue.isComplete()) {
       this._actionQueue.clearActions();
       this._repeatBuilder(this._repeatContext);
@@ -35,15 +35,15 @@ class Repeat implements Action {
     this._actionQueue.update(elapsed);
   }
 
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     return this._stopped || (this._repeat <= 0 && this._actionQueue.isComplete());
   }
 
-  public stop() {
+  public function stop() {
     this._stopped = true;
   }
 
-  public reset() {
+  public function reset() {
     this._repeat = this._originalRepeat;
   }
 }

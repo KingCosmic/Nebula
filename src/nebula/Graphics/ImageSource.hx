@@ -1,29 +1,29 @@
-package nebula.Graphic;
+package nebula.graphics;
 
-import nebula.Resources.Resource;
+import nebula.resources.Resource;
 
-import nebula.Graphics.Sprite;
-import nebula.Graphics.Filtering;
+import nebula.graphics.Sprite;
+import nebula.graphics.Filtering;
 
-import nebula.Interfaces.Loadable;
+import nebula.interfaces.Loadable;
 
-import nebula.Util.Log;
-import nebula.Util.Future;
+import nebula.util.Log;
+import nebula.util.Future;
 
-import nebula.Graphics.Context.TextureLoader;
+import nebula.graphics.context.TextureLoader;
 
-import nebula.Graphics.Wrapping;
-import nebula.Graphics.Graphic;
+import nebula.graphics.Wrapping;
+import nebula.graphics.Graphic;
 
 interface ImageSourceOptions {
-  filtering?: ImageFiltering;
-  wrapping?: ImageWrapConfiguration | ImageWrapping;
-  bustCache?: Bool;
+  var filtering: Null<ImageFiltering>;
+  var wrapping: Null<ImageWrapConfiguration>;
+  var bustCache: Null<Bool>;
 }
 
 interface ImageWrapConfiguration {
-  x: ImageWrapping;
-  y: ImageWrapping;
+  var x: ImageWrapping;
+  var y: ImageWrapping;
 }
 
 final ImageSourceAttributeConstants = {
@@ -33,31 +33,33 @@ final ImageSourceAttributeConstants = {
 };
 
 class ImageSource implements Loadable<HTMLImageElement> {
-  private _logger = Logger.getInstance();
-  private _resource: Resource<Blob>;
-  public filtering?: ImageFiltering;
-  public wrapping?: ImageWrapConfiguration;
+  private var _logger = Logger.getInstance();
+  private var _resource: Resource<Blob>;
+  public var filtering: Null<ImageFiltering>;
+  public var wrapping: Null<ImageWrapConfiguration>;
 
   /**
    * The original size of the source image in pixels
    */
-  public get width() {
+  public var width(get, never): Int;
+  function get_width() {
     return this.image.naturalWidth;
   }
 
   /**
    * The original height of the source image in pixels
    */
-  public get height() {
+  public var height(get, never): Int;
+  function get_height() {
     return this.image.naturalHeight;
   }
 
-  private _src?: String;
+  private var _src: Null<String>;
   /**
    * Returns true if the Texture is completely loaded and is ready
    * to be drawn.
    */
-  public isLoaded(): Bool {
+  public function isLoaded(): Bool {
     if (!this._src) {
       // this boosts speed of access
       this._src = this.data.src;
@@ -68,44 +70,47 @@ class ImageSource implements Loadable<HTMLImageElement> {
   /**
    * Access to the underlying html image element
    */
-  public data: HTMLImageElement = new Image();
-  public get image(): HTMLImageElement {
+  public var data: HTMLImageElement = new Image();
+  public var image(get, never): HTMLImageElement;
+  function get_image(): HTMLImageElement {
     return this.data;
   }
 
-  private _readyFuture = new Future<HTMLImageElement>();
+  private var _readyFuture = new Future<HTMLImageElement>();
   /**
    * Promise the resolves when the image is loaded and ready for use, does not initiate loading
    */
-  public ready: Promise<HTMLImageElement> = this._readyFuture.promise;
+  public var ready: Promise<HTMLImageElement> = this._readyFuture.promise;
 
-  public readonly path: String;
+  public var path: String;
 
   /**
    * The path to the image, can also be a data url like 'data:image/'
    * @param pathOrBase64 {string} Path to the image resource relative from the HTML document hosting the game, or absolute
    * @param options
    */
-  public function new(pathOrBase64: String, options?: ImageSourceOptions);
+  public function new(pathOrBase64: String, ?options: ImageSourceOptions);
   /**
    * The path to the image, can also be a data url like 'data:image/'
    * @param pathOrBase64 {string} Path to the image resource relative from the HTML document hosting the game, or absolute
    * @param bustCache {boolean} Should excalibur add a cache busting querystring?
    * @param filtering {ImageFiltering} Optionally override the image filtering set by {@apilink EngineOptions.antialiasing}
    */
-  public function new(pathOrBase64: String, bustCache: Bool, filtering?: ImageFiltering);
-  public function new(pathOrBase64: String, bustCacheOrOptions: Bool | ImageSourceOptions | undefined, filtering?: ImageFiltering) {
+  public function new(pathOrBase64: String, bustCache: Bool, ?filtering: ImageFiltering);
+  public function new(pathOrBase64: String, bustCacheOrOptions: Null<Any>, ?filtering: ImageFiltering) {
     this.path = pathOrBase64;
-    var bustCache: Bool | undefined = false;
-    var wrapping: ImageWrapConfiguration | ImageWrapping | undefined;
-    if (typeof bustCacheOrOptions === 'boolean') {
+    var bustCache: Null<Bool> = false;
+    var wrapping: Null<Any>;
+    if (Std.isOfType(bustCacheOrOptions, Bool)) {
       bustCache = bustCacheOrOptions;
     } else {
-      ({ filtering, wrapping, bustCache } = { ...bustCacheOrOptions });
+      bustCache = bustCacheOrOptions.bustCache;
+      wrapping = bustCacheOrOptions.wrapping;
+      filtering = bustCacheOrOptions.filtering;
     }
     this._resource = new Resource(pathOrBase64, 'blob', bustCache);
     this.filtering = filtering ?? this.filtering;
-    if (typeof wrapping === 'string') {
+    if (Std.isOfType(wrapping, String)) {
       this.wrapping = {
         x: wrapping,
         y: wrapping
@@ -124,21 +129,21 @@ class ImageSource implements Loadable<HTMLImageElement> {
    * Create an ImageSource from and HTML <image> tag element
    * @param image
    */
-  static fromHtmlImageElement(image: HTMLImageElement, options?: ImageSourceOptions) {
+  static function fromHtmlImageElement(image: HTMLImageElement, ?options: ImageSourceOptions) {
     final imageSource = new ImageSource('');
     imageSource._src = 'image-element';
     imageSource.data = image;
     imageSource.data.setAttribute('data-original-src', 'image-element');
 
-    if (options?.filtering) {
-      imageSource.data.setAttribute(ImageSourceAttributeConstants.Filtering, options?.filtering);
+    if (options && options.filtering) {
+      imageSource.data.setAttribute(ImageSourceAttributeConstants.Filtering, options.filtering);
     } else {
       imageSource.data.setAttribute(ImageSourceAttributeConstants.Filtering, ImageFiltering.Blended);
     }
 
-    if (options?.wrapping) {
+    if (options && options.wrapping) {
       var wrapping: ImageWrapConfiguration;
-      if (typeof options.wrapping === 'string') {
+      if (Std.isOfType(options.wrapping, String)) {
         wrapping = {
           x: options.wrapping,
           y: options.wrapping
@@ -161,20 +166,20 @@ class ImageSource implements Loadable<HTMLImageElement> {
     return imageSource;
   }
 
-  static fromHtmlCanvasElement(image: HTMLCanvasElement, options?: ImageSourceOptions): ImageSource {
+  static function fromHtmlCanvasElement(image: HTMLCanvasElement, ?options: ImageSourceOptions): ImageSource {
     final imageSource = new ImageSource('');
     imageSource._src = 'canvas-element-blob';
     imageSource.data.setAttribute('data-original-src', 'canvas-element-blob');
 
-    if (options?.filtering) {
-      imageSource.data.setAttribute(ImageSourceAttributeConstants.Filtering, options?.filtering);
+    if (options && options.filtering) {
+      imageSource.data.setAttribute(ImageSourceAttributeConstants.Filtering, options.filtering);
     } else {
       imageSource.data.setAttribute(ImageSourceAttributeConstants.Filtering, ImageFiltering.Blended);
     }
 
-    if (options?.wrapping) {
+    if (options && options.wrapping) {
       var wrapping: ImageWrapConfiguration;
-      if (typeof options.wrapping === 'string') {
+      if (Std.isOfType(options.wrapping, String)) {
         wrapping = {
           x: options.wrapping,
           y: options.wrapping
@@ -194,10 +199,10 @@ class ImageSource implements Loadable<HTMLImageElement> {
 
     TextureLoader.checkImageSizeSupportedAndLog(image);
 
-    image.toBlob((blob) => {
+    image.toBlob((blob) -> {
       // TODO throw? if blob null?
       final url = URL.createObjectURL(blob!);
-      imageSource.image.onload = () => {
+      imageSource.image.onload = () -> {
         // no longer need to read the blob so it's revoked
         URL.revokeObjectURL(url);
         imageSource.data = imageSource.image;
@@ -209,7 +214,7 @@ class ImageSource implements Loadable<HTMLImageElement> {
     return imageSource;
   }
 
-  static fromSvgString(svgSource: string, options?: ImageSourceOptions) {
+  static function fromSvgString(svgSource: String, ?options: ImageSourceOptions) {
     final blob = new Blob([svgSource], { type: 'image/svg+xml' });
     final url = URL.createObjectURL(blob);
     return new ImageSource(url, options);
@@ -219,18 +224,19 @@ class ImageSource implements Loadable<HTMLImageElement> {
    * Should excalibur add a cache busting querystring? By default false.
    * Must be set before loading
    */
-  public get bustCache() {
+  public var bustCache(get, set): Bool;
+  function get_bustCache() {
     return this._resource.bustCache;
   }
 
-  public set bustCache(val: Bool) {
+  function set_bustCache(val: Bool) {
     this._resource.bustCache = val;
   }
 
   /**
    * Begins loading the image and returns a promise that resolves when the image is loaded
    */
-  async load(): Promise<HTMLImageElement> {
+  function load(): Promise<HTMLImageElement> {
     if (this.isLoaded()) {
       return this.data;
     }
@@ -238,7 +244,7 @@ class ImageSource implements Loadable<HTMLImageElement> {
       // Load base64 or blob if needed
       var url: String;
       if (!this.path.includes('data:image/')) {
-        const blob = await this._resource.load();
+        final blob = this._resource.load();
         url = URL.createObjectURL(blob);
       } else {
         url = this.path;
@@ -249,12 +255,12 @@ class ImageSource implements Loadable<HTMLImageElement> {
       // Use Image.onload over Image.decode()
       // https://bugs.chromium.org/p/chromium/issues/detail?id=1055828#c7
       // Otherwise chrome will throw still Image.decode() failures for large textures
-      final loadedFuture = new Future<void>();
-      image.onload = () => loadedFuture.resolve();
+      final loadedFuture = new Future<Void>();
+      image.onload = () -> loadedFuture.resolve();
       image.src = url;
       image.setAttribute('data-original-src', this.path);
 
-      await loadedFuture.promise;
+      // await loadedFuture.promise;
 
       // Set results
       // We defer loading the texture into webgl until the first draw that way we avoid a singleton
@@ -264,11 +270,11 @@ class ImageSource implements Loadable<HTMLImageElement> {
 
       // emit warning if potentially too big
       TextureLoader.checkImageSizeSupportedAndLog(this.data);
-    } catch (error: any) {
+    } catch (error: Any) {
       throw 'Error loading ImageSource from path \'${this.path}\' with error [${error.message}]';
     }
     // Do a bad thing to pass the filtering as an attribute
-    this.data.setAttribute(ImageSourceAttributeConstants.Filtering, this.filtering as any); // TODO fix type
+    this.data.setAttribute(ImageSourceAttributeConstants.Filtering, this.filtering); // TODO fix type
     this.data.setAttribute(ImageSourceAttributeConstants.WrappingX, this.wrapping?.x ?? ImageWrapping.Clamp);
     this.data.setAttribute(ImageSourceAttributeConstants.WrappingY, this.wrapping?.y ?? ImageWrapping.Clamp);
 
@@ -280,14 +286,14 @@ class ImageSource implements Loadable<HTMLImageElement> {
   /**
    * Build a sprite from this ImageSource
    */
-  public toSprite(options?: Omit<GraphicOptions & SpriteOptions, 'image'>): Sprite {
+  public function toSprite(?options: Omit<GraphicOptions & SpriteOptions, 'image'>): Sprite {
     return Sprite.from(this, options);
   }
 
   /**
    * Unload images from memory
    */
-  unload(): Void {
+  function unload(): Void {
     this.data = new Image();
   }
 }

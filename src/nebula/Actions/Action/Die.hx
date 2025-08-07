@@ -1,33 +1,33 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.EntityComponentSystem.Entity;
-import nebula.Actions.Action;
-import nebula.Actions.ActionsComponent;
+import nebula.entitycomponentsystem.Entity;
+import nebula.actions.Action;
+import nebula.actions.ActionsComponent;
 
 class Die implements Action {
-  id = nextActionId();
-  private _entity: Entity;
-  private _stopped = false;
+  var id = nextActionId();
+  private var _entity: Entity;
+  private var _stopped = false;
 
-  constructor(entity: Entity) {
+  public function new(entity: Entity) {
     this._entity = entity;
   }
 
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     this._entity.get(ActionsComponent).clearActions();
     this._entity.kill();
     this._stopped = true;
   }
 
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     return this._stopped;
   }
 
-  public stop() {
+  public function stop() {
     return;
   }
 
-  public reset() {
+  public function reset() {
     return;
   }
 }

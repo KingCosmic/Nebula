@@ -1,12 +1,12 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
-import nebula.Graphics.SpriteFont;
-import nebula.Graphics.Graphic;
-import nebula.Graphics.Font;
+import nebula.graphics.SpriteFont;
+import nebula.graphics.Graphic;
+import nebula.graphics.Font;
 
 import nebula.Color;
 
@@ -14,22 +14,22 @@ interface TextOptions {
   /**
    * Text to draw
    */
-  text: String;
+  var text: String;
 
   /**
    * Optionally override the font color, currently unsupported by SpriteFont
    */
-  color?: Color;
+  var color: Null<Color>;
 
   /**
    * Optionally specify a font, if none specified a default font is used (System sans-serif 10 pixel)
    */
-  font?: Font | SpriteFont;
+  var font: Null<Font>;
 
   /**
    * Optionally specify a maximum width in pixels for our text, and wrap to the next line if needed.
    */
-  maxWidth?: Int;
+  var maxWidth: Null<Int>;
 }
 
 /**
@@ -38,8 +38,8 @@ interface TextOptions {
  * Useful for in game labels, ui, or overlays
  */
 class Text extends Graphic {
-  public color?: Color;
-  public maxWidth?: Int;
+  public var color: Null<Color>;
+  public var maxWidth: Null<Int>;
 
   public function new(options: TextOptions & GraphicOptions) {
     super(options);
@@ -50,7 +50,7 @@ class Text extends Graphic {
     this.maxWidth = options.maxWidth;
   }
 
-  public clone(): Text {
+  public function clone(): Text {
     return new Text({
       text: this.text.slice(),
       color: this.color?.clone() ?? Color.Black,
@@ -59,62 +59,66 @@ class Text extends Graphic {
     });
   }
 
-  private _text: String = '';
-  public get text() {
+  private var _text: String = '';
+  public var text(get, set): String;
+  function get_text() {
     return this._text;
   }
 
-  public set text(value: String) {
+  function set_text(value: String) {
     this._text = value;
     this._calculateDimension();
   }
 
-  private _font!: Font | SpriteFont;
-  public get font(): Font | SpriteFont {
+  private var _font: Font;
+  public var font(get, set): Font;
+  function get_font(): Font {
     return this._font;
   }
-  public set font(font: Font | SpriteFont) {
+  function set_font(font: Font) {
     this._font = font;
   }
 
-  private _textWidth: Int = 0;
-
-  public get width() {
-    if (this._textWidth === 0) {
+  private var _textWidth: Int = 0;
+  public var width(get, never): Int;
+  function get_width() {
+    if (this._textWidth == 0) {
       this._calculateDimension();
     }
     return this._textWidth * this.scale.x;
   }
 
-  private _textHeight: Int = 0;
-  public get height() {
-    if (this._textHeight === 0) {
+  private var _textHeight: Int = 0;
+  public var height(get, never): Int;
+  function get_height() {
+    if (this._textHeight == 0) {
       this._calculateDimension();
     }
     return this._textHeight * this.scale.y;
   }
 
-  private _calculateDimension() {
-    final { width, height } = this.font.measureText(this._text, this.maxWidth);
-    this._textWidth = width;
-    this._textHeight = height;
+  private function _calculateDimension() {
+    final size = this.font.measureText(this._text, this.maxWidth);
+    this._textWidth = size.width;
+    this._textHeight = size.height;
   }
 
-  public get localBounds(): BoundingBox {
+  public var localBounds(get, never): BoundingBox;
+  function get_localBounds(): BoundingBox {
     return this.font.measureText(this._text, this.maxWidth).scale(this.scale);
   }
 
-  protected override _rotate(_ex: ExcaliburGraphicsContext) {
+  public override function _rotate(_ex: ExcaliburGraphicsContext) {
     // None this is delegated to font
     // This override erases the default behavior
   }
 
-  protected override _flip(_ex: ExcaliburGraphicsContext) {
+  public override function _flip(_ex: ExcaliburGraphicsContext) {
     // None this is delegated to font
     // This override erases the default behavior
   }
 
-  protected override _preDraw(ex: ExcaliburGraphicsContext, x: Int, y: Int): void {
+  public override function _preDraw(ex: ExcaliburGraphicsContext, x: Int, y: Int): Void {
     if (this.isStale() || this.font.isStale()) {
       this.font.flipHorizontal = this.flipHorizontal;
       this.font.flipVertical = this.flipVertical;
@@ -126,13 +130,13 @@ class Text extends Graphic {
     super._preDraw(ex, x, y);
   }
 
-  protected override _drawImage(ex: ExcaliburGraphicsContext, x: Int, y: Int) {
-    var color = Color.Black;
-    if (this.font instanceof Font) {
-      color = this.color ?? this.font.color;
-    }
+  public override function _drawImage(ex: ExcaliburGraphicsContext, x: Int, y: Int) {
+    var color = this.color ?? this.font.color;
 
-    final { width, height } = this.font.measureText(this._text, this.maxWidth);
+    final size = this.font.measureText(this._text, this.maxWidth);
+    final width = size.width,
+          height = size.height;
+
     this._textWidth = width;
     this._textHeight = height;
 

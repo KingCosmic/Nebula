@@ -1,10 +1,10 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Raster;
+import nebula.graphics.Raster;
 
 interface RectangleOptions {
-  width: Int;
-  height: Int;
+  var width: Int;
+  var height: Int;
 }
 
 /**
@@ -19,15 +19,18 @@ class Rectangle extends Raster {
   }
 
   public function clone(): Rectangle {
-    return new Rectangle({
-      width: this.width,
-      height: this.height,
-      ...this.cloneGraphicOptions(),
-      ...this.cloneRasterOptions()
-    });
+    final config = Object.spreadWith(
+      { width: this.width, height: this.height },
+      Object.spreadWith(
+        this.cloneGraphicOptions(),
+        this.cloneRasterOptions()
+      )
+    );
+
+    return new Rectangle(config);
   }
 
-  public function execute(ctx: CanvasRenderingContext2D): void {
+  public function execute(ctx: CanvasRenderingContext2D): Void {
     if (this.color) {
       ctx.fillRect(0, 0, this.width, this.height);
     }

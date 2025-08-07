@@ -1,7 +1,7 @@
-package nebula.Util;
+package nebula.util;
 
 import nebula.Flags;
-import nebula.Util.Log;
+import nebula.util.Log;
 
 /**
  * Obsolete decorator options
@@ -17,8 +17,8 @@ interface ObsoleteOptions {
 
 final maxMessages: Int = 5;
 final obsoleteMessage: { [messageCount: String]: Int } = {};
-final resetObsoleteCounter = () => {
-  for (final message in obsoleteMessage) {
+final resetObsoleteCounter = () -> {
+  for (message in obsoleteMessage) {
     obsoleteMessage[message] = 0;
   }
 };

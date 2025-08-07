@@ -1,17 +1,19 @@
-package nebula.Math;
+package nebula.math;
 
-import nebula.Math.AffineMatrix;
-import nebula.Math.Util;
-import nebula.Math.Vector;
-import nebula.Math.VectorView;
-import nebula.Math.WatchVector;
+import nebula.math.AffineMatrix;
+import nebula.math.Util;
+import nebula.math.Vector;
+import nebula.math.VectorView;
+import nebula.math.WatchVector;
 
 class Transform {
-  private _parent: Null<Transform> = null;
-  get parent() {
+  private var _parent: Null<Transform> = null;
+
+  public var parent(get, set): Null<Transform>;
+  function get_parent() {
     return this._parent;
   }
-  set parent(transform: Null<Transform>) {
+  function set_parent(transform: Null<Transform>) {
     if (this._parent) {
       final index = this._parent._children.indexOf(this);
       if (index > -1) {
@@ -24,23 +26,31 @@ class Transform {
     }
     this.flagDirty();
   }
-  get children(): readonly Transform[] {
+
+  public var children(get, never): Array<Transform>;
+  function get_children(): Array<Transform> {
     return this._children;
   }
-  private _children: Transform[] = [];
+  private var _children: Array<Transform> = [];
 
-  private _pos: Vector = new WatchVector(vec(0, 0), () => {
+  private var _pos: Vector = new WatchVector(vec(0, 0), () -> {
     this.flagDirty();
   });
-  set pos(v: Vector) {
+
+  public var pos(get, set): Vector;
+  function get_pos() {
+    return this._pos;
+  }
+  function set_pos(v: Vector) {
     this._pos.x = v.x;
     this._pos.y = v.y;
   }
-  get pos() {
-    return this._pos;
-  }
 
-  set globalPos(v: Vector) {
+  public var globalPos(get, set): Vector;
+  function get_globalPos() {
+    return this._globalPos;
+  }
+  function set_globalPos(v: Vector) {
     var localPos = v.clone();
     if (this.parent) {
       localPos = this.parent.inverse.multiply(v);
@@ -50,79 +60,82 @@ class Transform {
       this.flagDirty();
     }
   }
-  private _globalPos = new VectorView({
-    getX: () => this.matrix.data[4],
-    getY: () => this.matrix.data[5],
-    setX: (x) => {
+  private var _globalPos = new VectorView({
+    getX: () -> this.matrix.data[4],
+    getY: () -> this.matrix.data[5],
+    setX: (x) -> {
       if (this.parent) {
-        final { x: newX } = this.parent.inverse.multiply(vec(x, this.pos.y));
+        final newX = this.parent.inverse.multiply(vec(x, this.pos.y)).x;
         this.pos.x = newX;
       } else {
         this.pos.x = x;
       }
-      if (x !== this.matrix.data[4]) {
+      if (x != this.matrix.data[4]) {
         this.flagDirty();
       }
     },
-    setY: (y) => {
+    setY: (y) -> {
       if (this.parent) {
-        final { y: newY } = this.parent.inverse.multiply(vec(this.pos.x, y));
+        final newY = this.parent.inverse.multiply(vec(this.pos.x, y)).y;
         this.pos.y = newY;
       } else {
         this.pos.y = y;
       }
-      if (y !== this.matrix.data[5]) {
+      if (y != this.matrix.data[5]) {
         this.flagDirty();
       }
     }
   });
-  get globalPos() {
-    return this._globalPos;
-  }
 
-  private _rotation: Int = 0;
-  set rotation(rotation: Int) {
-    const canonRotation = canonicalizeAngle(rotation);
-    if (canonRotation !== this._rotation) {
-      this.flagDirty();
-    }
-    this._rotation = canonRotation;
-  }
-  get rotation() {
+  private var _rotation: Int = 0;
+  public var rotation(get, set): Int;
+  function get_rotation() {
     return this._rotation;
   }
-
-  set globalRotation(rotation: Int) {
-    var inverseRotation = 0;
-    if (this.parent) {
-      inverseRotation = this.parent.globalRotation;
-    }
-    final canonRotation = canonicalizeAngle(rotation + inverseRotation);
-    if (canonRotation !== this._rotation) {
+  function set_rotation(rotation: Int) {
+    final canonRotation = canonicalizeAngle(rotation);
+    if (canonRotation != this._rotation) {
       this.flagDirty();
     }
     this._rotation = canonRotation;
   }
 
-  get globalRotation() {
+  public var globalRotation(get, set): Int;
+  function get_globalRotation() {
     if (this.parent) {
       return this.matrix.getRotation();
     }
     return this.rotation;
   }
+  function set_globalRotation(rotation: Int) {
+    var inverseRotation = 0;
+    if (this.parent) {
+      inverseRotation = this.parent.globalRotation;
+    }
+    final canonRotation = canonicalizeAngle(rotation + inverseRotation);
+    if (canonRotation != this._rotation) {
+      this.flagDirty();
+    }
+    this._rotation = canonRotation;
+  }
 
-  private _scale: Vector = new WatchVector(vec(1, 1), () => {
+  private var _scale: Vector = new WatchVector(vec(1, 1), () -> {
     this.flagDirty();
   });
-  set scale(v: Vector) {
+  public var scale(get, set): Vector;
+  function get_scale() {
+    return this._scale;
+  }
+  function set_scale(v: Vector) {
     this._scale.x = v.x;
     this._scale.y = v.y;
   }
-  get scale() {
-    return this._scale;
-  }
 
-  set globalScale(v: Vector) {
+  public var globalState(get, set): Vector;
+  function get_globalScale() {
+    return this._globalScale;
+  }
+  function set_globalScale(v: Vector) {
     var inverseScale = vec(1, 1);
     if (this.parent) {
       inverseScale = this.parent.globalScale;
@@ -130,10 +143,10 @@ class Transform {
     this.scale = v.scale(vec(1 / inverseScale.x, 1 / inverseScale.y));
   }
 
-  private _globalScale = new VectorView({
-    getX: () => (this.parent ? this.matrix.getScaleX() : this.scale.x),
-    getY: () => (this.parent ? this.matrix.getScaleY() : this.scale.y),
-    setX: (x) => {
+  private var _globalScale = new VectorView({
+    getX: () -> (this.parent ? this.matrix.getScaleX() : this.scale.x),
+    getY: () -> (this.parent ? this.matrix.getScaleY() : this.scale.y),
+    setX: (x) -> {
       if (this.parent) {
         final globalScaleX = this.parent.globalScale.x;
         this.scale.x = x / globalScaleX;
@@ -141,7 +154,7 @@ class Transform {
         this.scale.x = x;
       }
     },
-    setY: (y) => {
+    setY: (y) -> {
       if (this.parent) {
         final globalScaleY = this.parent.globalScale.y;
         this.scale.y = y / globalScaleY;
@@ -150,22 +163,25 @@ class Transform {
       }
     }
   });
-  get globalScale() {
-    return this._globalScale;
+
+  private var _z: Int = 0;
+  public var z(get, set): Int;
+  function get_z() {
+    return this._z;
   }
-
-  private _z: Int = 0;
-
-  set z(z: Int) {
+  function set_z(z: Int) {
     this._z = z;
     this.flagDirty();
   }
 
-  get z() {
-    return this._z;
+  public var globalZ(get, set): Int;
+  function get_globalZ() {
+    if (this.parent) {
+      return this.z + this.parent.globalZ;
+    }
+    return this.z;
   }
-
-  set globalZ(z: Int) {
+  function set_globalZ(z: Int) {
     if (this.parent) {
       this.z = z - this.parent.globalZ;
     } else {
@@ -173,17 +189,10 @@ class Transform {
     }
   }
 
-  get globalZ() {
-    if (this.parent) {
-      return this.z + this.parent.globalZ;
-    }
-    return this.z;
-  }
-
-  private _isDirty = false;
-  private _isInverseDirty = false;
-  private _matrix = AffineMatrix.identity();
-  private _inverse = AffineMatrix.identity();
+  private var _isDirty = false;
+  private var _isInverseDirty = false;
+  private var _matrix = AffineMatrix.identity();
+  private var _inverse = AffineMatrix.identity();
 
   /**
    * Calculates and returns the matrix representation of this transform
@@ -191,9 +200,10 @@ class Transform {
    * Avoid mutating the matrix to update the transform, it is not the source of truth.
    * Update the transform pos, rotation, scale.
    */
-  public get matrix(): AffineMatrix {
+  public var matrix(get, never): AffineMatrix;
+  function get_matrix(): AffineMatrix {
     if (this._isDirty) {
-      if (this.parent === null) {
+      if (this.parent == null) {
         this._calculateMatrix().clone(this._matrix);
       } else {
         this.parent.matrix.multiply(this._calculateMatrix()).clone(this._matrix);
@@ -206,7 +216,8 @@ class Transform {
   /**
    * Calculates and returns the inverse matrix representation of this transform
    */
-  public get inverse(): AffineMatrix {
+  public var inverse(get, never): AffineMatrix;
+  function get_inverse(): AffineMatrix {
     if (this._isInverseDirty) {
       this.matrix.inverse(this._inverse);
       this._isInverseDirty = false;
@@ -214,8 +225,8 @@ class Transform {
     return this._inverse;
   }
 
-  private _scratch = AffineMatrix.identity();
-  private _calculateMatrix(): AffineMatrix {
+  private var _scratch = AffineMatrix.identity();
+  private function _calculateMatrix(): AffineMatrix {
     this._scratch.data[0] = Math.cos(this._rotation);
     this._scratch.data[1] = Math.sin(this._rotation);
     this._scratch.data[2] = -Math.sin(this._rotation);
@@ -226,23 +237,23 @@ class Transform {
     return this._scratch;
   }
 
-  public flagDirty() {
+  public function flagDirty() {
     this._isDirty = true;
     this._isInverseDirty = true;
-    for (var i = 0; i < this._children.length; i++) {
+    for (i in 0...this._children.length) {
       this._children[i].flagDirty();
     }
   }
 
-  public apply(point: Vector): Vector {
+  public function apply(point: Vector): Vector {
     return this.matrix.multiply(point);
   }
 
-  public applyInverse(point: Vector): Vector {
+  public function applyInverse(point: Vector): Vector {
     return this.inverse.multiply(point);
   }
 
-  public setTransform(pos: Vector, rotation: Int, scale: Vector) {
+  public function setTransform(pos: Vector, rotation: Int, scale: Vector) {
     this._pos.x = pos.x;
     this._pos.y = pos.y;
     this._rotation = canonicalizeAngle(rotation);
@@ -254,7 +265,7 @@ class Transform {
   /**
    * Returns true if the transform has a negative x scale or y scale, but not both
    */
-  public isMirrored(): Bool {
+  public function isMirrored(): Bool {
     final signBitX = sign(this.scale.x) >>> 31;
     final signBitY = sign(this.scale.y) >>> 31;
     final mirrored = signBitX ^ signBitY;
@@ -266,7 +277,7 @@ class Transform {
    * **Warning does not clone the parent**
    * @param dest
    */
-  public clone(dest?: Transform): Transform {
+  public function clone(?dest: Transform): Transform {
     final target = dest ?? new Transform();
     this._pos.clone(target._pos);
     target._z = this._z;
@@ -279,7 +290,7 @@ class Transform {
   /**
    * Clones but keeps the same parent reference
    */
-  public cloneWithParent(dest?: Transform): Transform {
+  public function cloneWithParent(?dest: Transform): Transform {
     final target = dest ?? new Transform();
     this._pos.clone(target._pos);
     target._z = this._z;
@@ -290,7 +301,7 @@ class Transform {
     return target;
   }
 
-  public toString(): String {
+  public function toString(): String {
     return this.matrix.toString();
   }
 }

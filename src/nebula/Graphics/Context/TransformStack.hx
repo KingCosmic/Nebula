@@ -1,49 +1,49 @@
-package nebula.Graphics.Context;
+package nebula.graphics.context;
 
-import nebula.Math.AffineMatrix;
-import nebula.Util.RentalPool;
+import nebula.math.AffineMatrix;
+import nebula.util.RentalPool;
 
 class TransformStack {
-  private _pool = new RentalPool(
-    () => AffineMatrix.identity(),
-    (mat) => mat.reset(),
+  private var _pool = new RentalPool(
+    () -> AffineMatrix.identity(),
+    (mat) -> mat.reset(),
     100
   );
-  private _transforms: AffineMatrix[] = [];
+  private var _transforms: Array<AffineMatrix> = [];
 
-  private _currentTransform: AffineMatrix = this._pool.rent(true);
+  private var _currentTransform: AffineMatrix = this._pool.rent(true);
 
-  public save(): Void {
+  public function save(): Void {
     this._transforms.push(this._currentTransform);
     this._currentTransform = this._currentTransform.clone(this._pool.rent());
   }
 
-  public restore(): Void {
-    this._pool.return(this._currentTransform);
+  public function restore(): Void {
+    this._pool.remove(this._currentTransform);
     this._currentTransform = this._transforms.pop()!;
   }
 
-  public translate(x: Int, y: Int): AffineMatrix {
+  public function translate(x: Int, y: Int): AffineMatrix {
     return this._currentTransform.translate(x, y);
   }
 
-  public rotate(angle: Int): AffineMatrix {
+  public function rotate(angle: Int): AffineMatrix {
     return this._currentTransform.rotate(angle);
   }
 
-  public scale(x: Int, y: Int): AffineMatrix {
+  public function scale(x: Int, y: Int): AffineMatrix {
     return this._currentTransform.scale(x, y);
   }
 
-  public reset(): Void {
+  public function reset(): Void {
     this._currentTransform.reset();
   }
 
-  public set current(matrix: AffineMatrix) {
+  public var current(get, set): AffineMatrix;
+  function set_current(matrix: AffineMatrix) {
     this._currentTransform = matrix;
   }
-
-  public get current(): AffineMatrix {
+  function get_current(): AffineMatrix {
     return this._currentTransform;
   }
 }

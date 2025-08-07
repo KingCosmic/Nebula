@@ -1,8 +1,7 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.EntityComponentSystem;
-import nebula.Math;
-import nebula.Actions.Action;
+import nebula.math.Vector;
+import nebula.actions.Action;
 
 interface CurveToOptions {
   /**
@@ -10,11 +9,11 @@ interface CurveToOptions {
    *
    * The start control point is assumed to be the actor's current position
    */
-  controlPoints: [control1: Vector, control2: Vector, end: Vector];
+  var controlPoints: Array<{ control1: Vector, control2: Vector, end: Vector }>;
   /**
    * Total duration for the action to run
    */
-  duration: Float;
+  var duration: Int;
   /**
    * Dynamic mode will speed up/slow down depending on the curve
    *
@@ -22,7 +21,7 @@ interface CurveToOptions {
    *
    * Default: 'dynamic'
    */
-  mode?: 'dynamic' | 'uniform';
+  var mode: Null<String>;
   /**
    * Quality when sampling uniform points on the curve. Samples = 4 * quality;
    *
@@ -30,21 +29,21 @@ interface CurveToOptions {
    *
    * Default 4
    */
-  quality?: Int;
+  var quality: Null<Int>;
 }
 
 class CurveTo implements Action {
-  id: Int = nextActionId();
+  var id: Int = nextActionId();
 
-  private _curve: BezierCurve;
-  private _durationMs: Float;
-  private _entity: Entity<any>;
-  private _tx: TransformComponent;
-  private _currentMs: Float;
-  private _started = false;
-  private _stopped = false;
-  private _mode: 'dynamic' | 'uniform' = 'dynamic';
-  constructor(entity: Entity, options: CurveToOptions) {
+  private var _curve: BezierCurve;
+  private var _durationMs: Int;
+  private var _entity: Entity<Any>;
+  private var _tx: TransformComponent;
+  private var _currentMs: Float;
+  private var _started = false;
+  private var _stopped = false;
+  private var _mode: Null<String> = 'dynamic';
+  public function new(entity: Entity, options: CurveToOptions) {
     this._entity = entity;
     this._tx = this._entity.get(TransformComponent);
     if (!this._tx) {
@@ -59,35 +58,35 @@ class CurveTo implements Action {
     this._currentMs = this._durationMs;
   }
 
-  update(elapsed: Float): void {
+  function update(elapsed: Int): Void {
     if (!this._started) {
       this._curve.setControlPoint(0, this._tx.globalPos.clone());
       this._started = true;
     }
     this._currentMs -= elapsed;
     var t = clamp(remap(0, this._durationMs, 0, 1, this._durationMs - this._currentMs), 0, 1);
-    if (this._mode === 'dynamic') {
+    if (this._mode == 'dynamic') {
       this._tx.pos = this._curve.getPoint(t);
     } else {
       this._tx.pos = this._curve.getUniformPoint(t);
     }
     if (this.isComplete(this._entity)) {
-      if (this._mode === 'dynamic') {
+      if (this._mode == 'dynamic') {
         this._tx.pos = this._curve.getPoint(1);
       } else {
         this._tx.pos = this._curve.getUniformPoint(1);
       }
     }
   }
-  isComplete(entity: Entity): Bool {
+  function isComplete(entity: Entity): Bool {
     return this._stopped || this._currentMs < 0;
   }
-  reset() {
+  function reset() {
     this._currentMs = this._durationMs;
     this._started = false;
     this._stopped = false;
   }
-  stop() {
+  function stop() {
     this._stopped = true;
     this._currentMs = 0;
   }

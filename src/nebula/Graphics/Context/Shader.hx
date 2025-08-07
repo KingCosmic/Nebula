@@ -1,56 +1,66 @@
-package nebula.Graphics.Context;
+package nebula.graphics.context;
 
-import nebula.Math.Matrix;
-import nebula.Util.Watch;
-import nebula.Graphics.Context.UniformBuffer;
-import nebula.Graphics.Context.WebglUtil;
+import nebula.math.Matrix;
+import nebula.util.Watch;
+import nebula.math.Vector;
+import nebula.math.AffineMatrix;
+import nebula.graphics.context.UniformBuffer;
+import nebula.graphics.context.WebglUtil;
+import haxe.io.Float32Array;
 
-type UniformDictionary = Record<
-  String,
-  Int | Bool | Vector | Color | AffineMatrix | Float32Array | [uniformData: Float32Array, bindingPoint: Int]
->;
-/*
- * List of the possible glsl uniform types
- */
-type UniformTypeNames =
-  | 'uniform1f'
-  | 'uniform1i'
-  | 'uniform1ui'
-  | 'uniform2f'
-  | 'uniform2i'
-  | 'uniform2ui'
-  | 'uniform3f'
-  | 'uniform3i'
-  | 'uniform3ui'
-  | 'uniform4f'
-  | 'uniform4i'
-  | 'uniform4ui'
-  | 'uniform1fv'
-  | 'uniform1iv'
-  | 'uniform1uiv'
-  | 'uniform2fv'
-  | 'uniform2iv'
-  | 'uniform2uiv'
-  | 'uniform3fv'
-  | 'uniform3iv'
-  | 'uniform3uiv'
-  | 'uniform4fv'
-  | 'uniform4iv'
-  | 'uniform4uiv'
-  | 'uniformMatrix2fv'
-  | 'uniformMatrix2x3fv'
-  | 'uniformMatrix2x4fv'
-  | 'uniformMatrix3fv'
-  | 'uniformMatrix3x2fv'
-  | 'uniformMatrix3x4fv'
-  | 'uniformMatrix4fv'
-  | 'uniformMatrix4x2fv'
-  | 'uniformMatrix4x3fv';
+enum UniformValue {
+  UInt(value:Int);
+  Bool(value:Bool);
+  Vec(value:Vector);
+  Col(value:Color);
+  Mat(value:AffineMatrix);
+  Buffer(value:Float32Array); // or haxe.io.Float32Array
+  BufferWithBinding(buffer:Float32Array, bindingPoint:Int);
+}
+
+typedef UniformDictionary = Map<String, UniformValue>;
+// /*
+//  * List of the possible glsl uniform types
+//  */
+// enum UniformTypeNames =
+//   | 'uniform1f'
+//   | 'uniform1i'
+//   | 'uniform1ui'
+//   | 'uniform2f'
+//   | 'uniform2i'
+//   | 'uniform2ui'
+//   | 'uniform3f'
+//   | 'uniform3i'
+//   | 'uniform3ui'
+//   | 'uniform4f'
+//   | 'uniform4i'
+//   | 'uniform4ui'
+//   | 'uniform1fv'
+//   | 'uniform1iv'
+//   | 'uniform1uiv'
+//   | 'uniform2fv'
+//   | 'uniform2iv'
+//   | 'uniform2uiv'
+//   | 'uniform3fv'
+//   | 'uniform3iv'
+//   | 'uniform3uiv'
+//   | 'uniform4fv'
+//   | 'uniform4iv'
+//   | 'uniform4uiv'
+//   | 'uniformMatrix2fv'
+//   | 'uniformMatrix2x3fv'
+//   | 'uniformMatrix2x4fv'
+//   | 'uniformMatrix3fv'
+//   | 'uniformMatrix3x2fv'
+//   | 'uniformMatrix3x4fv'
+//   | 'uniformMatrix4fv'
+//   | 'uniformMatrix4x2fv'
+//   | 'uniformMatrix4x3fv';
 
 /**
  *
  */
-function glTypeToUniformTypeName(gl: WebGL2RenderingContext, glType: Int): UniformTypeNames {
+function glTypeToUniformTypeName(gl: WebGL2RenderingContext, glType: Int): String {
   switch (glType) {
     case gl.FLOAT: {
       return 'uniform1f';
@@ -158,37 +168,50 @@ function glTypeToUniformTypeName(gl: WebGL2RenderingContext, glType: Int): Unifo
       return 'uniform1ui';
     }
     default: {
-      throw new Error(`Unknown uniform type: ${glType}`);
+      throw new Error('Unknown uniform type: ${glType}');
     }
   }
 }
 
-type RemoveFirstFromTuple<T extends any[]> = T['length'] extends 0
-  ? []
-  : ((...b: T) => Void) extends (a: any, ...b: infer I) => Void
-    ? I
-    : [];
+enum UniformFunction {
+  Uniform1f(v:Float);
+  Uniform2fv(v:Array<Float>);
+  Uniform1i(v:Int);
+  Uniform2iv(v:Array<Int>);
+  // Add more as needed
+}
 
-type UniformParameters<TUniformType extends UniformTypeNames> = RemoveFirstFromTuple<Parameters<WebGL2RenderingContext[TUniformType]>>;
+function applyUniform(gl:js.html.webgl.WebGL2RenderingContext, location:js.html.webgl.WebGLUniformLocation, func:UniformFunction):Void {
+  switch func {
+    case Uniform1f(v):
+      gl.uniform1f(location, v);
+    case Uniform2fv(arr):
+      gl.uniform2fv(location, arr);
+    case Uniform1i(v):
+      gl.uniform1i(location, v);
+    case Uniform2iv(arr):
+      gl.uniform2iv(location, arr);
+  }
+}
 
 interface UniformDefinition {
-  name: String;
-  glType: Int;
-  location: WebGLUniformLocation;
+  var name: String;
+  var glType: Int;
+  var location: WebGLUniformLocation;
 }
 
 interface VertexAttributeDefinition {
   /**
    * string name of the attribute in the shader program, commonly `a_nameofmyvariable`
    */
-  name: String;
+  var name: String;
   /**
    * Number of components for a given attribute
    * Must be 1, 2, 3, or 4
    *
    * For example a vec4 attribute would be `4` floats, so 4
    */
-  size: Int;
+  var size: Int;
   /**
    * Supported types in webgl 1
    * * gl.BYTE
@@ -198,110 +221,112 @@ interface VertexAttributeDefinition {
    * * gl.FLOAT
    * https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/vertexAttribPointer
    */
-  glType: Int;
+  var glType: Int;
   /**
    * Is the attribute normalized between (0-1)
    */
-  normalized: Bool;
+  var normalized: Bool;
   /**
    * Location index in the shader program
    */
-  location: Int;
+  var location: Int;
 }
 
 interface ShaderOptions {
   /**
    * ExcaliburGraphicsContextWebGL this layout will be attached to, these cannot be reused across webgl contexts.
    */
-  graphicsContext: ExcaliburGraphicsContext;
+  var graphicsContext: ExcaliburGraphicsContext;
 
   /**
    * Optionally provide a name for the shader (useful for debugging purposes)
    */
-  name?: String;
+  var name: Null<String>;
 
   /**
    * Vertex shader source code in glsl #version 300 es
    */
-  vertexSource: String;
+  var vertexSource: String;
 
   /**
    * Fragment shader source code in glsl #version 300 es
    */
-  fragmentSource: String;
+  var fragmentSource: String;
 
   /**
    * Set initial uniforms
    */
-  uniforms?: UniformDictionary;
+  var uniforms: Null<UniformDictionary>;
 
   /**
    * Set initial images as uniform sampler2D
    */
-  images?: Record<string, ImageSource>;
+  var images: Null<Record<String, ImageSource>>;
 
   /**
    * Optionally set the starting texture slot, default 0
    */
-  startingTextureSlot?: Int;
+  var startingTextureSlot: Null<Int>;
 
   /**
    * Callback to fire directly before linking the program
    */
-  onPreLink?: (program: WebGLProgram) => Void;
+  var onPreLink: Null<(program: WebGLProgram) -> Void>;
   /**
    * Callback to fire directly after the progam has finished compiling
    */
-  onPostCompile?: (shader: Shader) => Void;
+  var onPostCompile: Null<(shader: Shader) -> Void>;
 }
 
 class Shader {
-  public readonly name: String = 'anonymous shader';
-  public readonly vertexSource: String;
-  public readonly fragmentSource: String;
+  public var name: String = 'anonymous shader';
+  public var vertexSource: String;
+  public var fragmentSource: String;
 
-  private static _ACTIVE_SHADER_INSTANCE: Shader | null = null;
+  private static var _ACTIVE_SHADER_INSTANCE: Null<Shader> = null;
 
-  private _logger = Logger.getInstance();
+  private var _logger = Logger.getInstance();
 
-  private _gl: WebGL2RenderingContext;
-  private _textureLoader: TextureLoader;
-  private _textures = new Map<ImageSource, WebGLTexture>();
+  private var _gl: WebGL2RenderingContext;
+  private var _textureLoader: TextureLoader;
+  private var _textures = new Map<ImageSource, WebGLTexture>();
 
-  public program!: WebGLProgram;
-  public attributes: { [variableName: String]: VertexAttributeDefinition } = {};
+  public var program: WebGLProgram;
+  
+  public var attributes: Map<String, VertexAttributeDefinition> = new Map();
 
-  private _uniforms: { [variableName: String]: UniformDefinition } = {};
-  private _uniformBuffers: { [blockName: String]: UniformBuffer } = {};
-  private _compiled = false;
-  private _onPreLink?: (program: WebGLProgram) => Void;
-  private _onPostCompile?: (shader: Shader) => Void;
+  private var _uniforms: Map<String, UniformDefinition> = new Map();
+  private var _uniformBuffers: Map<String, UniformBuffer> = new Map();
+  private var _compiled = false;
+  private var _onPreLink: Null<(program: WebGLProgram) -> Void>;
+  private var _onPostCompile: Null<(shader: Shader) -> Void>;
 
-  private _dirtyUniforms: Bool = true;
-  private _maxTextureSlots: Int;
-  private _startingTextureSlot = 0;
+  private var _dirtyUniforms: Bool = true;
+  private var _maxTextureSlots: Int;
+  private var _startingTextureSlot = 0;
 
   /**
    * Flags uniforms need to be re-uploaded on the next call to .use()
    */
-  public flagUniformsDirty(): Void {
+  public function flagUniformsDirty(): Void {
     this._dirtyUniforms = true;
   }
 
   /**
    * Set uniforms key value pairs
    */
-  uniforms: UniformDictionary = watch({}, () => this.flagUniformsDirty());
+  var uniforms: UniformDictionary = watch({}, () -> this.flagUniformsDirty());
 
   /**
    * Set images to load into the shader as a sampler2d
    */
-  images: Record<String, ImageSource> = {};
+  var images: Record<String, ImageSource> = {};
 
   /**
    * Returns whether the shader is compiled
    */
-  public get compiled() {
+  public var compiled(get, never): Bool;
+  function get_compiled() {
     return this._compiled;
   }
 
@@ -310,10 +335,18 @@ class Shader {
    * @param options specify shader vertex and fragment source
    */
   public function new(options: ShaderOptions) {
-    final { name, graphicsContext, vertexSource, fragmentSource, onPreLink, onPostCompile, uniforms, images, startingTextureSlot } =
-      options;
+    final name = options.name,
+          graphicsContext = options.graphicsContext,
+          vertexSource = options.vertexSource,
+          fragmentSource = options.fragmentSource,
+          onPreLink = options.onPreLink,
+          onPostCompile = options.onPostCompile,
+          uniforms = options.uniforms,
+          images = options.images,
+          startingTextureSlot = options.startingTextureSlot;
+
     this.name = name ?? this.name;
-    if (!(graphicsContext instanceof ExcaliburGraphicsContextWebGL)) {
+    if (!(Std.isTypeOf(graphicsContext, ExcaliburGraphicsContextWebGL))) {
       throw new Error('ExcaliburGraphicsContext provided to a shader ${this.name} must be WebGL');
     }
     this._gl = graphicsContext.__gl;
@@ -321,7 +354,7 @@ class Shader {
     this._maxTextureSlots = this._gl.getParameter(this._gl.MAX_TEXTURE_IMAGE_UNITS) - this._startingTextureSlot;
     this.vertexSource = vertexSource;
     this.fragmentSource = fragmentSource;
-    this.uniforms = watch(uniforms ?? this.uniforms, () => this.flagUniformsDirty());
+    this.uniforms = watch(uniforms ?? this.uniforms, () -> this.flagUniformsDirty());
     this.images = images ?? this.images;
     final keys = Object.keys(this.images);
     if (keys.length >= this._maxTextureSlots) {
@@ -338,16 +371,16 @@ class Shader {
   /**
    * Deletes the webgl program from the gpu
    */
-  dispose() {
+  function dispose() {
     final gl = this._gl;
     gl.deleteProgram(this.program);
-    this._gl = null as any;
+    this._gl = null;
   }
 
   /**
    * Binds the shader program
    */
-  use() {
+  function use() {
     final gl = this._gl;
     gl.useProgram(this.program);
     Shader._ACTIVE_SHADER_INSTANCE = this;
@@ -359,41 +392,41 @@ class Shader {
     this._setImages();
   }
 
-  unuse() {
+  function unuse() {
     final gl = this._gl;
     Shader._ACTIVE_SHADER_INSTANCE = null;
     gl.useProgram(null);
   }
 
-  isCurrentlyBound() {
-    return Shader._ACTIVE_SHADER_INSTANCE === this;
+  function isCurrentlyBound() {
+    return Shader._ACTIVE_SHADER_INSTANCE == this;
   }
 
-  private _setUniforms() {
+  private function _setUniforms() {
     final gl = this._gl;
     final entries = Object.entries(this.uniforms);
     if (entries.length) {
       final uniforms = this.getUniformDefinitions();
-      for (final [key, value] of entries) {
-        if (value instanceof Float32Array) {
+      for (key => value in entries) {
+        if (Std.isTypeOf(value, Float32Array)) {
           this.setUniformBuffer(key, value);
-        } else if (Array.isArray(value) && value[0] instanceof Float32Array && typeof value[1] === 'number') {
+        } else if (Array.isArray(value) && Std.isTypeOf(value[0], Float32Array) && Std.isTypeOf(value[1], Int)) {
           this.setUniformBuffer(key, value[0], value[1]);
-        } else if (typeof value === 'number') {
+        } else if (Std.isTypeOf(value, Float)) {
           this.trySetUniformFloat(key, value);
-        } else if (typeof value === 'boolean') {
+        } else if (Std.isTypeOf(value, Bool)) {
           this.trySetUniformBoolean(key, value);
-        } else if (value instanceof Vector) {
+        } else if (Std.isTypeOf(value, Vector)) {
           this.trySetUniformFloatVector(key, value);
-        } else if (value instanceof Color) {
+        } else if (Std.isTypeOf(value, Color)) {
           this.trySetUniformFloatColor(key, value);
-        } else if (value instanceof AffineMatrix) {
+        } else if (Std.isTypeOf(value, AffineMatrix)) {
           this.setUniformAffineMatrix(key, value);
         } else {
-          final uniform = uniforms.find((u) => u.name === key);
+          final uniform = uniforms.find((u) -> u.name == key);
           if (uniform) {
-            final typeName = glTypeToUniformTypeName(gl, uniform.glType) as UniformTypeNames;
-            this.trySetUniform(typeName as any, key, value);
+            final typeName = glTypeToUniformTypeName(gl, uniform.glType);
+            this.trySetUniform(typeName, key, value);
           } else {
             this._logger.warnOnce(
               'Could not locate uniform named ${key},' +
@@ -405,18 +438,18 @@ class Shader {
     }
   }
 
-  private _loadImageSource(image: ImageSource): Null<WebGLTexture> {
+  private function _loadImageSource(image: ImageSource): Null<WebGLTexture> {
     final imageElement = image.image;
     final maybeFiltering = imageElement.getAttribute(ImageSourceAttributeConstants.Filtering);
-    final filtering = maybeFiltering ? parseImageFiltering(maybeFiltering) : undefined;
-    final wrapX = parseImageWrapping(imageElement.getAttribute(ImageSourceAttributeConstants.WrappingX) as any);
-    final wrapY = parseImageWrapping(imageElement.getAttribute(ImageSourceAttributeConstants.WrappingY) as any);
+    final filtering = maybeFiltering ? parseImageFiltering(maybeFiltering) : null;
+    final wrapX = parseImageWrapping(imageElement.getAttribute(ImageSourceAttributeConstants.WrappingX));
+    final wrapY = parseImageWrapping(imageElement.getAttribute(ImageSourceAttributeConstants.WrappingY));
 
-    final force = imageElement.getAttribute('forceUpload') === 'true' ? true : false;
+    final force = imageElement.getAttribute('forceUpload') == 'true' ? true : false;
     final texture = this._textureLoader.load(
       imageElement,
       {
-        filtering,
+        filtering: filtering,
         wrapping: { x: wrapX, y: wrapY }
       },
       force
@@ -430,11 +463,11 @@ class Shader {
     return texture;
   }
 
-  _setImages(suppressWarning = false) {
+  function _setImages(suppressWarning = false) {
     final gl = this._gl;
     // first 2 textures slots are usually taken by 1 default graphic 2 screen texture
     var textureSlot = this._startingTextureSlot;
-    for (final [textureName, image] of Object.entries(this.images)) {
+    for (textureName => image in this.images) {
       if (!image.isLoaded()) {
         if (!suppressWarning) {
           this._logger.warnOnce(
@@ -461,7 +494,7 @@ class Shader {
   /**
    * Compile the current shader against a webgl context
    */
-  compile(): WebGLProgram {
+  function compile(): WebGLProgram {
     if (this._compiled) {
       return this.program;
     }
@@ -471,11 +504,11 @@ class Shader {
     this.program = this._createProgram(gl, vertexShader, fragmentShader);
 
     final attributes = this.getAttributeDefinitions();
-    for (final attribute of attributes) {
+    for (attribute in attributes) {
       this.attributes[attribute.name] = attribute;
     }
     final uniforms = this.getUniformDefinitions();
-    for (final uniform of uniforms) {
+    for (uniform in uniforms) {
       this._uniforms[uniform.name] = uniform;
     }
 
@@ -500,11 +533,11 @@ class Shader {
   /**
    * Get's the uniform definitons
    */
-  getUniformDefinitions(): UniformDefinition[] {
+  function getUniformDefinitions(): Array<UniformDefinition> {
     final gl = this._gl;
     final uniformCount = gl.getProgramParameter(this.program, gl.ACTIVE_UNIFORMS);
-    final uniforms: UniformDefinition[] = [];
-    for (var i = 0; i < uniformCount; i++) {
+    final uniforms: Array<UniformDefinition> = [];
+    for (i in 0...uniformCount) {
       final uniform = gl.getActiveUniform(this.program, i)!;
       final uniformLocation = gl.getUniformLocation(this.program, uniform.name)!;
       uniforms.push({
@@ -516,11 +549,11 @@ class Shader {
     return uniforms;
   }
 
-  getAttributeDefinitions(): VertexAttributeDefinition[] {
+  function getAttributeDefinitions(): Array<VertexAttributeDefinition> {
     final gl = this._gl;
     final attributeCount = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
-    final attributes: VertexAttributeDefinition[] = [];
-    for (var i = 0; i < attributeCount; i++) {
+    final attributes: Array<VertexAttributeDefinition> = [];
+    for (i in 0...attributeCount) {
       final attribute = gl.getActiveAttrib(this.program, i)!;
       final attributeLocation = gl.getAttribLocation(this.program, attribute.name);
       attributes.push({
@@ -534,7 +567,7 @@ class Shader {
     return attributes;
   }
 
-  addImageSource(samplerName: String, image: ImageSource) {
+  function addImageSource(samplerName: String, image: ImageSource) {
     final keys = Object.keys(this.images);
     if (keys.length < this._maxTextureSlots) {
       this.images[samplerName] = image;
@@ -546,11 +579,11 @@ class Shader {
     }
   }
 
-  removeImageSource(samplerName: String) {
+  function removeImageSource(samplerName: String) {
     final image = this.images[samplerName];
     if (image) {
       this._textureLoader.delete(image.image);
-      delete this.images[samplerName];
+      this.images.delete(samplerName);
     }
   }
 
@@ -559,7 +592,7 @@ class Shader {
    * @param slotNumber
    * @param texture
    */
-  setTexture(slotNumber: Int, texture: WebGLTexture): Void {
+  function setTexture(slotNumber: Int, texture: WebGLTexture): Void {
     final gl = this._gl;
     gl.activeTexture(gl.TEXTURE0 + slotNumber);
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -571,10 +604,10 @@ class Shader {
    * @param data Float32Array
    * @param [bindingPoint]
    */
-  setUniformBuffer(name: String, data: Float32Array, bindingPoint: Int = 0): Void {
+  function setUniformBuffer(name: String, data: Float32Array, bindingPoint: Int = 0): Void {
     final gl = this._gl;
     final index = gl.getUniformBlockIndex(this.program, name);
-    if (index === gl.INVALID_INDEX) {
+    if (index == gl.INVALID_INDEX) {
       this._logger.warnOnce('Invalid block name ${name}');
     }
     var uniformBuffer: UniformBuffer;
@@ -584,8 +617,8 @@ class Shader {
       uniformBuffer.upload();
     } else {
       uniformBuffer = new UniformBuffer({
-        gl,
-        data
+        gl: gl,
+        data: data
       });
       this._uniformBuffers[name] = uniformBuffer;
     }
@@ -593,7 +626,7 @@ class Shader {
     gl.bindBufferBase(gl.UNIFORM_BUFFER, bindingPoint, uniformBuffer.buffer);
   }
 
-  trySetUniformBuffer(name: String, data: Float32Array, bindingPoint: Int = 0): Bool {
+  function trySetUniformBuffer(name: String, data: Float32Array, bindingPoint: Int = 0): Bool {
     if (!this._compiled) {
       this._logger.warn('Must compile shader before setting a uniform block ${name} at binding point ${bindingPoint}');
       return false;
@@ -621,7 +654,7 @@ class Shader {
    * @param name
    * @param value
    */
-  setUniformInt(name: String, value: Int): Void {
+  function setUniformInt(name: String, value: Int): Void {
     this.setUniform('uniform1i', name, ~~value);
   }
 
@@ -632,7 +665,7 @@ class Shader {
    * @param name
    * @param value
    */
-  trySetUniformInt(name: String, value: Int): Bool {
+  function trySetUniformInt(name: String, value: Int): Bool {
     return this.trySetUniform('uniform1i', name, ~~value);
   }
 
@@ -643,7 +676,7 @@ class Shader {
    * @param name
    * @param value
    */
-  setUniformIntArray(name: String, value: Int[]): Void {
+  function setUniformIntArray(name: String, value: Array<Int>): Void {
     this.setUniform('uniform1iv', name, value);
   }
 
@@ -654,7 +687,7 @@ class Shader {
    * @param name
    * @param value
    */
-  trySetUniformIntArray(name: String, value: Int[]): Boolean {
+  function trySetUniformIntArray(name: String, value: Array<Int>): Boolean {
     return this.trySetUniform('uniform1iv', name, value);
   }
 
@@ -665,7 +698,7 @@ class Shader {
    * @param name
    * @param value
    */
-  setUniformBoolean(name: String, value: Bool): Void {
+  function setUniformBoolean(name: String, value: Bool): Void {
     this.setUniform('uniform1i', name, value ? 1 : 0);
   }
 
@@ -676,7 +709,7 @@ class Shader {
    * @param name
    * @param value
    */
-  trySetUniformBoolean(name: String, value: Bool): Bool {
+  function trySetUniformBoolean(name: String, value: Bool): Bool {
     return this.trySetUniform('uniform1i', name, value ? 1 : 0);
   }
 
@@ -687,7 +720,7 @@ class Shader {
    * @param name
    * @param value
    */
-  setUniformFloat(name: String, value: Float): Void {
+  function setUniformFloat(name: String, value: Float): Void {
     this.setUniform('uniform1f', name, value);
   }
 
@@ -698,7 +731,7 @@ class Shader {
    * @param name
    * @param value
    */
-  trySetUniformFloat(name: String, value: Float): Boolean {
+  function trySetUniformFloat(name: String, value: Float): Boolean {
     return this.trySetUniform('uniform1f', name, value);
   }
 
@@ -709,7 +742,7 @@ class Shader {
    * @param name
    * @param value
    */
-  setUniformFloatArray(name: String, value: Float[]): Void {
+  function setUniformFloatArray(name: String, value: Array<Float>): Void {
     this.setUniform('uniform1fv', name, value);
   }
   /**
@@ -719,7 +752,7 @@ class Shader {
    * @param name
    * @param value
    */
-  trySetUniformFloatArray(name: String, value: Float[]): Bool {
+  function trySetUniformFloatArray(name: String, value: Array<Float>): Bool {
     return this.trySetUniform('uniform1fv', name, value);
   }
 
@@ -730,7 +763,7 @@ class Shader {
    * @param name
    * @param value
    */
-  setUniformFloatVector(name: String, value: Vector): Void {
+  function setUniformFloatVector(name: String, value: Vector): Void {
     this.setUniform('uniform2f', name, value.x, value.y);
   }
 
@@ -741,7 +774,7 @@ class Shader {
    * @param name
    * @param value
    */
-  trySetUniformFloatVector(name: String, value: Vector): Bool {
+  function trySetUniformFloatVector(name: String, value: Vector): Bool {
     return this.trySetUniform('uniform2f', name, value.x, value.y);
   }
 
@@ -752,7 +785,7 @@ class Shader {
    * @param name
    * @param value
    */
-  setUniformFloatColor(name: String, value: Color): Void {
+  function setUniformFloatColor(name: String, value: Color): Void {
     this.setUniform('uniform4f', name, value.r / 255, value.g / 255, value.b / 255, value.a);
   }
 
@@ -763,7 +796,7 @@ class Shader {
    * @param name
    * @param value
    */
-  trySetUniformFloatColor(name: String, value: Color): Bool {
+  function trySetUniformFloatColor(name: String, value: Color): Bool {
     return this.trySetUniform('uniform4f', name, value.r / 255, value.g / 255, value.b / 255, value.a);
   }
 
@@ -774,11 +807,11 @@ class Shader {
    * @param name
    * @param value
    */
-  setUniformMatrix(name: String, value: Matrix): Void {
+  function setUniformMatrix(name: String, value: Matrix): Void {
     this.setUniform('uniformMatrix4fv', name, false, value.data);
   }
 
-  setUniformAffineMatrix(name: String, value: AffineMatrix): Void {
+  function setUniformAffineMatrix(name: String, value: AffineMatrix): Void {
     // prettier-ignore
     this.setUniform('uniformMatrix4fv', name, false, [
       value.data[0], value.data[1], 0, 0,
@@ -795,7 +828,7 @@ class Shader {
    * @param name
    * @param value
    */
-  trySetUniformMatrix(name: String, value: Matrix): Bool {
+  function trySetUniformMatrix(name: String, value: Matrix): Bool {
     return this.trySetUniform('uniformMatrix4fv', name, false, value.data);
   }
 
@@ -804,8 +837,8 @@ class Shader {
    *
    * For example setUniform('uniformMatrix2fv', 'u_my2x2_mat`, ...);
    */
-  function setUniform<TUniformType extends UniformTypeNames>(
-    uniformType: TUniformType,
+  function setUniform(
+    uniformType: TUnifoStringrmType,
     name: String,
     ...value: UniformParameters<TUniformType>
   ): Void {
@@ -822,7 +855,7 @@ class Shader {
     final location = gl.getUniformLocation(this.program, name);
     if (location) {
       final args = [location, ...value];
-      (this._gl as any)[uniformType].apply(this._gl, args);
+      this._gl[uniformType].apply(this._gl, args);
     } else {
       throw Error(
         'Uniform ${uniformType}:${name} doesn\'t exist or is not used in the shader source code,' +
@@ -840,11 +873,11 @@ class Shader {
    * For example setUniform('uniformMatrix2fv', 'u_my2x2_mat`, ...);
    *
    */
-  function trySetUniform<TUniformType extends UniformTypeNames>(
-    uniformType: TUniformType,
+  function trySetUniform(
+    uniformType: String,
     name: String,
-    ...value: UniformParameters<TUniformType>
-  ): boolean {
+    ...value: UniformParameters<String>
+  ): Bool {
     if (!this._compiled) {
       this._logger.warn('Must compile shader before setting a uniform ${uniformType}:${name}');
       return false;
@@ -860,16 +893,16 @@ class Shader {
     final location = gl.getUniformLocation(this.program, name);
     if (location) {
       final args = [location, ...value];
-      (this._gl as any)[uniformType].apply(this._gl, args);
+      this._gl[uniformType].apply(this._gl, args);
     } else {
       return false;
     }
     return true;
   }
 
-  private _createProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram {
+  private function _createProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram {
     final program = gl.createProgram();
-    if (program === null) {
+    if (program == null) {
       throw Error('Could not create graphics shader program');
     }
 
@@ -886,17 +919,17 @@ class Shader {
 
     final success = gl.getProgramParameter(program, gl.LINK_STATUS);
     if (!success) {
-      throw Error(`Could not link the program: [${gl.getProgramInfoLog(program)}]`);
+      throw Error('Could not link the program: [${gl.getProgramInfoLog(program)}]');
     }
 
     return program;
   }
 
-  private _compileShader(gl: WebGLRenderingContext, source: String, type: Int): WebGLShader {
-    final typeName = gl.VERTEX_SHADER === type ? 'vertex' : 'fragment';
+  private function _compileShader(gl: WebGLRenderingContext, source: String, type: Int): WebGLShader {
+    final typeName = gl.VERTEX_SHADER == type ? 'vertex' : 'fragment';
     final shader = gl.createShader(type);
-    if (shader === null) {
-      throw Error(`Could not build shader: [${source}]`);
+    if (shader == null) {
+      throw Error('Could not build shader: [${source}]');
     }
 
     gl.shaderSource(shader, source);
@@ -910,19 +943,20 @@ class Shader {
     return shader;
   }
 
-  private _processSourceForError(source: String, errorInfo: String) {
+  private function _processSourceForError(source: String, errorInfo: String) {
     if (!source) {
       return errorInfo;
     }
     final lines = source.split('\n');
-    final errorLineStart = errorInfo.search(/\d:\d/);
+    final errorLineStart = errorInfo.search(~/\d:\d/);
     final errorLineEnd = errorInfo.indexOf(' ', errorLineStart);
-    final [_, error2] = errorInfo
+    final error2 = errorInfo[1]
       .slice(errorLineStart, errorLineEnd)
       .split(':')
-      .map((v) => Number(v));
-    for (var i = 0; i < lines.length; i++) {
-      lines[i] = `${i + 1}: ${lines[i]}${error2 === i + 1 ? ' <----- ERROR!' : ''}`;
+      .map((v) -> Number(v));
+    
+    for (i in 0...lines.length) {
+      lines[i] = '${i + 1}: ${lines[i]}${error2 == i + 1 ? ' <----- ERROR!' : ''}';
     }
 
     return '\n\nSource:\n' + lines.join('\n');

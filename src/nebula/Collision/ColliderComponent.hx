@@ -1,48 +1,47 @@
-package nebula.Collision;
+package nebula.collision;
 
-import nebula.Math.Vector;
-import nebula.EntityComponentSystem;
-import nebula.EntityComponentSystem.Component;
-import nebula.EntityComponentSystem.Entity;
+import nebula.math.Vector;
+import nebula.entitycomponentsystem.Component;
+import nebula.entitycomponentsystem.Entity;
 
 import nebula.Events;
 
-import nebula.Util.Observable;
-import nebula.Collision.BoundingBox;
+import nebula.util.Observable;
+import nebula.collision.BoundingBox;
 
-import nebula.Collision.Detection.CollisionContact;
-import nebula.Collision.Colliders.CircleCollider;
-import nebula.Collision.Colliders.Collider;
-import nebula.Collision.Colliders.CompositeCollider;
-import nebula.Collision.Colliders.PolygonCollider;
-import nebula.Collision.Colliders.EdgeCollider;
-import nebula.Collision.Colliders.Shape;
+import nebula.collision.detection.CollisionContact;
+import nebula.collision.colliders.CircleCollider;
+import nebula.collision.colliders.Collider;
+import nebula.collision.colliders.CompositeCollider;
+import nebula.collision.colliders.PolygonCollider;
+import nebula.collision.colliders.EdgeCollider;
+import nebula.collision.colliders.Shape;
 
 import nebula.EventEmitter;
 import nebula.Actor;
 
 class ColliderComponent extends Component {
-  public events = new EventEmitter();
+  public var events = new EventEmitter();
   /**
    * Observable that notifies when a collider is added to the body
    */
-  public $colliderAdded = new Observable<Collider>();
+  public var colliderAdded = new Observable<Collider>();
 
   /**
    * Observable that notifies when a collider is removed from the body
    */
-  public $colliderRemoved = new Observable<Collider>();
+  public var colliderRemoved = new Observable<Collider>();
 
-  constructor(collider?: Collider) {
+  public function new(?collider: Collider) {
     super();
     this.set(collider);
   }
 
-  private _collider: Collider;
+  private var _collider: Null<Collider>;
   /**
    * Get the current collider geometry
    */
-  public get(): Collider | undefined {
+  public function get(): Null<Collider> {
     return this._collider;
   }
 
@@ -51,38 +50,38 @@ class ColliderComponent extends Component {
    * @param collider
    * @returns the collider you set
    */
-  public set<T extends Collider>(collider: T): T {
+  public function set<T:Collider>(collider: T): T {
     this.clear();
     if (collider) {
       this._collider = collider;
       this._collider.owner = this.owner;
       collider.events.pipe(this.events);
-      this.$colliderAdded.notifyAll(collider);
+      this.colliderAdded.notifyAll(collider);
       this.update();
     }
     return collider;
   }
 
-  private _collidersToRemove: Collider[] = [];
+  private var _collidersToRemove: Array<Collider> = [];
   /**
    * Remove collider geometry from collider component
    */
-  public clear() {
+  public function clear() {
     if (this._collider) {
       this._collidersToRemove.push(this._collider);
       this._collider = null;
     }
   }
 
-  public processColliderRemoval() {
-    for (final collider of this._collidersToRemove) {
+  public function processColliderRemoval() {
+    for (collider in this._collidersToRemove) {
       collider.events.unpipe(this.events);
       this.$colliderRemoved.notifyAll(collider);
       collider.owner = null;
     }
   }
 
-  public clone(): ColliderComponent {
+  public function clone(): ColliderComponent {
     final clone = new ColliderComponent(this._collider.clone());
 
     return clone;
@@ -91,22 +90,24 @@ class ColliderComponent extends Component {
   /**
    * Return world space bounds
    */
-  public get bounds() {
+  public var bounds(get, never): BoundingBox;
+  function get_bounds() {
     return this._collider?.bounds ?? new BoundingBox();
   }
 
   /**
    * Return local space bounds
    */
-  public get localBounds() {
-    return this._collider?.localBounds ?? new BoundingBox();
+  public var localBounds(get, never): BoundingBox;
+  function get_localBounds() {
+    return this._collider.localBounds ?? new BoundingBox();
   }
 
   /**
    * Update the collider's transformed geometry
    */
-  public update() {
-    final tx = this.owner?.get(TransformComponent);
+  public function update() {
+    final tx = this.owner.get(TransformComponent);
     if (this._collider) {
       this._collider.owner = this.owner;
       if (tx) {
@@ -119,7 +120,7 @@ class ColliderComponent extends Component {
    * Collide component with another
    * @param other
    */
-  collide(other: ColliderComponent): CollisionContact[] {
+  function collide(other: ColliderComponent): Array<CollisionContact> {
     var colliderA = this._collider;
     var colliderB = other._collider;
     if (!colliderA || !colliderB) {
@@ -129,7 +130,7 @@ class ColliderComponent extends Component {
     // If we have a composite left hand side :(
     // Might bite us, but to avoid updating all the handlers make composite always left side
     var flipped = false;
-    if (colliderB instanceof CompositeCollider) {
+    if (Std.isOfType(colliderB, CompositeCollider)) {
       colliderA = colliderB;
       colliderB = this._collider;
       flipped = true;
@@ -154,23 +155,23 @@ class ColliderComponent extends Component {
     return [];
   }
 
-  onAdd(entity: Entity) {
+  function onAdd(entity: Entity) {
     if (this._collider) {
       this.update();
     }
     // Wire up the collider events to the owning entity
-    this.events.on('precollision', (evt: Dynamic) => {
-      final precollision = evt as PreCollisionEvent<Collider>;
+    this.events.on('precollision', (evt: Dynamic) -> {
+      final precollision = evt;
       entity.events.emit(
         'precollision',
         new PreCollisionEvent(precollision.self, precollision.other, precollision.side, precollision.intersection, precollision.contact)
       );
-      if (entity instanceof Actor) {
+      if (Std.isOfType(entity, Actor)) {
         entity.onPreCollisionResolve(precollision.self, precollision.other, precollision.side, precollision.contact);
       }
     });
-    this.events.on('postcollision', (evt: Dynamic) => {
-      final postcollision = evt as PostCollisionEvent<Collider>;
+    this.events.on('postcollision', (evt: Dynamic) -> {
+      final postcollision = evt;
       entity.events.emit(
         'postcollision',
         new PostCollisionEvent(
@@ -181,29 +182,29 @@ class ColliderComponent extends Component {
           postcollision.contact
         )
       );
-      if (entity instanceof Actor) {
+      if (Std.isOfType(entity, Actor)) {
         entity.onPostCollisionResolve(postcollision.self, postcollision.other, postcollision.side, postcollision.contact);
       }
     });
-    this.events.on('collisionstart', (evt: Dynamic) => {
-      final start = evt as CollisionStartEvent<Collider>;
+    this.events.on('collisionstart', (evt: Dynamic) -> {
+      final start = evt;
       entity.events.emit('collisionstart', new CollisionStartEvent(start.self, start.other, start.side, start.contact));
-      if (entity instanceof Actor) {
+      if (Std.isOfType(entity, Actor)) {
         entity.onCollisionStart(start.self, start.other, start.side, start.contact);
       }
     });
-    this.events.on('collisionend', (evt: Dynamic) => {
-      final end = evt as CollisionEndEvent<Collider>;
+    this.events.on('collisionend', (evt: Dynamic) -> {
+      final end = evt;
       entity.events.emit('collisionend', new CollisionEndEvent(end.self, end.other, end.side, end.lastContact));
-      if (entity instanceof Actor) {
+      if (Std.isOfType(entity, Actor)) {
         entity.onCollisionEnd(end.self, end.other, end.side, end.lastContact);
       }
     });
   }
 
-  onRemove() {
+  function onRemove() {
     this.events.clear();
-    this.$colliderRemoved.notifyAll(this._collider);
+    this.colliderRemoved.notifyAll(this._collider);
   }
 
   /**
@@ -213,7 +214,7 @@ class ColliderComponent extends Component {
    *
    * By default, the box is center is at (0, 0) which means it is centered around the actors anchor.
    */
-  useBoxCollider(width: Int, height: Int, anchor: Vector = Vector.Half, center: Vector = Vector.Zero): PolygonCollider {
+  function useBoxCollider(width: Int, height: Int, anchor: Vector = Vector.Half, center: Vector = Vector.Zero): PolygonCollider {
     final collider = Shape.Box(width, height, anchor, center);
     return this.set(collider);
   }
@@ -227,7 +228,7 @@ class ColliderComponent extends Component {
    *
    * By default, the box is center is at (0, 0) which means it is centered around the actors anchor.
    */
-  usePolygonCollider(points: Vector[], center: Vector = Vector.Zero): PolygonCollider {
+  function usePolygonCollider(points: Array<Vector>, center: Vector = Vector.Zero): PolygonCollider {
     final poly = Shape.Polygon(points, center);
     return this.set(poly);
   }
@@ -237,7 +238,7 @@ class ColliderComponent extends Component {
    *
    * By default, the box is center is at (0, 0) which means it is centered around the actors anchor.
    */
-  useCircleCollider(radius: Int, center: Vector = Vector.Zero): CircleCollider {
+  function useCircleCollider(radius: Int, center: Vector = Vector.Zero): CircleCollider {
     final collider = Shape.Circle(radius, center);
     return this.set(collider);
   }
@@ -248,7 +249,7 @@ class ColliderComponent extends Component {
    *
    * By default, the box is center is at (0, 0) which means it is centered around the actors anchor.
    */
-  useEdgeCollider(begin: Vector, end: Vector): EdgeCollider {
+  function useEdgeCollider(begin: Vector, end: Vector): EdgeCollider {
     final collider = Shape.Edge(begin, end);
     return this.set(collider);
   }
@@ -257,7 +258,7 @@ class ColliderComponent extends Component {
    * Setups up a {@apilink CompositeCollider} which can define any arbitrary set of excalibur colliders
    * @param colliders
    */
-  useCompositeCollider(colliders: Collider[]): CompositeCollider {
+  function useCompositeCollider(colliders: Array<Collider>): CompositeCollider {
     return this.set(new CompositeCollider(colliders));
   }
 }

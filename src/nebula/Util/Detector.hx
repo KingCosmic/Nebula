@@ -1,13 +1,13 @@
-package nebula.Util;
+package nebula.util;
 
-import nebula.Util.Log;
+import nebula.util.Log;
 
 /**
  * This is the list of features that will be used to log the supported
  * features to the console when Detector.logBrowserFeatures() is called.
  */
 
-final REPORTED_FEATURES: { [key: String]: String } = {
+final REPORTED_FEATURES = {
   webgl: 'WebGL',
   webaudio: 'WebAudio',
   gamepadapi: 'Gamepad API'
@@ -17,38 +17,38 @@ final REPORTED_FEATURES: { [key: String]: String } = {
  * Interface for detected browser features matrix
  */
 interface DetectedFeatures {
-  readonly canvas: Bool;
-  readonly arraybuffer: Bool;
-  readonly dataurl: Bool;
-  readonly objecturl: Bool;
-  readonly rgba: Bool;
-  readonly webaudio: Bool;
-  readonly webgl: Bool;
-  readonly gamepadapi: Bool;
+  var canvas: Bool;
+  var arraybuffer: Bool;
+  var dataurl: Bool;
+  var objecturl: Bool;
+  var rgba: Bool;
+  var webaudio: Bool;
+  var webgl: Bool;
+  var gamepadapi: Bool;
 }
 
 interface CriticalTests {
-  canvasSupport(): Bool;
-  arrayBufferSupport(): Bool;
-  dataUrlSupport(): Bool;
-  objectUrlSupport(): Bool;
-  rgbaSupport(): Bool;
+  function canvasSupport(): Bool;
+  function arrayBufferSupport(): Bool;
+  function dataUrlSupport(): Bool;
+  function objectUrlSupport(): Bool;
+  function rgbaSupport(): Bool;
 }
 
 interface WarningTests {
-  webAudioSupport(): Bool;
-  webglSupport(): Bool;
+  function webAudioSupport(): Bool;
+  function webglSupport(): Bool;
 }
 
 /**
  * Excalibur internal feature detection helper class
  */
 class Detector {
-  private _features: DetectedFeatures = null;
+  private var _features: Null<DetectedFeatures> = null;
 
-  public failedTests: String[] = [];
+  public var failedTests: Array<String> = [];
 
-  public constructor() {
+  public function new() {
     this._features = this._loadBrowserFeatures();
   }
 
@@ -57,8 +57,8 @@ class Detector {
    * treats the features as a singleton and will only calculate feature
    * support if it has not previously been done.
    */
-  public getBrowserFeatures(): DetectedFeatures {
-    if (this._features === null) {
+  public function getBrowserFeatures(): DetectedFeatures {
+    if (this._features == null) {
       this._features = this._loadBrowserFeatures();
     }
     return this._features;
@@ -68,12 +68,12 @@ class Detector {
    * Report on non-critical browser support for debugging purposes.
    * Use native browser console colors for visibility.
    */
-  public logBrowserFeatures(): Void {
+  public function logBrowserFeatures(): Void {
     var msg = '%cSUPPORTED BROWSER FEATURES\n==========================%c\n';
     final args = ['font-weight: bold; color: navy', 'font-weight: normal; color: inherit'];
 
-    final supported: any = this.getBrowserFeatures();
-    for (final feature of Object.keys(REPORTED_FEATURES)) {
+    final supported: Any = this.getBrowserFeatures();
+    for (feature in Object.keys(REPORTED_FEATURES)) {
       if (supported[feature]) {
         msg += '(%c\u2713%c)'; // (✓)
         args.push('font-weight: bold; color: green');
@@ -95,52 +95,52 @@ class Detector {
    * Executes several IIFE's to get a constant reference to supported
    * features within the current execution context.
    */
-  private _loadBrowserFeatures(): DetectedFeatures {
+  private function _loadBrowserFeatures(): DetectedFeatures {
     return {
       // IIFE to check canvas support
-      canvas: (() => {
+      canvas: (() -> {
         return this._criticalTests.canvasSupport();
       })(),
 
       // IIFE to check arraybuffer support
-      arraybuffer: (() => {
+      arraybuffer: (() -> {
         return this._criticalTests.arrayBufferSupport();
       })(),
 
       // IIFE to check dataurl support
-      dataurl: (() => {
+      dataurl: (() -> {
         return this._criticalTests.dataUrlSupport();
       })(),
 
       // IIFE to check objecturl support
-      objecturl: (() => {
+      objecturl: (() -> {
         return this._criticalTests.objectUrlSupport();
       })(),
 
       // IIFE to check rgba support
-      rgba: (() => {
+      rgba: (() -> {
         return this._criticalTests.rgbaSupport();
       })(),
 
       // IIFE to check webaudio support
-      webaudio: (() => {
+      webaudio: (() -> {
         return this._warningTest.webAudioSupport();
       })(),
 
       // IIFE to check webgl support
-      webgl: (() => {
+      webgl: (() -> {
         return this._warningTest.webglSupport();
       })(),
 
       // IIFE to check gamepadapi support
-      gamepadapi: (() => {
-        return !!(<any>navigator).getGamepads;
+      gamepadapi: (() -> {
+        return !!navigator.getGamepads;
       })()
     };
   }
 
   // critical browser features required for ex to run
-  private _criticalTests: CriticalTests = {
+  private var _criticalTests: CriticalTests = {
     // Test canvas/2d context support
     canvasSupport: function () {
       final elem = document.createElement('canvas');
@@ -156,13 +156,13 @@ class Detector {
       } catch (e) {
         return false;
       }
-      return xhr.responseType === 'arraybuffer';
+      return xhr.responseType == 'arraybuffer';
     },
 
     // Test data urls ex uses for sprites
     dataUrlSupport: function () {
       final canvas = document.createElement('canvas');
-      return canvas.toDataURL('image/png').indexOf('data:image/png') === 0;
+      return canvas.toDataURL('image/png').indexOf('data:image/png') == 0;
     },
 
     // Test object url support for loading
@@ -179,14 +179,14 @@ class Detector {
   };
 
   // warnings excalibur performance will be degraded
-  private _warningTest: WarningTests = {
+  private var _warningTest: WarningTests = {
     webAudioSupport: function () {
       return !!(
-        (<any>window).AudioContext ||
-        (<any>window).webkitAudioContext ||
-        (<any>window).mozAudioContext ||
-        (<any>window).msAudioContext ||
-        (<any>window).oAudioContext
+        (window).AudioContext ||
+        (window).webkitAudioContext ||
+        (window).mozAudioContext ||
+        (window).msAudioContext ||
+        (window).oAudioContext
       );
     },
     webglSupport: function () {
@@ -195,11 +195,11 @@ class Detector {
     }
   };
 
-  public test(): Bool {
+  public function test(): Bool {
     // Critical test will for ex not to run
     var failedCritical = false;
-    for (final test in this._criticalTests) {
-      if (!this._criticalTests[<keyof CriticalTests>test].call(this)) {
+    for (test in this._criticalTests) {
+      if (!this._criticalTests[test].call(this)) {
         this.failedTests.push(test);
         Logger.getInstance().error('Critical browser feature missing, Excalibur requires:', test);
         failedCritical = true;
@@ -210,8 +210,8 @@ class Detector {
     }
 
     // Warning tests do not for ex to return false to compatibility
-    for (final warning in this._warningTest) {
-      if (!this._warningTest[<keyof WarningTests>warning]()) {
+    for (warning in this._warningTest) {
+      if (!this._warningTest[warning]()) {
         Logger.getInstance().warn('Warning browser feature missing, Excalibur will have reduced performance:', warning);
       }
     }

@@ -1,29 +1,29 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Graphics.Graphic;
-import nebula.Graphics.Animation;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.Graphic;
+import nebula.graphics.Animation;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
-import nebula.Util.Log;
+import nebula.util.Log;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
 interface GraphicsGroupingOptions {
-  members: (GraphicsGrouping | Graphic)[];
+  var members: Array<Graphic>;
   /**
    * Default true, GraphicsGroup will use the anchor to position all the graphics based on their combined bounds
    *
    * Setting to false will ignore anchoring from parent components and position the top left of all graphics at the actor's position,
    * positioning graphics in the group is done with the `offset` property.
    */
-  useAnchor?: Bool;
+  var useAnchor: Null<Bool>;
 }
 
 interface GraphicsGrouping {
-  offset: Vector;
-  graphic: Graphic;
+  var offset: Vector;
+  var graphic: Graphic;
   /**
    * Optionally disable this graphics bounds as part of group calculation, default true
    * if unspecified
@@ -33,13 +33,13 @@ interface GraphicsGrouping {
    *
    * **WARNING** having inaccurate bounds can cause offscreen culling issues.
    */
-  useBounds?: Bool;
+  var useBounds: Null<Bool>;
 }
 
 class GraphicsGroup extends Graphic implements HasTick {
-  private _logger = Logger.getInstance();
-  public useAnchor: Bool = true;
-  public members: (GraphicsGrouping | Graphic)[] = [];
+  private var _logger = Logger.getInstance();
+  public var useAnchor: Bool = true;
+  public var members: Array<Graphic> = [];
 
   public function new(options: GraphicsGroupingOptions & GraphicOptions) {
     super(options);
@@ -48,28 +48,33 @@ class GraphicsGroup extends Graphic implements HasTick {
     this._updateDimensions();
   }
 
-  public clone(): GraphicsGroup {
-    return new GraphicsGroup({
-      members: [...this.members],
-      ...this.cloneGraphicOptions()
-    });
+  public function clone(): GraphicsGroup {
+    var config = Object.spreadWith(
+      { members: this.members },
+      this.cloneGraphicOptions()
+    );
+
+    return new GraphicsGroup(config);
   }
 
-  private _updateDimensions(): BoundingBox {
+  private function _updateDimensions(): BoundingBox {
     final bb = this.localBounds;
     this.width = bb.width;
     this.height = bb.height;
     return bb;
   }
 
-  public get localBounds(): BoundingBox {
+  public var localBounds(get, never): BoundingBox;
+  function get_localBounds(): BoundingBox {
     final bb = new BoundingBox();
-    for (final member of this.members) {
-      if (member instanceof Graphic) {
+    for (member in this.members) {
+      if (Std.isOfType(member, Graphic)) {
         member.localBounds.combine(bb, bb);
       } else {
-        final { graphic, offset: pos, useBounds } = member;
-        final shouldUseBounds = useBounds === undefined ? true : useBounds;
+        final graphic = member.graphic,
+              pos = member.offset,
+              useBounds = member.useBounds;
+        final shouldUseBounds = useBounds == undefined ? true : useBounds;
         if (graphic) {
           if (shouldUseBounds) {
             graphic.localBounds.translate(pos).combine(bb, bb);
@@ -82,14 +87,14 @@ class GraphicsGroup extends Graphic implements HasTick {
     return bb;
   }
 
-  private _isAnimationOrGroup(graphic: Graphic): graphic is Animation | GraphicsGroup {
-    return graphic instanceof Animation || graphic instanceof GraphicsGroup;
+  private function _isAnimationOrGroup(graphic: Graphic) {
+    return Std.isOfType(graphic, Animation) || Std.isOfType(graphic, GraphicsGroup);
   }
 
-  public tick(elapsed: Float, idempotencyToken?: Int) {
-    for (final member of this.members) {
+  public function tick(elapsed: Float, ?idempotencyToken: Int) {
+    for (member in this.members) {
       var graphic: Graphic;
-      if (member instanceof Graphic) {
+      if (Std.isOfType(member, Graphic)) {
         graphic = member;
       } else {
         graphic = member.graphic;
@@ -100,10 +105,10 @@ class GraphicsGroup extends Graphic implements HasTick {
     }
   }
 
-  public reset() {
-    for (final member of this.members) {
+  public function reset() {
+    for (member in this.members) {
       var graphic: Graphic;
-      if (member instanceof Graphic) {
+      if (Std.isOfType(member, Graphic)) {
         graphic = member;
       } else {
         graphic = member.graphic;
@@ -114,16 +119,16 @@ class GraphicsGroup extends Graphic implements HasTick {
     }
   }
 
-  private _preDraw(ex: ExcaliburGraphicsContext, x: Int, y: Int) {
+  private function _preDraw(ex: ExcaliburGraphicsContext, x: Int, y: Int) {
     this._updateDimensions();
     super._preDraw(ex, this.useAnchor ? x : 0, this.useAnchor ? y : 0);
   }
 
-  private _drawImage(ex: ExcaliburGraphicsContext, x: Int, y: Int) {
+  private function _drawImage(ex: ExcaliburGraphicsContext, x: Int, y: Int) {
     final pos = Vector.Zero;
-    for (final member of this.members) {
+    for (member in this.members) {
       var graphic: Graphic;
-      if (member instanceof Graphic) {
+      if (Std.isOfType(member, Graphic)) {
         graphic = member;
       } else {
         graphic = member.graphic;

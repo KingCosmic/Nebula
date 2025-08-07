@@ -1,53 +1,53 @@
-package nebula.Graphics;
+package nebula.graphics;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
-import nebula.Collision.BoundingBox;
+import nebula.collision.BoundingBox;
 
 import nebula.Color;
 
-import nebula.Util.Watch;
-import nebula.Math.AffineMatrix;
+import nebula.util.Watch;
+import nebula.math.AffineMatrix;
 
-interface GraphicOptions {
+interface IGraphicOptions {
   /**
    * The width of the graphic
    */
-  width?: Int;
+  var width: Null<Int>;
   /**
    * The height of the graphic
    */
-  height?: Int;
+  var height: Null<Int>;
   /**
    * Should the graphic be flipped horizontally
    */
-  flipHorizontal?: Bool;
+  var flipHorizontal: Null<Bool>;
   /**
    * Should the graphic be flipped vertically
    */
-  flipVertical?: Bool;
+  var flipVertical: Null<Bool>;
   /**
    * The rotation of the graphic
    */
-  rotation?: Float;
+  var rotation: Null<Float>;
   /**
    * The scale of the graphic
    */
-  scale?: Vector;
+  var scale: Null<Vector>;
   /**
    * The opacity of the graphic between (0 -1)
    */
-  opacity?: Float;
+  var opacity: Null<Float>;
   /**
    * The tint of the graphic, this color will be multiplied by the original pixel colors
    */
-  tint?: Color;
+  var tint: Null<Color>;
   /**
    * The origin of the drawing in pixels to use when applying transforms, by default it will be the center of the image in pixels
    */
-  origin?: Vector;
+  var origin: Null<Vector>;
 }
 
 /**
@@ -59,57 +59,58 @@ interface GraphicOptions {
  * handles all the position, rotation, and scale transformations in {@apilink Graphic._preDraw} and {@apilink Graphic._postDraw}
  */
 abstract class Graphic {
-  private static _ID: Int = 0;
-  readonly id = Graphic._ID++;
+  private static var _ID: Int = 0;
+  var id = Graphic._ID++;
 
-  public transform: AffineMatrix = AffineMatrix.identity();
-  public tint?: Color;
+  public var transform: AffineMatrix = AffineMatrix.identity();
+  public var tint: Null<Color>;
 
-  private _transformStale = true;
-  public isStale() {
+  private var _transformStale = true;
+  public function isStale() {
     return this._transformStale;
   }
 
   /**
    * Gets or sets wether to show debug information about the graphic
    */
-  public showDebug: Bool = false;
+  public var showDebug: Bool = false;
 
-  private _flipHorizontal = false;
+  private var _flipHorizontal = false;
   /**
    * Gets or sets the flipHorizontal, which will flip the graphic horizontally (across the y axis)
    */
-  public get flipHorizontal(): Bool {
+  public var flipHorizontal(get, set): Bool;
+  function get_flipHorizontal(): Bool {
     return this._flipHorizontal;
   }
 
-  public set flipHorizontal(value: Bool) {
+  function set_flipHorizontal(value: Bool) {
     this._flipHorizontal = value;
     this._transformStale = true;
   }
 
-  private _flipVertical = false;
+  private var _flipVertical = false;
   /**
    * Gets or sets the flipVertical, which will flip the graphic vertically (across the x axis)
    */
-  public get flipVertical(): Bool {
+  public var flipVertical(get, set): Bool;
+  function get_flipVertical(): Bool {
     return this._flipVertical;
   }
-
-  public set flipVertical(value: Bool) {
+  function set_flipVertical(value: Bool) {
     this._flipVertical = value;
     this._transformStale = true;
   }
 
-  private _rotation = 0;
+  private var _rotation = 0;
   /**
    * Gets or sets the rotation of the graphic
    */
-  public get rotation(): Float {
+  public var rotation(get, set): Float;
+  function get_rotation(): Float {
     return this._rotation;
   }
-
-  public set rotation(value: Float) {
+  function set_rotation(value: Float) {
     this._rotation = value;
     this._transformStale = true;
   }
@@ -117,41 +118,41 @@ abstract class Graphic {
   /**
    * Gets or sets the opacity of the graphic, 0 is transparent, 1 is solid (opaque).
    */
-  public opacity: Float = 1;
+  public var opacity: Float = 1;
 
-  private _scale = Vector.One;
+  private var _scale = Vector.One;
   /**
    * Gets or sets the scale of the graphic, this affects the width and
    */
-  public get scale() {
+  public var scale(get, set): Vector;
+  function get_scale() {
     return this._scale;
   }
-
-  public set scale(value: Vector) {
-    this._scale = watch(value, () => {
+  function set_scale(value: Vector) {
+    this._scale = watch(value, () -> {
       this._transformStale = true;
     });
     this._transformStale = true;
   }
 
-  private _origin?: Vector;
+  private var _origin: Null<Vector>;
   /**
    * Gets or sets the origin of the graphic, if not set the center of the graphic is the origin
    */
-  public get origin(): Vector | undefined {
+  public var origin(get, set): Null<Vector>;
+  function get_origin(): Null<Vector> {
     return this._origin;
   }
-
-  public set origin(value: Vector | undefined) {
+  function set_origin(value: Null<Vector>) {
     if (value) {
-      this._origin = watch(value, () => {
+      this._origin = watch(value, () -> {
         this._transformStale = true;
       });
     }
     this._transformStale = true;
   }
 
-  constructor(options?: GraphicOptions) {
+  public function new(?options: GraphicOptions) {
     if (options) {
       this.origin = options.origin ?? this.origin;
       this.flipHorizontal = options.flipHorizontal ?? this.flipHorizontal;
@@ -170,44 +171,44 @@ abstract class Graphic {
     }
   }
 
-  public cloneGraphicOptions(): GraphicOptions {
+  public function cloneGraphicOptions(): GraphicOptions {
     return {
       width: this.width / this.scale.x,
       height: this.height / this.scale.y,
-      origin: this.origin ? this.origin.clone() : undefined,
+      origin: this.origin ? this.origin.clone() : null,
       flipHorizontal: this.flipHorizontal,
       flipVertical: this.flipVertical,
       rotation: this.rotation,
       opacity: this.opacity,
-      scale: this.scale ? this.scale.clone() : undefined,
-      tint: this.tint ? this.tint.clone() : undefined
+      scale: this.scale ? this.scale.clone() : null,
+      tint: this.tint ? this.tint.clone() : null
     };
   }
 
-  private _width: Int = 0;
+  private var _width: Int = 0;
 
   /**
    * Gets or sets the width of the graphic (always positive)
    */
-  public get width() {
+  public var width(get, set): Int;
+  function get_width() {
     return Math.abs(this._width * this.scale.x);
   }
-
-  private _height: Int = 0;
-
-  /**
-   * Gets or sets the height of the graphic (always positive)
-   */
-  public get height() {
-    return Math.abs(this._height * this.scale.y);
-  }
-
-  public set width(value: Int) {
+  function set_width(value: Int) {
     this._width = value;
     this._transformStale = true;
   }
 
-  public set height(value: Int) {
+  private var _height: Int = 0;
+
+  /**
+   * Gets or sets the height of the graphic (always positive)
+   */
+  public var height(get, set): Int;
+  function get_height() {
+    return Math.abs(this._height * this.scale.y);
+  }
+  function set_height(value: Int) {
     this._height = value;
     this._transformStale = true;
   }
@@ -215,7 +216,8 @@ abstract class Graphic {
   /**
    * Gets a copy of the bounds in pixels occupied by the graphic on the the screen. This includes scale.
    */
-  public get localBounds(): BoundingBox {
+  public var localBounds(get, never): BoundingBox;
+  function get_localBounds(): BoundingBox {
     return BoundingBox.fromDimension(this.width, this.height, Vector.Zero);
   }
 
@@ -225,7 +227,7 @@ abstract class Graphic {
    * @param x
    * @param y
    */
-  public draw(ex: ExcaliburGraphicsContext, x: Int, y: Int): Void {
+  public function draw(ex: ExcaliburGraphicsContext, x: Int, y: Int): Void {
     this._preDraw(ex, x, y);
     this._drawImage(ex, 0, 0);
     this._postDraw(ex);
@@ -239,7 +241,7 @@ abstract class Graphic {
    * @param x
    * @param y
    */
-  private abstract _drawImage(ex: ExcaliburGraphicsContext, x: Int, y: Int): Void;
+  private abstract function _drawImage(ex: ExcaliburGraphicsContext, x: Int, y: Int): Void;
 
   /**
    * Apply affine transformations to the graphics context to manipulate the graphic before {@apilink Graphic._drawImage}
@@ -247,7 +249,7 @@ abstract class Graphic {
    * @param x
    * @param y
    */
-  private _preDraw(ex: ExcaliburGraphicsContext, x: Int, y: Int): Void {
+  private function _preDraw(ex: ExcaliburGraphicsContext, x: Int, y: Int): Void {
     ex.save();
     ex.translate(x, y);
     if (this._transformStale) {
@@ -265,7 +267,7 @@ abstract class Graphic {
     }
   }
 
-  private _rotate(ex: ExcaliburGraphicsContext | AffineMatrix) {
+  private function _rotate(ex: AffineMatrix) {
     final scaleDirX = this.scale.x > 0 ? 1 : -1;
     final scaleDirY = this.scale.y > 0 ? 1 : -1;
     final origin = this.origin ?? vec(this.width / 2, this.height / 2);
@@ -276,7 +278,7 @@ abstract class Graphic {
     ex.translate(-origin.x, -origin.y);
   }
 
-  private _flip(ex: ExcaliburGraphicsContext | AffineMatrix) {
+  private function _flip(ex: AffineMatrix) {
     if (this.flipHorizontal) {
       ex.translate(this.width / this.scale.x, 0);
       ex.scale(-1, 1);
@@ -292,7 +294,7 @@ abstract class Graphic {
    * Apply any additional work after {@apilink Graphic._drawImage} and restore the context state.
    * @param ex
    */
-  private _postDraw(ex: ExcaliburGraphicsContext): Void {
+  private function _postDraw(ex: ExcaliburGraphicsContext): Void {
     if (this.showDebug) {
       ex.debug.drawRect(0, 0, this.width, this.height);
     }
@@ -302,5 +304,5 @@ abstract class Graphic {
   /**
    * Returns a new instance of the graphic that has the same properties
    */
-  abstract clone(): Graphic;
+  abstract function clone(): Graphic;
 }

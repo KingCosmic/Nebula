@@ -1,8 +1,8 @@
-package nebula.Graphics.PostProcessor;
+package nebula.graphics.postprocessor;
 
-import nebula.Graphics.Context.VertexLayout;
-import nebula.Graphics.Context.Shader;
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.VertexLayout;
+import nebula.graphics.context.Shader;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
 
 /**
  * PostProcessors can be used to apply a shader to the entire screen. It is recommended
@@ -21,20 +21,20 @@ import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
  * Custom uniforms can be updated in the {@apilink PostProcessor.onUpdate}
  */
 interface PostProcessor {
-  initialize(graphicsContext: ExcaliburGraphicsContextWebGL): Void;
-  getShader(): Shader;
-  getLayout(): VertexLayout;
+  function initialize(graphicsContext: ExcaliburGraphicsContextWebGL): Void;
+  function getShader(): Shader;
+  function getLayout(): VertexLayout;
   /**
    * Use the onUpdate hook to update any uniforms in the postprocessors shader
    *
    * The shader has already been bound so there is no need to call shader.use();
    * @param elapsed
    */
-  onUpdate?(elapsed: Int): Void;
+  var onUpdate: Null<(elapsed: Int) -> Void>;
 
   /**
    * Use the onDraw hook to upload any textures or command that need to run right before draw
    * @param elapsed
    */
-  onDraw?(): Void;
+  var onDraw: Null<() -> Void>;
 }

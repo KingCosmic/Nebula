@@ -1,31 +1,31 @@
-package nebula.Graphics.Context.ParticleRenderer;
+package nebula.graphics.context.particlerenderer;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
-import nebula.Graphics.Context.ExcaliburGraphicsContext;
-import nebula.Graphics.Context.Renderer;
-import nebula.Graphics.Context.Shader;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContext;
+import nebula.graphics.context.Renderer;
+import nebula.graphics.context.Shader;
 
-import nebula.Graphics.ImageSource;
-import nebula.Graphics.Wrapping;
-import nebula.Graphics.Filtering;
+import nebula.graphics.ImageSource;
+import nebula.graphics.Wrapping;
+import nebula.graphics.Filtering;
 
-import nebula.Particles.Particles;
-import nebula.Particles.GpuParticleRenderer;
+import nebula.particles.Particles;
+import nebula.particles.GpuParticleRenderer;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 import nebula.Color;
 
 // import particleVertexSource from './particle-vertex.glsl?raw';
 // import particleFragmentSource from './particle-fragment.glsl?raw';
 
 class ParticleRenderer implements RendererPlugin {
-  public readonly type = 'ex.particle';
-  public priority: Int = 0;
-  private _gl!: WebGL2RenderingContext;
-  private _context!: ExcaliburGraphicsContextWebGL;
-  private _shader!: Shader;
+  public var type = 'ex.particle';
+  public var priority: Int = 0;
+  private var _gl: WebGL2RenderingContext;
+  private var _context: ExcaliburGraphicsContextWebGL;
+  private var _shader: Shader;
 
-  initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
+  function initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
     this._gl = gl;
     this._context = context;
     this._shader = new Shader({
@@ -45,17 +45,17 @@ class ParticleRenderer implements RendererPlugin {
     this._shader.setUniformMatrix('u_matrix', this._context.ortho);
   }
 
-  private _getTexture(image: HTMLImageSource) {
+  private function _getTexture(image: HTMLImageSource) {
     final maybeFiltering = image.getAttribute(ImageSourceAttributeConstants.Filtering);
-    final filtering = maybeFiltering ? parseImageFiltering(maybeFiltering) : undefined;
+    final filtering = maybeFiltering ? parseImageFiltering(maybeFiltering) : null;
     final wrapX = parseImageWrapping(image.getAttribute(ImageSourceAttributeConstants.WrappingX));
     final wrapY = parseImageWrapping(image.getAttribute(ImageSourceAttributeConstants.WrappingY));
 
-    final force = image.getAttribute('forceUpload') === 'true' ? true : false;
+    final force = image.getAttribute('forceUpload') == 'true' ? true : false;
     final texture = this._context.textureLoader.load(
       image,
       {
-        filtering,
+        filtering: filtering,
         wrapping: { x: wrapX, y: wrapY }
       },
       force
@@ -65,13 +65,13 @@ class ParticleRenderer implements RendererPlugin {
     return texture;
   }
 
-  draw(renderer: GpuParticleRenderer, elapsed: Int): Void {
+  function draw(renderer: GpuParticleRenderer, elapsed: Int): Void {
     final gl = this._gl;
 
     this._shader.use();
     this._shader.setUniformMatrix('u_matrix', this._context.ortho);
     final transform =
-      renderer.particle.transform === ParticleTransform.Local
+      renderer.particle.transform == ParticleTransform.Local
         ? this._context.getTransform()
         : this._context.getTransform().multiply(renderer.emitter.transform.get().inverse);
     this._shader.setUniformAffineMatrix('u_transform', transform);
@@ -118,13 +118,13 @@ class ParticleRenderer implements RendererPlugin {
 
     renderer.draw(gl);
   }
-  hasPendingDraws(): Bool {
+  function hasPendingDraws(): Bool {
     return false;
   }
-  flush(): Void {
+  function flush(): Void {
     // pass
   }
-  dispose(): Void {
+  function dispose(): Void {
     // pass
   }
 }

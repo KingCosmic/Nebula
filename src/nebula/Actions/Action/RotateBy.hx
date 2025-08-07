@@ -1,50 +1,49 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.EntityComponentSystem.Components.MotionComponent;
-import nebula.EntityComponentSystem.Entity;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.entitycomponentsystem.components.MotionComponent;
+import nebula.entitycomponentsystem.Entity;
 
-import nebula.Math.Util;
-import nebula.Math;
+import nebula.math.Util;
 
-import nebula.Actions.Action;
+import nebula.actions.Action;
 
 interface RotateByOptions {
   /**
    * Angle in radians to offset from the current and rotate
    */
-  angleRadiansOffset: Float;
+  var angleRadiansOffset: Float;
   /**
    * Duration to take in milliseconds
    */
-  duration: Float;
+  var duration: Int;
   /**
    * Optionally provide type of rotation, default is RotationType.ShortestPath
    */
-  rotationType?: RotationType;
+  var rotationType: Null<RotationType>;
 }
 
 /**
  *
  */
-function isRotateByOptions(x: any): x is RotateByOptions {
-  return typeof x.angleRadiansOffset === 'number' && typeof x.duration === 'number';
+function isRotateByOptions(x: Any) {
+  return (Std.isOfType(x.angleRadianOffset, Float) && Std.isOfType(x.duration, Int));
 }
 
 class RotateByWithOptions implements Action {
-  id = nextActionId();
-  private _durationMs: Float;
-  private _tx: TransformComponent;
-  private _started: boolean = false;
-  private _currentMs: Float;
-  private _stopped: boolean = false;
-  private _motion: MotionComponent;
-  private _offset: Float = 0;
-  private _startAngle: Float = 0;
-  private _rotationType: RotationType;
-  private _endAngle: Float = 0;
+  var id = nextActionId();
+  private var _durationMs: Float;
+  private var _tx: TransformComponent;
+  private var _started: Bool = false;
+  private var _currentMs: Float;
+  private var _stopped: Bool = false;
+  private var _motion: MotionComponent;
+  private var _offset: Float = 0;
+  private var _startAngle: Float = 0;
+  private var _rotationType: RotationType;
+  private var _endAngle: Float = 0;
   public function new(
-    public entity: Entity,
+    entity: Entity,
     options: RotateByOptions
   ) {
     this._offset = options.angleRadiansOffset;
@@ -57,7 +56,7 @@ class RotateByWithOptions implements Action {
     this._rotationType = options.rotationType ?? RotationType.ShortestPath;
     this._currentMs = this._durationMs;
   }
-  update(elapsed: Float) {
+  function update(elapsed: Int) {
     if (!this._started) {
       this._startAngle = this._tx.rotation;
       this._endAngle = canonicalizeAngle(this._startAngle + this._offset);
@@ -68,7 +67,7 @@ class RotateByWithOptions implements Action {
     var newAngle = lerpAngle(this._startAngle, this._endAngle, this._rotationType, t);
     var currentAngle = this._tx.rotation;
     var seconds = elapsed / 1000;
-    var rx = seconds === 0 ? 0 : (newAngle - currentAngle) / seconds;
+    var rx = seconds == 0 ? 0 : (newAngle - currentAngle) / seconds;
     this._motion.angularVelocity = rx;
 
     if (this.isComplete()) {
@@ -76,17 +75,17 @@ class RotateByWithOptions implements Action {
       this._motion.angularVelocity = 0;
     }
   }
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     return this._stopped || this._currentMs < 0;
   }
 
-  public stop() {
+  public function stop() {
     this._motion.angularVelocity = 0;
     this._stopped = true;
     this._currentMs = 0;
   }
 
-  public reset() {
+  public function reset() {
     this._currentMs = this._durationMs;
     this._started = false;
     this._stopped = false;
@@ -94,26 +93,26 @@ class RotateByWithOptions implements Action {
 }
 
 class RotateBy implements Action {
-  id = nextActionId();
-  private _tx: TransformComponent;
-  private _motion: MotionComponent;
-  public x!: Float;
-  public y!: Float;
-  private _start!: Float;
-  private _end!: Float;
-  private _speed: Float;
-  private _offset: Float;
+  var id = nextActionId();
+  private var _tx: TransformComponent;
+  private var _motion: MotionComponent;
+  public var x: Float;
+  public var y: Float;
+  private var _start: Float;
+  private var _end: Float;
+  private var _speed: Float;
+  private var _offset: Float;
 
-  private _rotationType: RotationType;
-  private _direction!: Float;
-  private _distance!: Float;
-  private _shortDistance!: Float;
-  private _longDistance!: Float;
-  private _shortestPathIsPositive!: Bool;
-  private _currentNonCannonAngle!: Float;
-  private _started = false;
-  private _stopped = false;
-  constructor(entity: Entity, angleRadiansOffset: Float, speed: Float, rotationType?: RotationType) {
+  private var _rotationType: RotationType;
+  private var _direction: Float;
+  private var _distance: Float;
+  private var _shortDistance: Float;
+  private var _longDistance: Float;
+  private var _shortestPathIsPositive: Bool;
+  private var _currentNonCannonAngle: Float;
+  private var _started = false;
+  private var _stopped = false;
+  public function new(entity: Entity, angleRadiansOffset: Float, speed: Float, ?rotationType: RotationType) {
     this._tx = entity.get(TransformComponent);
     this._motion = entity.get(MotionComponent);
     this._speed = speed;
@@ -121,7 +120,7 @@ class RotateBy implements Action {
     this._rotationType = rotationType || RotationType.ShortestPath;
   }
 
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     if (!this._started) {
       this._started = true;
       this._start = this._tx.rotation;
@@ -186,21 +185,21 @@ class RotateBy implements Action {
     }
   }
 
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     var distanceTraveled = Math.abs(this._currentNonCannonAngle - this._start);
     return this._stopped || distanceTraveled >= Math.abs(this._distance);
   }
 
-  public stop() {
+  public function stop() {
     this._motion.angularVelocity = 0;
     this._stopped = true;
   }
 
-  public reset() {
+  public function reset() {
     this._started = false;
     this._stopped = false;
-    this._start = undefined as any;
-    this._currentNonCannonAngle = undefined as any;
-    this._distance = undefined as any;
+    this._start = null;
+    this._currentNonCannonAngle = null;
+    this._distance = null;
   }
 }

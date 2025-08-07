@@ -1,6 +1,6 @@
-package nebula.Graphics.Context;
+package nebula.graphics.context;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
 
 /**
  * Interface that defines an Excalibur Renderer that can be called with .draw() in the {@apilink ExcaliburGraphicsContext}
@@ -9,40 +9,40 @@ interface RendererPlugin {
   /**
    * Unique type name for this renderer plugin
    */
-  readonly type: String;
+  var type: String;
 
   /**
    * Render priority tie breaker when drawings are at the same z index
    *
    * Lower number means higher priority and is drawn first. Higher number means lower priority and is drawn last.
    */
-  priority: Int;
+  var priority: Int;
 
   /**
    * Initialize your renderer
    * @param gl
    * @param context
    */
-  initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void;
+  function initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void;
 
   /**
    * Issue a draw command to draw something to the screen
    * @param args
    */
-  draw(...args: any[]): Void;
+  function draw(...args: Array<Any>): Void;
 
   /**
    * @returns if there are any pending draws in the renderer
    */
-  hasPendingDraws(): Bool;
+  function hasPendingDraws(): Bool;
 
   /**
    * Flush any pending graphics draws to the screen
    */
-  flush(): Void;
+  function flush(): Void;
 
   /**
    * Clear out any allocated memory
    */
-  dispose(): Void;
+  function dispose(): Void;
 }

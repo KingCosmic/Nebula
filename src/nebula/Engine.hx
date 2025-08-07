@@ -1,54 +1,38 @@
 package nebula;
 
-import nebula.Util.Object;
-import nebula.Util.Future;
+import nebula.util.Object;
+import nebula.util.Future;
 import nebula.EventEmitter;
-import nebula.Input.PointerScope;
+import nebula.input.PointerScope;
 import nebula.Flags;
-import nebula.Math.Vector;
+import nebula.math.Vector;
 import nebula.Screen;
 import nebula.ScreenElement;
 import nebula.Actor;
 import nebula.Timer;
-import nebula.TileMap;
-import nebula.Director.DefaultLoader;
-import nebula.Director.Loader;
-import nebula.Util.Detector;
+import nebula.tilemap.TileMap;
+import nebula.director.DefaultLoader;
+import nebula.director.Loader;
+import nebula.util.Detector;
 import nebula.Events;
-import nebula.Util.Log;
+import nebula.util.Log;
 import nebula.Color;
 import nebula.Scene;
-import nebula.EntityComponentSystem.Entity;
-import nebula.Debug.DebugConfig;
-import nebula.Util.Browser;
-import nebula.Graphics;
-import nebula.Util.Clock;
-import nebula.Graphics.Filtering;
-import nebula.Graphics.GraphicsDiagnostics;
-import nebula.Input.InputMapper;
-import nebula.Director.Director;
-import nebula.Input.InputHost;
-import nebula.Collision.PhysicsConfig;
-import nebula.Util.Required;
+import nebula.entityComponentSystem.Entity;
+import nebula.debug.DebugConfig;
+import nebula.util.Browser;
+import nebula.util.Clock;
+import nebula.graphics.Filtering;
+import nebula.graphics.GraphicsDiagnostics;
+import nebula.input.InputMapper;
+import nebula.director.Director;
+import nebula.input.InputHost;
+import nebula.collision.PhysicsConfig;
 import nebula.Context;
 import nebula.GarbageCollector;
-import nebula.Util.Util;
-import nebula.Util.IFrame;
-
-typedef TEngineEvents = DirectorEvents & {
-  fallbackgraphicscontext: ExcaliburGraphicsContext2DCanvas,
-  initialize: InitializeEvent<Engine>,
-  visible: VisibleEvent,
-  hidden: HiddenEvent,
-  start: GameStartEvent,
-  stop: GameStopEvent,
-  preupdate: PreUpdateEvent<Engine>,
-  postupdate: PostUpdateEvent<Engine>,
-  preframe: PreFrameEvent,
-  postframe: PostFrameEvent,
-  predraw: PreDrawEvent,
-  postdraw: PostDrawEvent
-};
+import nebula.util.Util;
+import nebula.util.IFrame;
+import nebula.graphics.context.ExcaliburGraphicsContext;
 
 var EngineEvents = spreadWith(DirectorEvents, {
   FallbackGraphicsContext: 'fallbackgraphicscontext',
@@ -88,20 +72,14 @@ enum CanvasRendering {
   Pixelated;
 }
 
-enum EitherOr3<A, B, C> {
-  First(a: A);
-  Second(b: B);
-  Third(c: C);
-}
-
 enum EitherOr<A, B> {
   First(a: A);
   Second(b: B);
 }
 
-typedef TypeofScene = EitherOr3<Scene, SceneConstructor, SceneWithOptions>;
+typedef TypeofScene = EitherOr<Scene, SceneWithOptions>;
 
-typedef RootOrLoader = EitherOr<WithRoot<TKnownScenes>, DefaultLoader>;
+typedef RootOrLoader = EitherOr<String, DefaultLoader>;
 
 enum PowerPreferences {
   Default;
@@ -162,8 +140,7 @@ interface EngineOptions {
    * It is recommended you stick to `true` or `false` unless you understand what you're doing, it is possible to get into a downward
    * spiral if collection timings are set too low where you are stuck in repeated collection.
    */
-  public var garbageCollection: Null<Bool>;
-  public var gcOptions: Null<GarbageCollectionOptions>;
+  public var garbageCollection: Null<Any>;
 
   /**
    * Quick convenience property to configure Excalibur to use special settings for "pretty" anti-aliased pixel art
@@ -231,7 +208,7 @@ interface EngineOptions {
   /**
    * Optionally configure the global, or a factory to produce it to listen to for browser events for Excalibur to listen to
    */
-  public var global: Null<GlobalEventHandlers>;
+  public var global: Null<Any>;
 
   /**
    * Configures the pointer scope. Pointers scoped to the 'Canvas' can only fire events within the canvas viewport; whereas, 'Document'
@@ -332,12 +309,12 @@ interface EngineOptions {
   /**
    * Optionally provide a custom handler for the webgl context lost event
    */
-  public var handleContextLost: Null<(e: Event) -> Void>;
+  public var handleContextLost: Null<(e: Any) -> Void>;
 
   /**
    * Optionally provide a custom handler for the webgl context restored event
    */
-  public var handleContextRestored: Null<(e: Event) -> Void>;
+  public var handleContextRestored: Null<(e: Any) -> Void>;
 
   /**
    * Optionally configure how excalibur handles poor performance on a player's browser
@@ -377,7 +354,7 @@ interface EngineOptions {
    *
    * Scene transitions can can overridden dynamically by the `Scene` or by the call to `.goToScene`
    */
-  public var scenes: Null<SceneMap<TKnownScenes>>;
+  public var scenes: Null<Map<String, Scene>>;
 }
 
 /**
@@ -406,11 +383,11 @@ class Engine {
    */
   public var scope = (cb: () -> TReturn) -> Engine.Context.scope(this, cb);
 
-  public var global: GlobalEventHandlers;
+  public var global: Any;
 
   private var _garbageCollector: GarbageCollector;
 
-  public var garbageCollectorConfig: Null<GarbageCollectionOptions>;
+  public var garbageCollectorConfig: Null<Any>;
 
   /**
    * Current Excalibur version string
@@ -437,12 +414,12 @@ class Engine {
   /**
    * Scene director, manages all scenes, scene transitions, and loaders in excalibur
    */
-  public var director: Director<TKnownScenes>;
+  public var director: Director;
 
   /**
    * Direct access to the engine's canvas element
    */
-  public var canvas: HTMLCanvasElement;
+  public var canvas: Any;
 
   /**
    * Direct access to the ExcaliburGraphicsContext used for drawing things to the screen
@@ -453,7 +430,7 @@ class Engine {
   /**
    * Direct access to the physics configuration for excalibur
    */
-  public var physics: DeepRequired<PhysicsConfig>;
+  public var physics: PhysicsConfig;
 
   /**
    * Optionally set the maximum fps if not set Excalibur will go as fast as the device allows.
@@ -712,7 +689,7 @@ class Engine {
 
   private var _logger: Logger;
 
-  private var _toaster: Toaster = new Toaster();
+  // private var _toaster: Toaster = new Toaster();
 
   // this determines whether excalibur is compatible with your browser
   private var _compatible: Bool;
@@ -1061,7 +1038,7 @@ class Engine {
     Engine.InstanceCount++;
   }
 
-  private function _handleWebGLContextLost(e: Event) {
+  private function _handleWebGLContextLost(e: Any) {
     e.preventDefault();
     this.clock.stop();
     this._logger.fatalOnce('WebGL Graphics Lost', e);
@@ -1145,12 +1122,12 @@ class Engine {
           );
 
           if (showPlayerMessage) {
-            this._toaster.toast(
-              'Excalibur is encountering performance issues. ' +
-                "It's possible that your browser doesn't have hardware acceleration enabled. " +
-                'Visit [LINK] for more information and potential solutions.',
-              'https://excaliburjs.com/docs/performance'
-            );
+            // this._toaster.toast(
+            //   'Excalibur is encountering performance issues. ' +
+            //     "It's possible that your browser doesn't have hardware acceleration enabled. " +
+            //     'Visit [LINK] for more information and potential solutions.',
+            //   'https://excaliburjs.com/docs/performance'
+            // );
           }
           this.useCanvas2DFallback();
           this.emit('fallbackgraphicscontext', this.graphicsContext);
@@ -1359,7 +1336,7 @@ class Engine {
    * @param destinationScene
    * @param options
    */
-  public function goToScene(destinationScene: WithRoot<TKnownScenes>, ?options: GoToOptions<TData>): Promise<Void> {
+  public function goToScene(destinationScene: String, ?options: GoToOptions): Any {
     this.scope(() -> {
       this.director.goToScene(destinationScene, options);
     });
@@ -1609,11 +1586,11 @@ class Engine {
   function get_ready() {
     return this._isReadyFuture.isCompleted;
   }
-  public function isReady(): Promise<Void> {
+  public function isReady(): Any {
     return this._isReadyFuture.promise;
   }
 
-  public function start(?sceneNameOrLoader: RootOrLoader, ?options: StartOptions): Promise<Void> {
+  public function start(?sceneNameOrLoader: RootOrLoader, ?options: StartOptions): Any {
     this.scope(() -> {
       if (!this._compatible) {
         throw new Error('Excalibur is incompatible with your browser');
@@ -1721,17 +1698,17 @@ class Engine {
     return this.clock.isRunning();
   }
 
-  private var _screenShotRequests: Array<{ preserveHiDPIResolution: Bool, resolve: (image: HTMLImageElement) -> Void }> = [];
+  private var _screenShotRequests: Array<{ preserveHiDPIResolution: Bool, resolve: (image: Any) -> Void }> = [];
   /**
    * Takes a screen shot of the current viewport and returns it as an
    * HTML Image Element.
    * @param preserveHiDPIResolution in the case of HiDPI return the full scaled backing image, by default false
    */
-  public function screenshot(preserveHiDPIResolution = false): Promise<HTMLImageElement> {
-    var screenShotPromise = new Promise<HTMLImageElement>((resolve) => {
+  public function screenshot(preserveHiDPIResolution = false): Any {
+    // var screenShotPromise = new Promise<HTMLImageElement>((resolve) => {
       this._screenShotRequests.push({ preserveHiDPIResolution: preserveHiDPIResolution, resolve: resolve });
-    });
-    return screenShotPromise;
+    // });
+    // return screenShotPromise;
   }
 
   private function _checkForScreenShots() {
@@ -1766,7 +1743,7 @@ class Engine {
    * will appear.
    * @param loader  Some {@apilink Loadable} such as a {@apilink Loader} collection, {@apilink Sound}, or {@apilink Texture}.
    */
-  public function load(loader: DefaultLoader, hideLoader = false): Promise<Void> {
+  public function load(loader: DefaultLoader, hideLoader = false): Any {
     this.scope(() -> {
       try {
         // early exit if loaded

@@ -1,39 +1,39 @@
-package nebula.Graphics.Context.CircleRenderer;
+package nebula.graphics.context.circlerenderer;
 
 import nebula.Color;
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
-import nebula.Graphics.GraphicsDiagnostics;
+import nebula.graphics.GraphicsDiagnostics;
 
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
 
-import nebula.Graphics.Context.QuadIndexBuffer;
+import nebula.graphics.context.QuadIndexBuffer;
 
-import nebula.Graphics.Context.Renderer;
-import nebula.Graphics.Context.Shader;
-import nebula.Graphics.Context.VertexBuffer;
-import nebula.Graphics.Context.VertexLayout;
+import nebula.graphics.context.Renderer;
+import nebula.graphics.context.Shader;
+import nebula.graphics.context.VertexBuffer;
+import nebula.graphics.context.VertexLayout;
 
 // import frag from './circle-renderer.frag.glsl?raw';
 // import vert from './circle-renderer.vert.glsl?raw';
 
 class CircleRenderer implements RendererPlugin {
-  public readonly type = 'ex.circle';
-  public priority: Int = 0;
+  public var type = 'ex.circle';
+  public var priority: Int = 0;
 
-  private _maxCircles: Int = 10922; // max(uint16) / 6 verts
+  private var _maxCircles: Int = 10922; // max(uint16) / 6 verts
 
-  private _shader!: Shader;
-  private _context!: ExcaliburGraphicsContextWebGL;
-  private _gl!: WebGLRenderingContext;
-  private _buffer!: VertexBuffer;
-  private _layout!: VertexLayout;
-  private _quads!: QuadIndexBuffer;
+  private var _shader: Shader;
+  private var _context: ExcaliburGraphicsContextWebGL;
+  private var _gl: WebGLRenderingContext;
+  private var _buffer: VertexBuffer;
+  private var _layout: VertexLayout;
+  private var _quads: QuadIndexBuffer;
 
-  private _circleCount: Int = 0;
-  private _vertexIndex: Int = 0;
+  private var _circleCount: Int = 0;
+  private var _vertexIndex: Int = 0;
 
-  initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
+  function initialize(gl: WebGL2RenderingContext, context: ExcaliburGraphicsContextWebGL): Void {
     this._gl = gl;
     this._context = context;
     this._shader = new Shader({
@@ -48,13 +48,13 @@ class CircleRenderer implements RendererPlugin {
     this._shader.setUniformMatrix('u_matrix', context.ortho);
 
     this._buffer = new VertexBuffer({
-      gl,
+      gl: gl,
       size: 14 * 4 * this._maxCircles,
       type: 'dynamic'
     });
 
     this._layout = new VertexLayout({
-      gl,
+      gl: gl,
       shader: this._shader,
       vertexBuffer: this._buffer,
       attributes: [
@@ -70,7 +70,7 @@ class CircleRenderer implements RendererPlugin {
     this._quads = new QuadIndexBuffer(gl, this._maxCircles, true);
   }
 
-  public dispose() {
+  public function dispose() {
     this._buffer.dispose();
     this._quads.dispose();
     this._shader.dispose();
@@ -78,14 +78,14 @@ class CircleRenderer implements RendererPlugin {
     this._gl = null;
   }
 
-  private _isFull() {
+  private function _isFull() {
     if (this._circleCount >= this._maxCircles) {
       return true;
     }
     return false;
   }
 
-  draw(pos: Vector, radius: Int, color: Color, stroke: Color = Color.Transparent, strokeThickness: Int = 0): Void {
+  function draw(pos: Vector, radius: Int, color: Color, stroke: Color = Color.Transparent, strokeThickness: Int = 0): Void {
     if (this._isFull()) {
       this.flush();
     }
@@ -189,13 +189,13 @@ class CircleRenderer implements RendererPlugin {
     vertexBuffer[this._vertexIndex++] = strokeThickness / radius;
   }
 
-  hasPendingDraws(): Bool {
-    return this._circleCount !== 0;
+  function hasPendingDraws(): Bool {
+    return this._circleCount != 0;
   }
 
-  flush(): Void {
+  function flush(): Void {
     // nothing to draw early exit
-    if (this._circleCount === 0) {
+    if (this._circleCount == 0) {
       return;
     }
 

@@ -1,79 +1,79 @@
-package nebula.EntityComponentSystem.Components;
+package nebula.entitycomponentsystem.components;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
-import nebula.EntityComponentSystem.Component;
+import nebula.entitycomponentsystem.Component;
 
 interface Motion {
   /**
    * The velocity of an entity in pixels per second
    */
-  vel: Vector;
+  var vel: Vector;
 
   /**
    * The maximum component-wise velocity of an entity in pixels per second
    */
-  maxVel: Vector;
+  var maxVel: Vector;
 
   /**
    * The acceleration of entity in pixels per second^2
    */
-  acc: Vector;
+  var acc: Vector;
 
   /**
    * The scale rate of change in scale units per second
    */
-  scaleFactor: Vector;
+  var scaleFactor: Vector;
 
   /**
    * The angular velocity which is how quickly the entity is rotating in radians per second
    */
-  angularVelocity: Float;
+  var angularVelocity: Float;
 
   /**
    * The amount of torque applied to the entity, angular acceleration is torque * inertia
    */
-  torque: Float;
+  var torque: Float;
 
   /**
    * Inertia can be thought of as the resistance to motion
    */
-  inertia: Float;
+  var inertia: Float;
 }
 
 class MotionComponent extends Component {
   /**
    * The velocity of an entity in pixels per second
    */
-  public vel: Vector = Vector.Zero;
+  public var vel: Vector = Vector.Zero;
 
   /**
    * The maximum component-wise velocity of an entity in pixels per second
    */
-  public maxVel: Vector = Vector.One.scaleEqual(Infinity);
+  public var maxVel: Vector = Vector.One.scaleEqual(Infinity);
 
   /**
    * The acceleration of entity in pixels per second^2
    */
-  public acc: Vector = Vector.Zero;
+  public var acc: Vector = Vector.Zero;
 
   /**
    * The scale rate of change in scale units per second
    */
-  public scaleFactor: Vector = Vector.Zero;
+  public var scaleFactor: Vector = Vector.Zero;
 
   /**
    * The angular velocity which is how quickly the entity is rotating in radians per second
    */
-  public angularVelocity = 0;
+  public var angularVelocity = 0;
 
   /**
    * The amount of torque applied to the entity, angular acceleration is torque * inertia
    */
-  public torque: number = 0;
+  public var torque: Int = 0;
 
   /**
    * Inertia can be thought of as the resistance to motion
    */
-  public inertia: number = 1;
+  public var inertia: Int = 1;
 }

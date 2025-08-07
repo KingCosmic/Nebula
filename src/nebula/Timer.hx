@@ -1,8 +1,8 @@
 package nebula;
 
 import nebula.Scene;
-import nebula.Util.Log;
-import nebula.Math.Random;
+import nebula.util.Log;
+import nebula.math.Random;
 
 interface TimerOptions {
   /**

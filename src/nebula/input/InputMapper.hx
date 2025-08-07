@@ -1,27 +1,29 @@
-import type { Gamepads } from './Gamepad';
-import type { Keyboard } from './Keyboard';
-import type { PointerEventReceiver } from './PointerEventReceiver';
+package nebula.input;
 
-export interface InputsOptions {
-  keyboard: Keyboard;
-  gamepads: Gamepads;
-  pointers: PointerEventReceiver;
+import nebula.input.Gamepad;
+import nebula.input.Keyboard;
+import nebula.input.PointerEventReceiver;
+
+interface InputsOptions {
+  var keyboard: Keyboard;
+  var gamepads: Gamepads;
+  var pointers: PointerEventReceiver;
 }
 
 /**
  * This allows you to map multiple inputs to specific commands! This is especially useful when
  * you need to allow multiple input sources to control a specific action.
  */
-export class InputMapper {
-  private _handlers = new Map<any, any>();
-  constructor(public inputs: InputsOptions) {}
+class InputMapper {
+  private var _handlers = new Map<Any, Any>();
+  public function new(inputs: InputsOptions) {}
 
   /**
    * Executes the input map, called internally by Excalibur
    */
-  execute() {
-    for (const [input, command] of this._handlers.entries()) {
-      const results = input(this.inputs);
+  function execute() {
+    for (input => command in this._handlers) {
+      final results = input(this.inputs);
       if (results) {
         command(results);
       }
@@ -48,9 +50,9 @@ export class InputMapper {
    * @param inputHandler
    * @param commandHandler
    */
-  on<TInputHandlerData>(
-    inputHandler: (inputs: InputsOptions) => TInputHandlerData | false,
-    commandHandler: (data: TInputHandlerData) => any
+  function on(
+    inputHandler: (inputs: InputsOptions) -> Null<TInputHandlerData>,
+    commandHandler: (data: TInputHandlerData) -> Any
   ) {
     this._handlers.set(inputHandler, commandHandler);
   }

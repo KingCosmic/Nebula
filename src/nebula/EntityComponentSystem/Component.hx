@@ -1,16 +1,11 @@
-package nebula.EntityComponentSystem;
+package nebula.entitycomponentsystem;
 
-import nebula.EntityComponentSystem.Entity;
-
-/**
- * Component Constructor Types
- */
-type ComponentCtor<TComponent extends Component = Component> = new (...args: dynamic[]) => TComponent;
+import nebula.entitycomponentsystem.Entity;
 
 /**
  *
  */
-function isComponentCtor(value: dynamic): value is ComponentCtor<Component> {
+function isComponentCtor(value: Any) {
   return !!value && !!value.prototype && !!value.prototype.constructor;
 }
 
@@ -18,7 +13,7 @@ function isComponentCtor(value: dynamic): value is ComponentCtor<Component> {
  * Type guard to check if a component implements clone
  * @param x
  */
-function hasClone(x: dynamic): x is { clone(): any } {
+function hasClone(x: Any) {
   return !!x?.clone;
 }
 
@@ -43,22 +38,23 @@ abstract class Component {
    *
    * Only components with zero-arg constructors are supported as automatic component dependencies
    */
-  readonly dependencies?: ComponentCtor[];
+  var dependencies: Null<Array<Any>>;
 
   /**
    * Current owning {@apilink Entity}, if any, of this component. Null if not added to any {@apilink Entity}
    */
-  owner?: Entity = undefined;
+  var owner: Null<Entity> = null;
 
   /**
    * Clones any properties on this component, if that property value has a `clone()` method it will be called
    */
-  clone(): Component {
-    final newComponent = new (this.constructor as any)();
-    for (final prop in this) {
+  function clone(): Component {
+    final Cons = this.new;
+    final newComponent = new Cons();
+    for (prop in this) {
       if (this.hasOwnProperty(prop)) {
         final val = this[prop];
-        if (hasClone(val) && prop !== 'owner' && prop !== 'clone') {
+        if (hasClone(val) && prop != 'owner' && prop != 'clone') {
           newComponent[prop] = val.clone();
         } else {
           newComponent[prop] = val;
@@ -71,10 +67,10 @@ abstract class Component {
   /**
    * Optional callback called when a component is added to an entity
    */
-  onAdd?(owner: Entity): void;
+  var onAdd: Null<(owner: Entity) -> Void>;
 
   /**
    * Optional callback called when a component is removed from an entity
    */
-  onRemove?(previousOwner: Entity): void;
+  var onRemove: Null<(previousOwner: Entity) -> Void>;
 }

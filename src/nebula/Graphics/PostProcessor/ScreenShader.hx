@@ -1,10 +1,10 @@
-package nebula.Graphics.PostProcessor;
+package nebula.graphics.postprocessor;
 
-import nebula.Util.Log;
-import nebula.Graphics.Context.ExcaliburGraphicsContextWebGL;
-import nebula.Graphics.Context.Shader;
-import nebula.Graphics.Context.VertexBuffer;
-import nebula.Graphics.Context.VertexLayout;
+import nebula.util.Log;
+import nebula.graphics.context.ExcaliburGraphicsContextWebGL;
+import nebula.graphics.context.Shader;
+import nebula.graphics.context.VertexBuffer;
+import nebula.graphics.context.VertexLayout;
 
 /**
  * Helper that defines a whole screen renderer, just provide a fragment source!
@@ -13,18 +13,18 @@ import nebula.Graphics.Context.VertexLayout;
  * - vec2 a_texcoord between 0-1 which corresponds to screen position
  */
 class ScreenShader {
-  private _shader: Shader;
-  private _buffer: VertexBuffer;
-  private _layout: VertexLayout;
+  private var _shader: Shader;
+  private var _buffer: VertexBuffer;
+  private var _layout: VertexLayout;
   public function new(context: ExcaliburGraphicsContextWebGL, fragmentSource: String) {
-    if (process.env.NODE_ENV === 'development') {
-      if (fragmentSource.includes('v_texcoord')) {
-        Logger.getInstance().warn(
-          'ScreenShader: "v_texcoord" is deprecated in postprocessing fragment shaders will be removed in v1.0,' +
-            ' use "v_uv" instead. Source [${fragmentSource}]'
-        );
-      }
-    }
+    // if (process.env.NODE_ENV == 'development') {
+    //   if (fragmentSource.includes('v_texcoord')) {
+    //     Logger.getInstance().warn(
+    //       'ScreenShader: "v_texcoord" is deprecated in postprocessing fragment shaders will be removed in v1.0,' +
+    //         ' use "v_uv" instead. Source [${fragmentSource}]'
+    //     );
+    //   }
+    // }
     final gl = context.__gl;
     this._shader = new Shader({
       graphicsContext: context,
@@ -45,7 +45,7 @@ class ScreenShader {
     this._shader.compile();
     // Setup memory layout
     this._buffer = new VertexBuffer({
-      gl,
+      gl: gl,
       type: 'static',
       // clip space quad + uv since we don't need a camera
       data: new Float32Array([
@@ -55,7 +55,7 @@ class ScreenShader {
       ])
     });
     this._layout = new VertexLayout({
-      gl,
+      gl: gl,
       shader: this._shader,
       vertexBuffer: this._buffer,
       attributes: [
@@ -66,10 +66,10 @@ class ScreenShader {
     this._buffer.upload();
   }
 
-  public getShader() {
+  public function getShader() {
     return this._shader;
   }
-  public getLayout() {
+  public function getLayout() {
     return this._layout;
   }
 }

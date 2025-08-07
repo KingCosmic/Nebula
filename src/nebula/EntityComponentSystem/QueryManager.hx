@@ -1,45 +1,42 @@
-package nebula.EntityComponentSystem;
+package nebula.entitycomponentsystem;
 
-import nebula.EntityComponentSystem.Entity;
-import nebula.EntityComponentSystem.Query;
-import nebula.EntityComponentSystem.Component;
-import nebula.EntityComponentSystem.World;
-import nebula.EntityComponentSystem.TagQuery;
+import nebula.entitycomponentsystem.Entity;
+import nebula.entitycomponentsystem.Query;
+import nebula.entitycomponentsystem.Component;
+import nebula.entitycomponentsystem.World;
+import nebula.entitycomponentsystem.TagQuery;
 
 /**
  * The query manager is responsible for updating all queries when entities/components change
  */
 class QueryManager {
-  private _queries = new Map<String, Query<dynamic, dynamic>>();
-  private _addComponentHandlers = new Map<Entity, (c: Component) => dynamic>();
-  private _removeComponentHandlers = new Map<Entity, (c: Component) => dynamic>();
-  private _componentToQueriesIndex = new Map<ComponentCtor<dynamic>, Query<dynamic, dynamic>[]>();
+  private var _queries = new Map<String, Query>();
+  private var _addComponentHandlers = new Map<Entity, (c: Component) -> Any>();
+  private var _removeComponentHandlers = new Map<Entity, (c: Component) -> Any>();
+  private var _componentToQueriesIndex = new Map<Any, Array<Query>>();
 
-  private _tagQueries = new Map<String, TagQuery<dynamic>>();
-  private _addTagHandlers = new Map<Entity, (tag: String) => dynamic>();
-  private _removeTagHandlers = new Map<Entity, (tag: String) => dynamic>();
-  private _tagToQueriesIndex = new Map<String, TagQuery<dynamic>[]>();
+  private var _tagQueries = new Map<String, TagQuery<Any>>();
+  private var _addTagHandlers = new Map<Entity, (tag: String) -> Any>();
+  private var _removeTagHandlers = new Map<Entity, (tag: String) -> Any>();
+  private var _tagToQueriesIndex = new Map<String, Array<TagQuery<Any>>>();
 
-  public function new(private _world: World) {}
+  public function new(_world: World) {}
 
-  public createQuery<
-    TKnownComponentCtors extends ComponentCtor<Component> = never,
-    TAnyComponentCtors extends ComponentCtor<Component> = never
-  >(
-    params: TKnownComponentCtors[] | QueryParams<TKnownComponentCtors, TAnyComponentCtors>
-  ): Query<TKnownComponentCtors, TAnyComponentCtors> {
+  public function createQuery(
+    params: QueryParams
+  ): Query {
     final id = Query.createId(params);
     if (this._queries.has(id)) {
       // short circuit if query is already created
-      return this._queries.get(id) as Query<TKnownComponentCtors>;
+      return this._queries.get(id);
     }
 
-    final query = new Query<TKnownComponentCtors, TAnyComponentCtors>(params);
+    final query = new Query(params);
 
     this._queries.set(query.id, query);
 
     // index maintenance
-    for (final component of [...query.filter.components.all, ...query.filter.components.any, ...query.filter.components.not]) {
+    for (component in [...query.filter.components.all, ...query.filter.components.any, ...query.filter.components.not]) {
       final queries = this._componentToQueriesIndex.get(component);
       if (!queries) {
         this._componentToQueriesIndex.set(component, [query]);
@@ -48,18 +45,18 @@ class QueryManager {
       }
     }
 
-    for (final entity of this._world.entities) {
+    for (entity in this._world.entities) {
       this.addEntity(entity);
     }
 
     return query;
   }
 
-  public createTagQuery<TKnownTags extends String>(requiredTags: TKnownTags[]): TagQuery<TKnownTags> {
+  public function createTagQuery(requiredTags: Array<String>): TagQuery {
     final id = TagQuery.createId(requiredTags);
     if (this._tagQueries.has(id)) {
       // short circuit if query is already created
-      return this._tagQueries.get(id) as TagQuery<TKnownTags>;
+      return this._tagQueries.get(id);
     }
 
     final query = new TagQuery(requiredTags);
@@ -67,7 +64,7 @@ class QueryManager {
     this._tagQueries.set(query.id, query);
 
     // index maintenance
-    for (final tag of requiredTags) {
+    for (tag in requiredTags) {
       final queries = this._tagToQueriesIndex.get(tag);
       if (!queries) {
         this._tagToQueriesIndex.set(tag, [query]);
@@ -76,26 +73,26 @@ class QueryManager {
       }
     }
 
-    for (final entity of this._world.entities) {
+    for (entity in this._world.entities) {
       this.addEntity(entity);
     }
 
     return query;
   }
 
-  private _createAddComponentHandler = (entity: Entity) => (c: Component) => {
+  private var _createAddComponentHandler = (entity: Entity) -> (c: Component) -> {
     this.addComponent(entity, c);
   };
 
-  private _createRemoveComponentHandler = (entity: Entity) => (c: Component) => {
+  private var _createRemoveComponentHandler = (entity: Entity) -> (c: Component) -> {
     this.removeComponent(entity, c);
   };
 
-  private _createAddTagHandler = (entity: Entity) => (tag: String) => {
+  private var _createAddTagHandler = (entity: Entity) -> (tag: String) -> {
     this.addTag(entity, tag);
   };
 
-  private _createRemoveTagHandler = (entity: Entity) => (tag: String) => {
+  private var _createRemoveTagHandler = (entity: Entity) -> (tag: String) -> {
     this.removeTag(entity, tag);
   };
 
@@ -103,7 +100,7 @@ class QueryManager {
    * Scans queries and locates any that need this entity added
    * @param entity
    */
-  addEntity(entity: Entity) {
+  function addEntity(entity: Entity) {
     final maybeAddComponent = this._addComponentHandlers.get(entity);
     final maybeRemoveComponent = this._removeComponentHandlers.get(entity);
     final addComponent = maybeAddComponent ?? this._createAddComponentHandler(entity);
@@ -118,48 +115,48 @@ class QueryManager {
     this._addTagHandlers.set(entity, addTag);
     this._removeTagHandlers.set(entity, removeTag);
 
-    for (final query of this._queries.values()) {
+    for (query in this._queries.values()) {
       query.checkAndAdd(entity);
     }
-    for (final tagQuery of this._tagQueries.values()) {
+    for (tagQuery in this._tagQueries.values()) {
       tagQuery.checkAndAdd(entity);
     }
-    entity.componentAdded$.subscribe(addComponent);
-    entity.componentRemoved$.subscribe(removeComponent);
-    entity.tagAdded$.subscribe(addTag);
-    entity.tagRemoved$.subscribe(removeTag);
+    entity.componentAdded.subscribe(addComponent);
+    entity.componentRemoved.subscribe(removeComponent);
+    entity.tagAdded.subscribe(addTag);
+    entity.tagRemoved.subscribe(removeTag);
   }
 
   /**
    * Scans queries and locates any that need this entity removed
    * @param entity
    */
-  removeEntity(entity: Entity) {
+  function removeEntity(entity: Entity) {
     // Handle components
     final addComponent = this._addComponentHandlers.get(entity);
     final removeComponent = this._removeComponentHandlers.get(entity);
-    for (final query of this._queries.values()) {
+    for (query in this._queries.values()) {
       query.removeEntity(entity);
     }
     if (addComponent) {
-      entity.componentAdded$.unsubscribe(addComponent);
+      entity.componentAdded.unsubscribe(addComponent);
     }
     if (removeComponent) {
-      entity.componentRemoved$.unsubscribe(removeComponent);
+      entity.componentRemoved.unsubscribe(removeComponent);
     }
 
     // Handle tags
     final addTag = this._addTagHandlers.get(entity);
     final removeTag = this._removeTagHandlers.get(entity);
-    for (final tagQuery of this._tagQueries.values()) {
+    for (tagQuery in this._tagQueries.values()) {
       tagQuery.removeEntity(entity);
     }
 
     if (addTag) {
-      entity.tagAdded$.unsubscribe(addTag);
+      entity.tagAdded.unsubscribe(addTag);
     }
     if (removeTag) {
-      entity.tagRemoved$.unsubscribe(removeTag);
+      entity.tagRemoved.unsubscribe(removeTag);
     }
   }
 
@@ -168,9 +165,9 @@ class QueryManager {
    * @param entity
    * @param component
    */
-  addComponent(entity: Entity, component: Component) {
-    final queries = this._componentToQueriesIndex.get(component.constructor as ComponentCtor<any>) ?? [];
-    for (final query of queries) {
+  function addComponent(entity: Entity, component: Component) {
+    final queries = this._componentToQueriesIndex.get(component.constructor) ?? [];
+    for (query in queries) {
       query.checkAndAdd(entity);
     }
   }
@@ -180,9 +177,9 @@ class QueryManager {
    * @param entity
    * @param component
    */
-  removeComponent(entity: Entity, component: Component) {
-    final queries = this._componentToQueriesIndex.get(component.constructor as ComponentCtor<any>) ?? [];
-    for (final query of queries) {
+  function removeComponent(entity: Entity, component: Component) {
+    final queries = this._componentToQueriesIndex.get(component.constructor) ?? [];
+    for (query in queries) {
       query.removeEntity(entity);
     }
   }
@@ -192,9 +189,9 @@ class QueryManager {
    * @param entity
    * @param tag
    */
-  addTag(entity: Entity, tag: String) {
+  function addTag(entity: Entity, tag: String) {
     final queries = this._tagToQueriesIndex.get(tag) ?? [];
-    for (final query of queries) {
+    for (query in queries) {
       query.checkAndAdd(entity);
     }
   }
@@ -204,9 +201,9 @@ class QueryManager {
    * @param entity
    * @param tag
    */
-  removeTag(entity: Entity, tag: String) {
+  function removeTag(entity: Entity, tag: String) {
     final queries = this._tagToQueriesIndex.get(tag) ?? [];
-    for (final query of queries) {
+    for (query in queries) {
       query.removeEntity(entity);
     }
   }

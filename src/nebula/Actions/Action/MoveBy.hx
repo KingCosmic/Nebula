@@ -1,44 +1,43 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.EntityComponentSystem.Components.MotionComponent;
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.EntityComponentSystem.Entity;
+import nebula.entitycomponentsystem.components.MotionComponent;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.entitycomponentsystem.Entity;
 
-import nebula.Math;
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
-import nebula.Util.EasingFunctions;
-import nebula.Util.Log;
+import nebula.util.EasingFunctions;
+import nebula.util.Log;
 
-import nebula.Actions.Action;
+import nebula.actions.Action;
 
 interface MoveByOptions {
-  offset: Vector;
-  duration: Float;
-  easing?: EasingFunction;
+  var offset: Vector;
+  var duration: Int;
+  var easing: Null<EasingFunction>;
 }
 
 /**
  *
  */
-function isMoveByOptions(x: any): x is MoveByOptions {
-  return x.offset instanceof Vector && typeof x.duration === 'number';
+function isMoveByOptions(x: Any) {
+  return (Std.isOfType(x.offset, Vector) && Std.isOfType(x.duration, Int));
 }
 
 class MoveByWithOptions implements Action {
-  id = nextActionId();
-  private _start!: Vector;
-  private _end!: Vector;
-  private _durationMs: Float;
-  private _tx: TransformComponent;
-  private _started: Bool = false;
-  private _currentMs: Float;
-  private _stopped: Bool = false;
-  private _motion: MotionComponent;
-  private _offset: Vector;
-  private _easing: EasingFunction = EasingFunctions.Linear;
+  var id = nextActionId();
+  private var _start: Vector;
+  private var _end: Vector;
+  private var _durationMs: Float;
+  private var _tx: TransformComponent;
+  private var _started: Bool = false;
+  private var _currentMs: Float;
+  private var _stopped: Bool = false;
+  private var _motion: MotionComponent;
+  private var _offset: Vector;
+  private var _easing: EasingFunction = EasingFunctions.Linear;
   public function new(
-    public entity: Entity,
+    entity: Entity,
     options: MoveByOptions
   ) {
     this._offset = options.offset;
@@ -51,7 +50,7 @@ class MoveByWithOptions implements Action {
     this._durationMs = options.duration;
     this._currentMs = this._durationMs;
   }
-  update(elapsed: Float) {
+  function update(elapsed: Int) {
     if (!this._started) {
       this._start = this._tx.pos.clone();
       this._end = this._start.add(this._offset);
@@ -63,8 +62,8 @@ class MoveByWithOptions implements Action {
     var newPosX = this._easing(t, this._start.x, this._end.x, 1);
     var newPosY = this._easing(t, this._start.y, this._end.y, 1);
     var seconds = elapsed / 1000;
-    var velX = seconds === 0 ? 0 : (newPosX - currentPos.x) / seconds;
-    var velY = seconds === 0 ? 0 : (newPosY - currentPos.y) / seconds;
+    var velX = seconds == 0 ? 0 : (newPosX - currentPos.x) / seconds;
+    var velY = seconds == 0 ? 0 : (newPosY - currentPos.y) / seconds;
     this._motion.vel.x = velX;
     this._motion.vel.y = velY;
 
@@ -73,17 +72,17 @@ class MoveByWithOptions implements Action {
       this._motion.vel = vec(0, 0);
     }
   }
-  public isComplete(entity: Entity): Bool {
+  public function isComplete(entity: Entity): Bool {
     return this._stopped || this._currentMs < 0;
   }
 
-  public stop() {
+  public function stop() {
     this._motion.vel = vec(0, 0);
     this._stopped = true;
     this._currentMs = 0;
   }
 
-  public reset() {
+  public function reset() {
     this._currentMs = this._durationMs;
     this._started = false;
     this._stopped = false;
@@ -91,23 +90,23 @@ class MoveByWithOptions implements Action {
 }
 
 class MoveBy implements Action {
-  id = nextActionId();
-  private _tx: TransformComponent;
-  private _motion: MotionComponent;
-  private _entity: Entity;
-  public x!: Float;
-  public y!: Float;
-  private _distance!: Float;
-  private _speed: Float;
+  var id = nextActionId();
+  private var _tx: TransformComponent;
+  private var _motion: MotionComponent;
+  private var _entity: Entity;
+  public var x: Float;
+  public var y: Float;
+  private var _distance: Float;
+  private var _speed: Float;
 
-  private _start!: Vector;
-  private _offset!: Vector;
-  private _end!: Vector;
-  private _dir!: Vector;
-  private _started = false;
-  private _stopped = false;
+  private var _start: Vector;
+  private var _offset: Vector;
+  private var _end: Vector;
+  private var _dir: Vector;
+  private var _started = false;
+  private var _stopped = false;
 
-  constructor(entity: Entity, offsetX: Float, offsetY: Float, speed: Float) {
+  public function new(entity: Entity, offsetX: Int, offsetY: Int, speed: Int) {
     this._entity = entity;
     this._tx = entity.get(TransformComponent);
     this._motion = entity.get(MotionComponent);
@@ -119,7 +118,7 @@ class MoveBy implements Action {
     }
   }
 
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     if (!this._started) {
       this._started = true;
       this._start = new Vector(this._tx.pos.x, this._tx.pos.y);
@@ -136,17 +135,17 @@ class MoveBy implements Action {
     }
   }
 
-  public isComplete(entity: Entity): Bool {
-    const tx = entity.get(TransformComponent);
+  public function isComplete(entity: Entity): Bool {
+    final tx = entity.get(TransformComponent);
     return this._stopped || tx.pos.distance(this._start) >= this._distance;
   }
 
-  public stop() {
+  public function stop() {
     this._motion.vel = vec(0, 0);
     this._stopped = true;
   }
 
-  public reset() {
+  public function reset() {
     this._started = false;
     this._stopped = false;
   }

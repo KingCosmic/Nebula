@@ -1,42 +1,40 @@
-package nebula.Actions.Action;
+package nebula.actions.action;
 
-import nebula.Math.Vector;
+import nebula.math.Vector;
 
-import nebula.EntityComponentSystem.Components.MotionComponent;
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.EntityComponentSystem.Entity;
+import nebula.entitycomponentsystem.components.MotionComponent;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.entitycomponentsystem.Entity;
 
-import nebula.Math;
-
-import nebula.Actions.Action;
+import nebula.actions.Action;
 
 interface ScaleToOptions {
   /**
    * Absolute scale to change to
    */
-  scale: Vector;
+  var scale: Vector;
   /**
    * Duration to take in milliseconds
    */
-  duration: Float;
+  var duration: Int;
 }
 
-function isScaleToOptions(x: any): x is ScaleToOptions {
-  return typeof x.scale === 'object' && typeof x.duration === 'number';
+function isScaleToOptions(x: Any) {
+  return (Std.isOfType(x.scale, Vector) && Std.isOfType(x.duration, Int));
 }
 
 class ScaleToWithOptions implements Action {
-  id = nextActionId();
-  private _durationMs: Float;
-  private _tx: TransformComponent;
-  private _started: Bool = false;
-  private _currentMs: Float;
-  private _stopped: Bool = false;
-  private _motion: MotionComponent;
-  private _endScale: Vector = vec(1, 1);
-  private _startScale: Vector = vec(1, 1);
+  var id = nextActionId();
+  private var _durationMs: Float;
+  private var _tx: TransformComponent;
+  private var _started: Bool = false;
+  private var _currentMs: Float;
+  private var _stopped: Bool = false;
+  private var _motion: MotionComponent;
+  private var _endScale: Vector = vec(1, 1);
+  private var _startScale: Vector = vec(1, 1);
   public function new(
-    public entity: Entity,
+    entity: Entity,
     options: ScaleToOptions
   ) {
     this._endScale = options.scale;
@@ -48,7 +46,7 @@ class ScaleToWithOptions implements Action {
     this._durationMs = options.duration;
     this._currentMs = this._durationMs;
   }
-  update(elapsed: Float) {
+  function update(elapsed: Int) {
     if (!this._started) {
       this._startScale = this._tx.scale;
       this._started = true;
@@ -59,7 +57,7 @@ class ScaleToWithOptions implements Action {
     var currentScale = this._tx.scale;
 
     var seconds = elapsed / 1000;
-    var sx = newScale.sub(currentScale).scale(seconds === 0 ? 0 : 1 / seconds);
+    var sx = newScale.sub(currentScale).scale(seconds == 0 ? 0 : 1 / seconds);
     this._motion.scaleFactor = sx;
 
     if (this.isComplete()) {
@@ -67,17 +65,17 @@ class ScaleToWithOptions implements Action {
       this._motion.angularVelocity = 0;
     }
   }
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     return this._stopped || this._currentMs < 0;
   }
 
-  public stop() {
+  public function stop() {
     this._motion.scaleFactor = Vector.Zero;
     this._stopped = true;
     this._currentMs = 0;
   }
 
-  public reset() {
+  public function reset() {
     this._currentMs = this._durationMs;
     this._started = false;
     this._stopped = false;
@@ -85,21 +83,21 @@ class ScaleToWithOptions implements Action {
 }
 
 class ScaleTo implements Action {
-  id = nextActionId();
-  private _tx: TransformComponent;
-  private _motion: MotionComponent;
-  public x!: Float;
-  public y!: Float;
-  private _startX!: Float;
-  private _startY!: Float;
-  private _endX: Float;
-  private _endY: Float;
-  private _speedX: Float;
-  private _speedY: Float;
-  private _distanceX!: Float;
-  private _distanceY!: Float;
-  private _started = false;
-  private _stopped = false;
+  var id = nextActionId();
+  private var _tx: TransformComponent;
+  private var _motion: MotionComponent;
+  public var x: Float;
+  public var y: Float;
+  private var _startX: Float;
+  private var _startY: Float;
+  private var _endX: Float;
+  private var _endY: Float;
+  private var _speedX: Float;
+  private var _speedY: Float;
+  private var _distanceX: Float;
+  private var _distanceY: Float;
+  private var _started = false;
+  private var _stopped = false;
   public function new(entity: Entity, scaleX: Float, scaleY: Float, speedX: Float, speedY: Float) {
     this._tx = entity.get(TransformComponent);
     this._motion = entity.get(MotionComponent);
@@ -109,7 +107,7 @@ class ScaleTo implements Action {
     this._speedY = speedY;
   }
 
-  public update(elapsed: Float) {
+  public function update(elapsed: Int) {
     if (!this._started) {
       this._started = true;
       this._startX = this._tx.scale.x;
@@ -139,7 +137,7 @@ class ScaleTo implements Action {
     }
   }
 
-  public isComplete(): Bool {
+  public function isComplete(): Bool {
     return (
       this._stopped ||
       (Math.abs(this._tx.scale.x - this._startX) >= this._distanceX - 0.01 &&
@@ -147,13 +145,13 @@ class ScaleTo implements Action {
     );
   }
 
-  public stop() {
+  public function stop() {
     this._motion.scaleFactor.x = 0;
     this._motion.scaleFactor.y = 0;
     this._stopped = true;
   }
 
-  public reset() {
+  public function reset() {
     this._started = false;
     this._stopped = false;
   }

@@ -1,28 +1,30 @@
-package nebula.Graphics;
+package nebula.graphics;
 
 /**
  * Describes the different image wrapping modes
  */
 enum ImageWrapping {
-  Clamp = 'Clamp',
+  Clamp;
 
-  Repeat = 'Repeat',
+  Repeat;
 
-  Mirror = 'Mirror'
+  Mirror;
 }
 
-/**
- *
- */
-function parseImageWrapping(val: String): ImageWrapping {
-  switch (val) {
-    case ImageWrapping.Clamp:
-      return ImageWrapping.Clamp;
-    case ImageWrapping.Repeat:
-      return ImageWrapping.Repeat;
-    case ImageWrapping.Mirror:
-      return ImageWrapping.Mirror;
-    default:
-      return ImageWrapping.Clamp;
+class Wrapping {
+  /**
+   *
+   */
+  public static function parseImageWrapping(val: String): ImageWrapping {
+    switch (val) {
+      case 'Clamp':
+        return ImageWrapping.Clamp;
+      case 'Repeat':
+        return ImageWrapping.Repeat;
+      case 'Mirror':
+        return ImageWrapping.Mirror;
+      default:
+        return ImageWrapping.Clamp;
+    }
   }
 }

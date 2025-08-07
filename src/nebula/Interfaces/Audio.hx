@@ -1,4 +1,4 @@
-package nebula.Interfaces;
+package nebula.interfaces;
 
 /**
  * Represents an audio control implementation

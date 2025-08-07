@@ -1,39 +1,39 @@
-package nebula.Collision;
+package nebula.collision;
 
-import nebula.EntityComponentSystem.Entity;
-import nebula.EntityComponentSystem.Query;
-import nebula.EntityComponentSystem.World;
-import nebula.EntityComponentSystem.SystemPriority;
-import nebula.EntityComponentSystem.Components.MotionComponent;
-import nebula.EntityComponentSystem.Components.TransformComponent;
-import nebula.EntityComponentSystem.System;
-import nebula.Collision.BodyComponent;
-import nebula.Collision.CollisionType;
-import nebula.Collision.Integrator;
-import nebula.Collision.PhysicsWorld;
+import nebula.entitycomponentsystem.Entity;
+import nebula.entitycomponentsystem.Query;
+import nebula.entitycomponentsystem.World;
+import nebula.entitycomponentsystem.SystemPriority;
+import nebula.entitycomponentsystem.components.MotionComponent;
+import nebula.entitycomponentsystem.components.TransformComponent;
+import nebula.entitycomponentsystem.System;
+import nebula.collision.BodyComponent;
+import nebula.collision.CollisionType;
+import nebula.collision.Integrator;
+import nebula.collision.PhysicsWorld;
 
 class MotionSystem extends System {
-  static priority = SystemPriority.Higher;
+  static var priority = SystemPriority.Higher;
 
-  public systemType = SystemType.Update;
-  private _physicsConfigDirty = false;
-  query: Query<typeof TransformComponent | typeof MotionComponent>;
+  public var systemType = SystemType.Update;
+  private var _physicsConfigDirty = false;
+  var query: Query;
   public function new(
-    public world: World,
-    public physics: PhysicsWorld
+    world: World,
+    physics: PhysicsWorld
   ) {
     super();
-    physics.$configUpdate.subscribe(() => (this._physicsConfigDirty = true));
+    physics.$configUpdate.subscribe(() -> (this._physicsConfigDirty = true));
     this.query = this.world.query([TransformComponent, MotionComponent]);
   }
 
-  update(elapsed: Float) {
+  function update(elapsed: Int) {
     var transform: TransformComponent;
     var motion: MotionComponent;
     final entities = this.query.entities;
     final substep = this.physics.config.substep;
 
-    for (var i = 0; i < entities.length; i++) {
+    for (i in 0...entities.length) {
       transform = entities[i].get(TransformComponent);
       motion = entities[i].get(MotionComponent);
 
@@ -47,7 +47,7 @@ class MotionSystem extends System {
       }
 
       final totalAcc = motion.acc.clone();
-      if (optionalBody?.collisionType === CollisionType.Active && optionalBody?.useGravity) {
+      if (optionalBody.collisionType == CollisionType.Active && optionalBody.useGravity) {
         totalAcc.addEqual(this.physics.config.gravity);
       }
 
@@ -63,10 +63,10 @@ class MotionSystem extends System {
     this._physicsConfigDirty = false;
   }
 
-  captureOldTransformWithChildren(entity: Entity) {
+  function captureOldTransformWithChildren(entity: Entity) {
     entity.get(BodyComponent)?.captureOldTransform();
 
-    for (var i = 0; i < entity.children.length; i++) {
+    for (i in 0...entity.children.length) {
       this.captureOldTransformWithChildren(entity.children[i]);
     }
   }

@@ -1,22 +1,24 @@
-package nebula.Util;
+package nebula.util;
 
-import nebula.Util.Log;
+import nebula.util.Log;
 
-/**
- * Whether or not the browser can play this file as HTML5 Audio
- */
-function canPlayFile(file: String): Bool {
-  try {
-    final a = new Audio();
-    final filetype = /.*\.([A-Za-z0-9]+)(?:(?:\?|\#).*)*$/;
-    final type = file.match(filetype)[1];
-    if (a.canPlayType('audio/' + type)) {
-      return true;
-    } else {
+class Sound {
+  /**
+   * Whether or not the browser can play this file as HTML5 Audio
+   */
+  public static function canPlayFile(file: String): Bool {
+    try {
+      final a = new Audio();
+      final filetype = ~/.*\.([A-Za-z0-9]+)(?:(?:\?|\#).*)*$/;
+      final type = file.match(filetype)[1];
+      if (a.canPlayType('audio/' + type)) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      Logger.getInstance().warn('Cannot determine audio support, assuming no support for the Audio Tag', e);
       return false;
     }
-  } catch (e) {
-    Logger.getInstance().warn('Cannot determine audio support, assuming no support for the Audio Tag', e);
-    return false;
-  }
+  } 
 }
